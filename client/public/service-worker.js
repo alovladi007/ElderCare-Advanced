@@ -1,10 +1,11 @@
-const CACHE_NAME = 'eldercare-v1';
+const CACHE_NAME = 'evergreen-care-v1';
 const urlsToCache = [
   '/',
+  '/index.html',
   '/static/css/main.css',
   '/static/js/main.js',
   '/manifest.json',
-  '/favicon.ico'
+  '/logo.svg'
 ];
 
 // Install service worker
