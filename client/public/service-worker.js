@@ -1,4 +1,4 @@
-const CACHE_NAME = 'evergreen-care-v1';
+const CACHE_NAME = 'evergreen-care-v2-monitoring';
 const urlsToCache = [
   '/',
   '/index.html',

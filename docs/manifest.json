@@ -1,7 +1,7 @@
 {
   "short_name": "Evergreen Care",
-  "name": "Evergreen Home & Care - Elder Care & Home Services",
-  "description": "Professional elder care, home care, and home repair services available 24/7",
+  "name": "Evergreen Home & Care - Elder Care & Health Monitoring",
+  "description": "Professional elder care, home care, home repair services, and real-time patient health monitoring available 24/7",
   "icons": [
     {
       "src": "logo.svg",
@@ -16,6 +16,14 @@
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
   "categories": ["health", "lifestyle", "medical"],
+  "features": [
+    "Elder Care Services",
+    "Home Care Services",
+    "Home Repairs",
+    "Real-Time Patient Monitoring",
+    "Health Tracking Dashboard",
+    "24/7 Emergency Support"
+  ],
   "screenshots": [
     {
       "src": "screenshot1.png",
