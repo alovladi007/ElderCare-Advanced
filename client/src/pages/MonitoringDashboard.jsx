@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity, Heart, Droplet, Thermometer, Wind, AlertTriangle,
   Bell, User, LogOut, RefreshCw, TrendingUp, TrendingDown,
-  Camera, Phone, Clock, CheckCircle, XCircle, Shield
+  Camera, Phone, Clock, CheckCircle, XCircle, Shield,
+  Brain, Footprints, Moon, Coffee, Battery, Wifi, Zap, Target, Gauge, Eye
 } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -374,59 +375,239 @@ const MonitoringDashboard = () => {
                   </div>
                 </div>
 
-                {/* Live Vitals */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <VitalCard
-                    icon={Activity}
-                    title="Blood Pressure"
-                    value={latestVitals['blood-pressure'] ?
-                      `${latestVitals['blood-pressure'].values.systolic}/${latestVitals['blood-pressure'].values.diastolic}` : '--'}
-                    unit="mmHg"
-                    status={latestVitals['blood-pressure'] ?
-                      getVitalStatus('bp', latestVitals['blood-pressure'].values) : 'normal'}
-                  />
-                  <VitalCard
-                    icon={Heart}
-                    title="Heart Rate"
-                    value={latestVitals['heart-rate']?.values.heartRate}
-                    unit="bpm"
-                    status={latestVitals['heart-rate'] ?
-                      getVitalStatus('heartRate', latestVitals['heart-rate'].values.heartRate) : 'normal'}
-                  />
-                  <VitalCard
-                    icon={Droplet}
-                    title="Blood Glucose"
-                    value={latestVitals['glucose']?.values.glucose}
-                    unit="mg/dL"
-                    status={latestVitals['glucose'] ?
-                      getVitalStatus('glucose', latestVitals['glucose'].values.glucose) : 'normal'}
-                  />
-                  <VitalCard
-                    icon={Thermometer}
-                    title="Temperature"
-                    value={latestVitals['temperature']?.values.temperature}
-                    unit="°F"
-                    status={latestVitals['temperature'] ?
-                      getVitalStatus('temperature', latestVitals['temperature'].values.temperature) : 'normal'}
-                  />
-                  <VitalCard
-                    icon={Wind}
-                    title="SpO2"
-                    value={latestVitals['spo2']?.values.oxygenSaturation}
-                    unit="%"
-                    status={latestVitals['spo2'] ?
-                      getVitalStatus('spo2', latestVitals['spo2'].values.oxygenSaturation) : 'normal'}
-                  />
-                  <VitalCard
-                    icon={Activity}
-                    title="Last Updated"
-                    value={latestVitals['blood-pressure'] ?
-                      new Date(latestVitals['blood-pressure'].timestamp).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : '--'}
-                    unit="Live"
-                  />
+                {/* Live Vitals - Primary Metrics */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Heart className="w-5 h-5 mr-2 text-red-500" />
+                    Cardiovascular Metrics
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Activity}
+                      title="Blood Pressure"
+                      value={latestVitals?.bloodPressure ?
+                        `${latestVitals.bloodPressure.systolic}/${latestVitals.bloodPressure.diastolic}` : '--'}
+                      unit="mmHg"
+                      status={latestVitals?.bloodPressure ?
+                        getVitalStatus('bp', latestVitals.bloodPressure) : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Heart}
+                      title="Heart Rate"
+                      value={latestVitals?.heartRate}
+                      unit="bpm"
+                      status={latestVitals?.heartRate ?
+                        getVitalStatus('heartRate', latestVitals.heartRate) : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Target}
+                      title="MAP"
+                      value={latestVitals?.bloodPressure?.map}
+                      unit="mmHg"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Zap}
+                      title="HRV"
+                      value={latestVitals?.heartRateVariability}
+                      unit="ms"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Respiratory Metrics */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Wind className="w-5 h-5 mr-2 text-blue-500" />
+                    Respiratory Metrics
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Wind}
+                      title="SpO2"
+                      value={latestVitals?.oxygenSaturation}
+                      unit="%"
+                      status={latestVitals?.oxygenSaturation ?
+                        getVitalStatus('spo2', latestVitals.oxygenSaturation) : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Activity}
+                      title="Respiratory Rate"
+                      value={latestVitals?.respiratoryRate}
+                      unit="bpm"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Gauge}
+                      title="End-Tidal CO₂"
+                      value={latestVitals?.endTidalCO2}
+                      unit="mmHg"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Wind}
+                      title="Peak Flow"
+                      value={latestVitals?.peakExpiratoryFlow}
+                      unit="L/min"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Metabolic & Neurological */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Thermometer className="w-5 h-5 mr-2 text-orange-500" />
+                    Metabolic & Neurological
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Thermometer}
+                      title="Temperature"
+                      value={latestVitals?.temperature}
+                      unit="°F"
+                      status={latestVitals?.temperature ?
+                        getVitalStatus('temperature', latestVitals.temperature) : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Droplet}
+                      title="Blood Glucose"
+                      value={latestVitals?.bloodGlucose}
+                      unit="mg/dL"
+                      status={latestVitals?.bloodGlucose ?
+                        getVitalStatus('glucose', latestVitals.bloodGlucose) : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Activity}
+                      title="Blood Lactate"
+                      value={latestVitals?.bloodLactate}
+                      unit="mmol/L"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Brain}
+                      title="Consciousness"
+                      value={latestVitals?.consciousnessLevel}
+                      unit=""
+                      status={latestVitals?.consciousnessLevel === 'Alert' ? 'normal' : 'warning'}
+                    />
+                  </div>
+                </div>
+
+                {/* Activity & Safety */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Footprints className="w-5 h-5 mr-2 text-green-500" />
+                    Activity & Safety Monitoring
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Footprints}
+                      title="Steps (Last Hour)"
+                      value={latestVitals?.steps}
+                      unit="steps"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Activity}
+                      title="Movement"
+                      value={latestVitals?.movementDetected ? 'Active' : 'Resting'}
+                      unit=""
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={AlertTriangle}
+                      title="Fall Risk"
+                      value={latestVitals?.fallRisk}
+                      unit=""
+                      status={latestVitals?.fallRisk === 'High' ? 'critical' :
+                             latestVitals?.fallRisk === 'Medium' ? 'warning' : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Activity}
+                      title="Position Changes"
+                      value={latestVitals?.positionChanges}
+                      unit="changes"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Sleep & Wellness */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Moon className="w-5 h-5 mr-2 text-indigo-500" />
+                    Sleep & Wellness
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Moon}
+                      title="Sleep Quality"
+                      value={latestVitals?.sleepQuality}
+                      unit=""
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Coffee}
+                      title="Fluid Intake"
+                      value={latestVitals?.fluidIntake}
+                      unit="mL/hr"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Droplet}
+                      title="Nutrition Score"
+                      value={latestVitals?.nutritionScore}
+                      unit="%"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Eye}
+                      title="Pain Level"
+                      value={latestVitals?.painLevel}
+                      unit="/10"
+                      status={latestVitals?.painLevel > 5 ? 'warning' : 'normal'}
+                    />
+                  </div>
+                </div>
+
+                {/* Device & Environmental */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Battery className="w-5 h-5 mr-2 text-yellow-500" />
+                    Device & Environment Status
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Battery}
+                      title="Device Battery"
+                      value={latestVitals?.deviceBattery}
+                      unit="%"
+                      status={latestVitals?.deviceBattery < 20 ? 'warning' : 'normal'}
+                    />
+                    <VitalCard
+                      icon={Wifi}
+                      title="Signal Strength"
+                      value={latestVitals?.signalStrength}
+                      unit="/5"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Thermometer}
+                      title="Room Temp"
+                      value={latestVitals?.roomTemperature}
+                      unit="°F"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Droplet}
+                      title="Room Humidity"
+                      value={latestVitals?.roomHumidity}
+                      unit="%"
+                      status="normal"
+                    />
+                  </div>
                 </div>
 
                 {/* BP Trend Chart */}
