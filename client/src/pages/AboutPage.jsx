@@ -81,10 +81,10 @@ const AboutPage = () => {
           <TrendingUp className="w-16 h-16 text-blue-600 mx-auto mb-6" />
           <h2 className="text-3xl font-bold mb-6">Our Impact</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            <div><div className="text-4xl font-bold text-blue-600 mb-2">5,000+</div><div className="text-gray-600">Families Served</div></div>
+            <div><div className="text-4xl font-bold text-blue-600 mb-2">150+</div><div className="text-gray-600">Families Served</div></div>
             <div><div className="text-4xl font-bold text-blue-600 mb-2">98%</div><div className="text-gray-600">Satisfaction Rate</div></div>
-            <div><div className="text-4xl font-bold text-blue-600 mb-2">15+</div><div className="text-gray-600">Years Experience</div></div>
-            <div><div className="text-4xl font-bold text-blue-600 mb-2">100+</div><div className="text-gray-600">Care Professionals</div></div>
+            <div><div className="text-4xl font-bold text-blue-600 mb-2">2+</div><div className="text-gray-600">Years Experience</div></div>
+            <div><div className="text-4xl font-bold text-blue-600 mb-2">12+</div><div className="text-gray-600">Care Professionals</div></div>
           </div>
         </div>
       </section>

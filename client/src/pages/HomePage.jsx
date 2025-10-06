@@ -35,8 +35,8 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { number: '15+', label: 'Years Experience' },
-    { number: '5,000+', label: 'Families Served' },
+    { number: '2+', label: 'Years Experience' },
+    { number: '150+', label: 'Families Served' },
     { number: '98%', label: 'Satisfaction Rate' },
     { number: '24/7', label: 'Availability' }
   ];
