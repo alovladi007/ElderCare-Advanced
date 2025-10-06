@@ -53,12 +53,12 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Resources</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Care Guide</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Testimonials</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Blog</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+              <li><Link to="/care-guide" className="text-gray-400 hover:text-white transition-colors">Care Guide</Link></li>
+              <li><Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
+              <li><Link to="/testimonials" className="text-gray-400 hover:text-white transition-colors">Testimonials</Link></li>
+              <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">Blog</Link></li>
+              <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 
@@ -103,9 +103,9 @@ const Footer = () => {
             </p>
             <div className="flex space-x-6 text-sm">
               <Link to="/employee-login" className="text-gray-400 hover:text-white transition-colors">Employee Login</Link>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">Accessibility</a>
+              <Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">Terms of Service</Link>
+              <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Accessibility</Link>
             </div>
           </div>
         </div>

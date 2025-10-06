@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/ElderCare-Advanced/static/css/main.302cb3e2.css",
-    "main.js": "/ElderCare-Advanced/static/js/main.0018a9ba.js",
+    "main.js": "/ElderCare-Advanced/static/js/main.df77c5aa.js",
     "index.html": "/ElderCare-Advanced/index.html",
     "main.302cb3e2.css.map": "/ElderCare-Advanced/static/css/main.302cb3e2.css.map",
-    "main.0018a9ba.js.map": "/ElderCare-Advanced/static/js/main.0018a9ba.js.map"
+    "main.df77c5aa.js.map": "/ElderCare-Advanced/static/js/main.df77c5aa.js.map"
   },
   "entrypoints": [
     "static/css/main.302cb3e2.css",
-    "static/js/main.0018a9ba.js"
+    "static/js/main.df77c5aa.js"
   ]
 }
