@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Heart, Clock, Shield, Users, Activity, Brain, Stethoscope,
-  Home, Utensils, Pill, HeartPulse, CheckCircle, ArrowRight
+  Home, Utensils, Pill, HeartPulse, CheckCircle, ArrowRight, Monitor
 } from 'lucide-react';
 
 const ElderCarePage = () => {
@@ -13,6 +13,13 @@ const ElderCarePage = () => {
       title: '24/7 Personal Care',
       description: 'Round-the-clock assistance with daily living activities including bathing, dressing, grooming, and mobility support.',
       link: '/24-7-care'
+    },
+    {
+      icon: <Monitor className="w-10 h-10" />,
+      title: 'Remote Health Monitoring',
+      description: 'AI-powered medical devices tracking blood pressure, sugar levels, heart rate with 24/7 alerts to doctors and emergency services.',
+      link: '/remote-health-monitoring',
+      badge: 'Advanced Tech'
     },
     {
       icon: <Pill className="w-10 h-10" />,
@@ -119,8 +126,13 @@ const ElderCarePage = () => {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="card p-8 hover:shadow-2xl transition-all cursor-pointer"
+                  className="card p-8 hover:shadow-2xl transition-all cursor-pointer relative"
                 >
+                  {service.badge && (
+                    <span className="absolute top-4 right-4 px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold rounded-full">
+                      {service.badge}
+                    </span>
+                  )}
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white mb-6">
                     {service.icon}
                   </div>
