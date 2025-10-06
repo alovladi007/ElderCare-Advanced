@@ -5,12 +5,12 @@ import { Wrench, Home, Zap, Droplet, Hammer, Lock, AlertCircle, ArrowRight, Chec
 
 const RepairServicesPage = () => {
   const services = [
-    { icon: <Wrench />, title: 'General Repairs', description: 'Fix doors, windows, cabinets, and general household items' },
-    { icon: <Zap />, title: 'Electrical Work', description: 'Light fixtures, outlets, switches, and electrical safety checks' },
-    { icon: <Droplet />, title: 'Plumbing Services', description: 'Faucet repairs, pipe fixes, toilet repairs, and leak prevention' },
-    { icon: <Home />, title: 'Safety Modifications', description: 'Grab bars, ramps, stair lifts, and accessibility improvements' },
-    { icon: <Lock />, title: 'Security Upgrades', description: 'Lock installation, security system setup, and home safety' },
-    { icon: <Hammer />, title: 'Handyman Services', description: 'Assembly, installation, painting, and general maintenance' }
+    { icon: <Wrench />, title: 'General Repairs', description: 'Fix doors, windows, cabinets, and general household items', link: '/general-repairs' },
+    { icon: <Zap />, title: 'Electrical Work', description: 'Light fixtures, outlets, switches, and electrical safety checks', link: '/electrical-work' },
+    { icon: <Droplet />, title: 'Plumbing Services', description: 'Faucet repairs, pipe fixes, toilet repairs, and leak prevention', link: '/plumbing-services' },
+    { icon: <Home />, title: 'Safety Modifications', description: 'Grab bars, ramps, stair lifts, and accessibility improvements', link: '/safety-modifications' },
+    { icon: <Lock />, title: 'Security Upgrades', description: 'Lock installation, security system setup, and home safety', link: '/security-upgrades' },
+    { icon: <Hammer />, title: 'Handyman Services', description: 'Assembly, installation, painting, and general maintenance', link: '/handyman-services' }
   ];
 
   const emergencyServices = [
@@ -43,13 +43,18 @@ const RepairServicesPage = () => {
           <h2 className="section-title text-center mb-16">Our Repair Services</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="card p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white mb-6">
-                  {React.cloneElement(service.icon, { className: 'w-10 h-10' })}
-                </div>
-                <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </motion.div>
+              <Link to={service.link} key={i}>
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="card p-8 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white mb-6">
+                    {React.cloneElement(service.icon, { className: 'w-10 h-10' })}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{service.title}</h3>
+                  <p className="text-gray-600 mb-4">{service.description}</p>
+                  <span className="text-blue-600 font-semibold flex items-center">
+                    Learn More <ArrowRight className="w-4 h-4 ml-2" />
+                  </span>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>

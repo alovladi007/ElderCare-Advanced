@@ -20,6 +20,12 @@ import TestimonialsPage from './pages/TestimonialsPage';
 import BlogPage from './pages/BlogPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
+import GeneralRepairsPage from './pages/GeneralRepairsPage';
+import ElectricalWorkPage from './pages/ElectricalWorkPage';
+import PlumbingServicesPage from './pages/PlumbingServicesPage';
+import SafetyModificationsPage from './pages/SafetyModificationsPage';
+import SecurityUpgradesPage from './pages/SecurityUpgradesPage';
+import HandymanServicesPage from './pages/HandymanServicesPage';
 
 // Components
 import Navbar from './components/Navbar';
@@ -55,6 +61,12 @@ function App() {
                   <Route path="/blog" element={<BlogPage />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/general-repairs" element={<GeneralRepairsPage />} />
+                  <Route path="/electrical-work" element={<ElectricalWorkPage />} />
+                  <Route path="/plumbing-services" element={<PlumbingServicesPage />} />
+                  <Route path="/safety-modifications" element={<SafetyModificationsPage />} />
+                  <Route path="/security-upgrades" element={<SecurityUpgradesPage />} />
+                  <Route path="/handyman-services" element={<HandymanServicesPage />} />
                 </Routes>
               </main>
               <Footer />
