@@ -102,6 +102,7 @@ const Footer = () => {
               &copy; {currentYear} ElderCare & HomeCare Services. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm">
+              <Link to="/employee-login" className="text-gray-400 hover:text-white transition-colors">Employee Login</Link>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">Accessibility</a>

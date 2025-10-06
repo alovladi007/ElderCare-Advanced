@@ -14,6 +14,7 @@ const bookingRoutes = require('./routes/bookings');
 const contactRoutes = require('./routes/contact');
 const serviceRoutes = require('./routes/services');
 const authRoutes = require('./routes/auth');
+const employeeRoutes = require('./routes/employees');
 
 // Initialize Express app
 const app = express();
@@ -52,6 +53,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/employees', employeeRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
