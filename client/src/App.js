@@ -14,6 +14,12 @@ import BookingPage from './pages/BookingPage';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeLoginPage from './pages/EmployeeLoginPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
+import CareGuidePage from './pages/CareGuidePage';
+import FAQPage from './pages/FAQPage';
+import TestimonialsPage from './pages/TestimonialsPage';
+import BlogPage from './pages/BlogPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 
 // Components
 import Navbar from './components/Navbar';
@@ -43,6 +49,12 @@ function App() {
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/booking" element={<BookingPage />} />
                   <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/care-guide" element={<CareGuidePage />} />
+                  <Route path="/faq" element={<FAQPage />} />
+                  <Route path="/testimonials" element={<TestimonialsPage />} />
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                 </Routes>
               </main>
               <Footer />
