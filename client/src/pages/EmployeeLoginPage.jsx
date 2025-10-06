@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { Lock, User, Eye, EyeOff, Briefcase } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, Briefcase, ArrowLeft } from 'lucide-react';
 
 const EmployeeLoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -36,6 +36,15 @@ const EmployeeLoginPage = () => {
   return (
     <div className="min-h-screen neural-bg flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
+        {/* Back to Main Site */}
+        <Link
+          to="/"
+          className="inline-flex items-center text-white hover:text-blue-200 mb-6 transition-colors"
+        >
+          <ArrowLeft className="mr-2" size={20} />
+          Back to Main Site
+        </Link>
+
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">

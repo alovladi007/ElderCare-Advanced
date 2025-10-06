@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   Clock, LogOut, FileText, Calendar, User, CheckCircle,
-  ClipboardList, AlertCircle, TrendingUp, PlayCircle, StopCircle
+  ClipboardList, AlertCircle, TrendingUp, PlayCircle, StopCircle, Home
 } from 'lucide-react';
 
 const EmployeeDashboard = () => {
@@ -262,9 +262,18 @@ const EmployeeDashboard = () => {
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Employee Dashboard</h1>
-              <p className="text-blue-100">ElderCare & HomeCare Services</p>
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/"
+                className="p-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                title="Back to Main Site"
+              >
+                <Home size={20} />
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold">Employee Dashboard</h1>
+                <p className="text-blue-100">ElderCare & HomeCare Services</p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
