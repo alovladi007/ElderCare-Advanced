@@ -11,32 +11,38 @@ const ElderCarePage = () => {
     {
       icon: <HeartPulse className="w-10 h-10" />,
       title: '24/7 Personal Care',
-      description: 'Round-the-clock assistance with daily living activities including bathing, dressing, grooming, and mobility support.'
+      description: 'Round-the-clock assistance with daily living activities including bathing, dressing, grooming, and mobility support.',
+      link: '/24-7-care'
     },
     {
       icon: <Pill className="w-10 h-10" />,
       title: 'Medication Management',
-      description: 'Careful monitoring and administration of medications according to prescribed schedules to ensure health and safety.'
+      description: 'Careful monitoring and administration of medications according to prescribed schedules to ensure health and safety.',
+      link: '/medication-management'
     },
     {
       icon: <Brain className="w-10 h-10" />,
       title: 'Memory Care',
-      description: 'Specialized care for individuals with Alzheimer\'s, dementia, and other cognitive impairments with compassionate support.'
+      description: 'Specialized care for individuals with Alzheimer\'s, dementia, and other cognitive impairments with compassionate support.',
+      link: '/memory-care'
     },
     {
       icon: <Stethoscope className="w-10 h-10" />,
       title: 'Health Monitoring',
-      description: 'Regular vital signs monitoring, health assessments, and coordination with healthcare providers for comprehensive care.'
+      description: 'Regular vital signs monitoring, health assessments, and coordination with healthcare providers for comprehensive care.',
+      link: '/health-monitoring'
     },
     {
       icon: <Utensils className="w-10 h-10" />,
       title: 'Nutrition & Meal Prep',
-      description: 'Nutritious meal planning and preparation tailored to dietary needs, preferences, and medical restrictions.'
+      description: 'Nutritious meal planning and preparation tailored to dietary needs, preferences, and medical restrictions.',
+      link: '/nutrition-meal-prep'
     },
     {
       icon: <Users className="w-10 h-10" />,
       title: 'Companionship',
-      description: 'Social engagement, conversation, activities, and emotional support to combat loneliness and promote wellbeing.'
+      description: 'Social engagement, conversation, activities, and emotional support to combat loneliness and promote wellbeing.',
+      link: '/elder-companionship'
     }
   ];
 
@@ -108,19 +114,23 @@ const ElderCarePage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="card p-8 hover:shadow-2xl transition-all"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white mb-6">
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </motion.div>
+              <Link to={service.link} key={index}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="card p-8 hover:shadow-2xl transition-all cursor-pointer"
+                >
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white mb-6">
+                    {service.icon}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{service.title}</h3>
+                  <p className="text-gray-600 mb-4">{service.description}</p>
+                  <span className="text-blue-600 font-semibold flex items-center">
+                    Learn More <ArrowRight className="w-4 h-4 ml-2" />
+                  </span>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>

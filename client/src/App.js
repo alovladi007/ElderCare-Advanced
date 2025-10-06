@@ -31,6 +31,12 @@ import CompanionshipPage from './pages/CompanionshipPage';
 import MealPreparationPage from './pages/MealPreparationPage';
 import LightHousekeepingPage from './pages/LightHousekeepingPage';
 import SafetySupervisionPage from './pages/SafetySupervisionPage';
+import TwentyFourSevenCarePage from './pages/TwentyFourSevenCarePage';
+import MedicationManagementPage from './pages/MedicationManagementPage';
+import MemoryCarePage from './pages/MemoryCarePage';
+import HealthMonitoringPage from './pages/HealthMonitoringPage';
+import NutritionMealPrepPage from './pages/NutritionMealPrepPage';
+import ElderCompanionshipPage from './pages/ElderCompanionshipPage';
 
 // Components
 import Navbar from './components/Navbar';
@@ -77,6 +83,12 @@ function App() {
                   <Route path="/meal-preparation" element={<MealPreparationPage />} />
                   <Route path="/light-housekeeping" element={<LightHousekeepingPage />} />
                   <Route path="/safety-supervision" element={<SafetySupervisionPage />} />
+                  <Route path="/24-7-care" element={<TwentyFourSevenCarePage />} />
+                  <Route path="/medication-management" element={<MedicationManagementPage />} />
+                  <Route path="/memory-care" element={<MemoryCarePage />} />
+                  <Route path="/health-monitoring" element={<HealthMonitoringPage />} />
+                  <Route path="/nutrition-meal-prep" element={<NutritionMealPrepPage />} />
+                  <Route path="/elder-companionship" element={<ElderCompanionshipPage />} />
                 </Routes>
               </main>
               <Footer />
