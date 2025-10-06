@@ -14,6 +14,8 @@ const EmployeeDashboard = () => {
   const [workDuration, setWorkDuration] = useState(0);
   const [clockInTime, setClockInTime] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedForm, setSelectedForm] = useState(null);
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
     // Check authentication
@@ -149,23 +151,21 @@ const EmployeeDashboard = () => {
     </div>
   );
 
+  const forms = [
+    { id: 1, name: 'Daily Care Report', icon: <ClipboardList />, color: 'blue' },
+    { id: 2, name: 'Incident Report', icon: <AlertCircle />, color: 'red' },
+    { id: 3, name: 'Medication Log', icon: <FileText />, color: 'green' },
+    { id: 4, name: 'Patient Visit Notes', icon: <User />, color: 'purple' }
+  ];
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    toast.success('Form submitted successfully!');
+    setSelectedForm(null);
+    setFormData({});
+  };
+
   const FormsTab = () => {
-    const [selectedForm, setSelectedForm] = useState(null);
-    const [formData, setFormData] = useState({});
-
-    const forms = [
-      { id: 1, name: 'Daily Care Report', icon: <ClipboardList />, color: 'blue' },
-      { id: 2, name: 'Incident Report', icon: <AlertCircle />, color: 'red' },
-      { id: 3, name: 'Medication Log', icon: <FileText />, color: 'green' },
-      { id: 4, name: 'Patient Visit Notes', icon: <User />, color: 'purple' }
-    ];
-
-    const handleFormSubmit = (e) => {
-      e.preventDefault();
-      toast.success('Form submitted successfully!');
-      setSelectedForm(null);
-      setFormData({});
-    };
 
     if (selectedForm) {
       return (
@@ -231,19 +231,24 @@ const EmployeeDashboard = () => {
           <p className="text-gray-600">Select a form to fill out</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {forms.map((form) => (
-            <div
-              key={form.id}
-              onClick={() => setSelectedForm(form)}
-              className="card p-6 cursor-pointer hover:shadow-xl transition-shadow"
-            >
-              <div className={`w-12 h-12 bg-${form.color}-100 rounded-lg flex items-center justify-center text-${form.color}-600 mb-4`}>
-                {form.icon}
+          {forms.map((form) => {
+            const bgColorClass = form.color === 'blue' ? 'bg-blue-100' : form.color === 'red' ? 'bg-red-100' : form.color === 'green' ? 'bg-green-100' : 'bg-purple-100';
+            const textColorClass = form.color === 'blue' ? 'text-blue-600' : form.color === 'red' ? 'text-red-600' : form.color === 'green' ? 'text-green-600' : 'text-purple-600';
+
+            return (
+              <div
+                key={form.id}
+                onClick={() => setSelectedForm(form)}
+                className="card p-6 cursor-pointer hover:shadow-xl transition-shadow"
+              >
+                <div className={`w-12 h-12 ${bgColorClass} rounded-lg flex items-center justify-center ${textColorClass} mb-4`}>
+                  {form.icon}
+                </div>
+                <h4 className="text-xl font-bold mb-2">{form.name}</h4>
+                <p className="text-gray-600 text-sm">Click to fill out this form</p>
               </div>
-              <h4 className="text-xl font-bold mb-2">{form.name}</h4>
-              <p className="text-gray-600 text-sm">Click to fill out this form</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
