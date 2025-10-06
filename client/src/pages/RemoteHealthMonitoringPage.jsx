@@ -430,9 +430,12 @@ const RemoteHealthMonitoringPage = () => {
                 Protect your loved ones with cutting-edge health monitoring technology. Peace of mind with 24/7 automated alerts.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <Link to="/booking" className="group px-8 py-4 bg-white text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-xl inline-flex items-center">
-                  Schedule Installation
+                <Link to="/monitoring/login" className="group px-8 py-4 bg-white text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-xl inline-flex items-center">
+                  Access Monitoring Dashboard
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link to="/booking" className="px-8 py-4 border-2 border-white/30 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/10 transition-all inline-flex items-center">
+                  Schedule Installation
                 </Link>
                 <Link to="/elder-care" className="px-8 py-4 border-2 border-white/30 backdrop-blur-sm rounded-xl font-semibold hover:bg-white/10 transition-all inline-flex items-center">
                   View All Elder Care Services

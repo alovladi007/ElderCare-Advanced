@@ -38,6 +38,8 @@ import HealthMonitoringPage from './pages/HealthMonitoringPage';
 import NutritionMealPrepPage from './pages/NutritionMealPrepPage';
 import ElderCompanionshipPage from './pages/ElderCompanionshipPage';
 import RemoteHealthMonitoringPage from './pages/RemoteHealthMonitoringPage';
+import MonitoringLoginPage from './pages/MonitoringLoginPage';
+import MonitoringDashboard from './pages/MonitoringDashboard';
 
 // Components
 import Navbar from './components/Navbar';
@@ -52,6 +54,10 @@ function App() {
           {/* Employee Routes (No Navbar/Footer) */}
           <Route path="/employee-login" element={<EmployeeLoginPage />} />
           <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+
+          {/* Monitoring System Routes (No Navbar/Footer) */}
+          <Route path="/monitoring/login" element={<MonitoringLoginPage />} />
+          <Route path="/monitoring/dashboard" element={<MonitoringDashboard />} />
 
           {/* Public Routes (With Navbar/Footer) */}
           <Route path="/*" element={
