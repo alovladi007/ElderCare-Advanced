@@ -80,32 +80,32 @@ const PatientSchema = new mongoose.Schema({
       enabled: { type: Boolean, default: true },
       frequency: { type: Number, default: 30 }, // minutes
       alertThresholds: {
-        systolic: { min: 90, max: 140 },
-        diastolic: { min: 60, max: 90 }
+        systolic: { min: { type: Number, default: 90 }, max: { type: Number, default: 140 } },
+        diastolic: { min: { type: Number, default: 60 }, max: { type: Number, default: 90 } }
       }
     },
     glucose: {
       enabled: { type: Boolean, default: false },
       frequency: { type: Number, default: 60 },
       alertThresholds: {
-        min: 70,
-        max: 180
+        min: { type: Number, default: 70 },
+        max: { type: Number, default: 180 }
       }
     },
     heartRate: {
       enabled: { type: Boolean, default: true },
       continuous: { type: Boolean, default: true },
       alertThresholds: {
-        min: 50,
-        max: 100
+        min: { type: Number, default: 50 },
+        max: { type: Number, default: 100 }
       }
     },
     temperature: {
       enabled: { type: Boolean, default: true },
       frequency: { type: Number, default: 120 },
       alertThresholds: {
-        min: 97.0,
-        max: 99.5
+        min: { type: Number, default: 97.0 },
+        max: { type: Number, default: 99.5 }
       }
     },
     fallDetection: {
