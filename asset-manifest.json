@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/ElderCare-Advanced/static/css/main.3f0011fe.css",
+    "main.js": "/ElderCare-Advanced/static/js/main.99dbad82.js",
+    "index.html": "/ElderCare-Advanced/index.html",
+    "main.3f0011fe.css.map": "/ElderCare-Advanced/static/css/main.3f0011fe.css.map",
+    "main.99dbad82.js.map": "/ElderCare-Advanced/static/js/main.99dbad82.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3f0011fe.css",
+    "static/js/main.99dbad82.js"
+  ]
+}
