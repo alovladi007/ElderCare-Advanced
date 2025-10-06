@@ -26,6 +26,11 @@ import PlumbingServicesPage from './pages/PlumbingServicesPage';
 import SafetyModificationsPage from './pages/SafetyModificationsPage';
 import SecurityUpgradesPage from './pages/SecurityUpgradesPage';
 import HandymanServicesPage from './pages/HandymanServicesPage';
+import PersonalCarePage from './pages/PersonalCarePage';
+import CompanionshipPage from './pages/CompanionshipPage';
+import MealPreparationPage from './pages/MealPreparationPage';
+import LightHousekeepingPage from './pages/LightHousekeepingPage';
+import SafetySupervisionPage from './pages/SafetySupervisionPage';
 
 // Components
 import Navbar from './components/Navbar';
@@ -67,6 +72,11 @@ function App() {
                   <Route path="/safety-modifications" element={<SafetyModificationsPage />} />
                   <Route path="/security-upgrades" element={<SecurityUpgradesPage />} />
                   <Route path="/handyman-services" element={<HandymanServicesPage />} />
+                  <Route path="/personal-care" element={<PersonalCarePage />} />
+                  <Route path="/companionship" element={<CompanionshipPage />} />
+                  <Route path="/meal-preparation" element={<MealPreparationPage />} />
+                  <Route path="/light-housekeeping" element={<LightHousekeepingPage />} />
+                  <Route path="/safety-supervision" element={<SafetySupervisionPage />} />
                 </Routes>
               </main>
               <Footer />

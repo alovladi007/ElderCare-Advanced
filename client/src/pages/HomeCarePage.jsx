@@ -5,12 +5,11 @@ import { Home, Users, Clock, Heart, CheckCircle, ArrowRight, Sparkles, ShieldChe
 
 const HomeCarePage = () => {
   const services = [
-    { icon: <Users />, title: 'Personal Care Assistance', description: 'Help with bathing, dressing, grooming, and personal hygiene' },
-    { icon: <Clock />, title: 'Flexible Scheduling', description: 'Hourly, daily, or live-in care options to fit your needs' },
-    { icon: <Heart />, title: 'Companionship Services', description: 'Social interaction, activities, and emotional support' },
-    { icon: <Home />, title: 'Light Housekeeping', description: 'Cleaning, laundry, and maintaining a comfortable living environment' },
-    { icon: <Sparkles />, title: 'Meal Preparation', description: 'Nutritious meal planning and cooking based on dietary needs' },
-    { icon: <ShieldCheck />, title: 'Safety Supervision', description: 'Fall prevention, medication reminders, and safety monitoring' }
+    { icon: <Users />, title: 'Personal Care Assistance', description: 'Help with bathing, dressing, grooming, and personal hygiene', link: '/personal-care' },
+    { icon: <Heart />, title: 'Companionship Services', description: 'Social interaction, activities, and emotional support', link: '/companionship' },
+    { icon: <Sparkles />, title: 'Meal Preparation', description: 'Nutritious meal planning and cooking based on dietary needs', link: '/meal-preparation' },
+    { icon: <Home />, title: 'Light Housekeeping', description: 'Cleaning, laundry, and maintaining a comfortable living environment', link: '/light-housekeeping' },
+    { icon: <ShieldCheck />, title: 'Safety Supervision', description: 'Fall prevention, medication reminders, and safety monitoring', link: '/safety-supervision' }
   ];
 
   return (
@@ -34,13 +33,18 @@ const HomeCarePage = () => {
           <h2 className="section-title text-center mb-16">Our Home Care Services</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="card p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white mb-6">
-                  {React.cloneElement(service.icon, { className: 'w-10 h-10' })}
-                </div>
-                <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </motion.div>
+              <Link to={service.link} key={i}>
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="card p-8 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-white mb-6">
+                    {React.cloneElement(service.icon, { className: 'w-10 h-10' })}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{service.title}</h3>
+                  <p className="text-gray-600 mb-4">{service.description}</p>
+                  <span className="text-purple-600 font-semibold flex items-center">
+                    Learn More <ArrowRight className="w-4 h-4 ml-2" />
+                  </span>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
