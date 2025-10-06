@@ -1,0 +1,42 @@
+{
+  "name": "eldercare-homecare-business",
+  "version": "1.0.0",
+  "description": "Comprehensive Elder Care, Home Care, and Home Repair Services Platform",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "concurrently \"nodemon server/server.js\" \"cd client && npm start\"",
+    "client": "cd client && npm start",
+    "server": "nodemon server/server.js",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd client && npm install"
+  },
+  "keywords": [
+    "eldercare",
+    "homecare",
+    "home-repair",
+    "healthcare",
+    "senior-care"
+  ],
+  "author": "Vladimir Antoine",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "mongoose": "^8.0.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.7",
+    "express-validator": "^7.0.1",
+    "multer": "^1.4.5-lts.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.2"
+  }
+}
