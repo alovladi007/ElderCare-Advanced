@@ -272,7 +272,7 @@ const EmployeeDashboard = () => {
               </Link>
               <div>
                 <h1 className="text-3xl font-bold">Employee Dashboard</h1>
-                <p className="text-blue-100">ElderCare & HomeCare Services</p>
+                <p className="text-blue-100">Evergreen Home & Care Services</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">

@@ -34,9 +34,9 @@ const Navbar = () => {
               <Phone size={16} className="mr-1" />
               (123) 456-7890
             </a>
-            <a href="mailto:info@eldercare.com" className="hidden md:flex items-center hover:text-blue-200">
+            <a href="mailto:info@evergreenhomecare.com" className="hidden md:flex items-center hover:text-blue-200">
               <Mail size={16} className="mr-1" />
-              info@eldercare.com
+              info@evergreenhomecare.com
             </a>
           </div>
           <div className="text-xs md:text-sm">
@@ -58,9 +58,9 @@ const Navbar = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  ElderCare & HomeCare
+                  Evergreen Home & Care
                 </h1>
-                <p className="text-xs text-gray-600">Compassionate Care & Services</p>
+                <p className="text-xs text-gray-600">Quality Care for Life</p>
               </div>
             </Link>
 

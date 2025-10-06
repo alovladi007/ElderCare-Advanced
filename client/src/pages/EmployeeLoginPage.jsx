@@ -51,7 +51,7 @@ const EmployeeLoginPage = () => {
             <Briefcase className="w-10 h-10 text-blue-600" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">Employee Portal</h1>
-          <p className="text-blue-100">ElderCare & HomeCare Services</p>
+          <p className="text-blue-100">Evergreen Home & Care Services</p>
         </div>
 
         {/* Login Form */}

@@ -16,7 +16,7 @@ const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Heart className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold">ElderCare & HomeCare</h3>
+              <h3 className="text-xl font-bold">Evergreen Home & Care</h3>
             </div>
             <p className="text-gray-400 mb-4">
               Providing compassionate elder care, professional home care, and reliable home repair services for over 15 years.
@@ -99,7 +99,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              &copy; {currentYear} ElderCare & HomeCare Services. All rights reserved.
+              &copy; {currentYear} Evergreen Home & Care Services. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm">
               <Link to="/employee-login" className="text-gray-400 hover:text-white transition-colors">Employee Login</Link>

@@ -33,7 +33,7 @@ const TermsOfServicePage = () => {
                 Acceptance of Terms
               </h2>
               <p className="text-gray-600 mb-8">
-                By accessing and using the services of ElderCare & HomeCare Services ("we," "us," or "our"), you accept
+                By accessing and using the services of Evergreen Home & Care Services ("we," "us," or "our"), you accept
                 and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
               </p>
 

@@ -21,7 +21,7 @@ const AboutPage = () => {
       <section className="neural-bg text-white py-20 md:py-32">
         <div className="container mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">About ElderCare & HomeCare</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">About Evergreen Home & Care</h1>
             <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
               Over 15 years of dedicated service providing compassionate care and professional home services to families in our community.
             </p>
