@@ -4,7 +4,16 @@
  */
 
 const rateLimit = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
+
+// Only import Redis store if Redis is configured
+let RedisStore = null;
+if (process.env.REDIS_URL) {
+  try {
+    RedisStore = require('rate-limit-redis');
+  } catch (error) {
+    console.warn('rate-limit-redis not installed. Using in-memory rate limiting.');
+  }
+}
 
 /**
  * General API rate limiter
@@ -19,10 +28,13 @@ const apiLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
-  // Store in Redis if available, otherwise in-memory
-  ...(process.env.REDIS_URL && {
+  // Store in Redis if available and configured
+  ...(process.env.REDIS_URL && RedisStore && {
     store: new RedisStore({
-      sendCommand: (...args) => require('redis').createClient({ url: process.env.REDIS_URL }).sendCommand(args),
+      sendCommand: (...args) => {
+        const redis = require('redis');
+        return redis.createClient({ url: process.env.REDIS_URL }).sendCommand(args);
+      },
     }),
   })
 });
