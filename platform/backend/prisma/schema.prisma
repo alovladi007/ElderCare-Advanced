@@ -23,22 +23,22 @@ enum UserRole {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  phone         String?
-  role          UserRole
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations based on role
-  elderProfile      ElderProfile?
-  familyProfile     FamilyProfile?
-  caregiverProfile  CaregiverProfile?
-  clinicianProfile  ClinicianProfile?
+  elderProfile     ElderProfile?
+  familyProfile    FamilyProfile?
+  caregiverProfile CaregiverProfile?
+  clinicianProfile ClinicianProfile?
 
   // Activity tracking
   careTeamMemberships  ElderCareTeamMember[]
@@ -48,9 +48,10 @@ model User {
   assessmentsPerformed AssessmentInstance[]
   careNotesAuthored    CareNote[]
   mealsLogged          MealIntakeLog[]
-  resolvedAlerts       Alert[]              @relation("AlertResolvedBy")
+  resolvedAlerts       Alert[]                       @relation("AlertResolvedBy")
   recordedVitals       VitalReading[]
   adminActions         MedicationAdministrationLog[]
+  notifications        Notification[]
 
   @@index([email])
   @@index([role])
@@ -77,18 +78,18 @@ enum MobilityLevel {
 }
 
 model ElderProfile {
-  id                     String          @id @default(uuid())
-  userId                 String          @unique
-  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dateOfBirth            DateTime
-  gender                 String
-  primaryDiagnosis       String?
-  cognitiveStatus        CognitiveStatus @default(NORMAL)
-  mobilityLevel          MobilityLevel   @default(INDEPENDENT)
-  address                String
-  emergencyContactName   String
-  emergencyContactPhone  String
-  notes                  String?
+  id                    String          @id @default(uuid())
+  userId                String          @unique
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth           DateTime
+  gender                String
+  primaryDiagnosis      String?
+  cognitiveStatus       CognitiveStatus @default(NORMAL)
+  mobilityLevel         MobilityLevel   @default(INDEPENDENT)
+  address               String
+  emergencyContactName  String
+  emergencyContactPhone String
+  notes                 String?
 
   // Relations
   careTeamMembers     ElderCareTeamMember[]
@@ -107,17 +108,18 @@ model ElderProfile {
   nutritionProfile    NutritionProfile?
   mealPlans           MealPlan[]
   mealIntakeLogs      MealIntakeLog[]
+  familyProfiles      FamilyProfile[]
 
   @@map("elder_profiles")
 }
 
 model FamilyProfile {
-  id                   String       @id @default(uuid())
-  userId               String       @unique
-  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  relationshipToElder  String
-  associatedElderId    String
-  associatedElder      ElderProfile @relation(fields: [associatedElderId], references: [id], onDelete: Restrict)
+  id                  String       @id @default(uuid())
+  userId              String       @unique
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relationshipToElder String
+  associatedElderId   String
+  associatedElder     ElderProfile @relation(fields: [associatedElderId], references: [id], onDelete: Restrict)
 
   @@index([associatedElderId])
   @@map("family_profiles")
@@ -229,18 +231,18 @@ enum TaskPriority {
 }
 
 model CareTaskTemplate {
-  id                String           @id @default(uuid())
-  carePlanId        String
-  carePlan          CarePlan         @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
-  category          CareTaskCategory
-  title             String
-  description       String
-  frequencyType     FrequencyType
-  timeWindowStart   String // stored as HH:mm
-  timeWindowEnd     String // stored as HH:mm
-  daysOfWeek        String[] // ["MON", "TUE", etc.]
-  priority          TaskPriority     @default(MEDIUM)
-  instructions      String?
+  id              String           @id @default(uuid())
+  carePlanId      String
+  carePlan        CarePlan         @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  category        CareTaskCategory
+  title           String
+  description     String
+  frequencyType   FrequencyType
+  timeWindowStart String // stored as HH:mm
+  timeWindowEnd   String // stored as HH:mm
+  daysOfWeek      String[] // ["MON", "TUE", etc.]
+  priority        TaskPriority     @default(MEDIUM)
+  instructions    String?
 
   taskInstances CareTaskInstance[]
 
@@ -375,16 +377,16 @@ enum MedicationFrequencyType {
 }
 
 model MedicationSchedule {
-  id            String                   @id @default(uuid())
+  id            String                  @id @default(uuid())
   medicationId  String
-  medication    Medication               @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  medication    Medication              @relation(fields: [medicationId], references: [id], onDelete: Cascade)
   dosage        String
   frequencyType MedicationFrequencyType
   timesOfDay    String[] // stored as HH:mm
   startDate     DateTime
   endDate       DateTime?
-  requiresFood  Boolean                  @default(false)
-  isCritical    Boolean                  @default(false)
+  requiresFood  Boolean                 @default(false)
+  isCritical    Boolean                 @default(false)
 
   administrationLog MedicationAdministrationLog[]
 
@@ -401,19 +403,19 @@ enum MedAdministrationStatus {
 }
 
 model MedicationAdministrationLog {
-  id                  String                  @id @default(uuid())
-  medicationId        String
-  medication          Medication              @relation(fields: [medicationId], references: [id], onDelete: Cascade)
-  scheduleId          String?
-  schedule            MedicationSchedule?     @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
-  elderId             String
+  id                   String                  @id @default(uuid())
+  medicationId         String
+  medication           Medication              @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  scheduleId           String?
+  schedule             MedicationSchedule?     @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  elderId              String
   administeredByUserId String?
-  administeredBy      User?                   @relation(fields: [administeredByUserId], references: [id])
-  plannedTime         DateTime
-  status              MedAdministrationStatus
-  actualTime          DateTime?
-  notes               String?
-  createdAt           DateTime                @default(now())
+  administeredBy       User?                   @relation(fields: [administeredByUserId], references: [id])
+  plannedTime          DateTime
+  status               MedAdministrationStatus
+  actualTime           DateTime?
+  notes                String?
+  createdAt            DateTime                @default(now())
 
   @@index([medicationId])
   @@index([elderId])
@@ -473,21 +475,21 @@ enum VitalSource {
 }
 
 model VitalReading {
-  id             String       @id @default(uuid())
-  elderId        String
-  elder          ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  deviceId       String?
-  device         Device?      @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-  vitalTypeId    String
-  vitalType      VitalType    @relation(fields: [vitalTypeId], references: [id])
-  value          Float
-  valueSecondary Float? // for BP diastolic
-  recordedAt     DateTime
-  source         VitalSource
+  id               String       @id @default(uuid())
+  elderId          String
+  elder            ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  deviceId         String?
+  device           Device?      @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  vitalTypeId      String
+  vitalType        VitalType    @relation(fields: [vitalTypeId], references: [id])
+  value            Float
+  valueSecondary   Float? // for BP diastolic
+  recordedAt       DateTime
+  source           VitalSource
   recordedByUserId String?
-  recordedBy     User?        @relation(fields: [recordedByUserId], references: [id])
-  notes          String?
-  createdAt      DateTime     @default(now())
+  recordedBy       User?        @relation(fields: [recordedByUserId], references: [id])
+  notes            String?
+  createdAt        DateTime     @default(now())
 
   @@index([elderId])
   @@index([vitalTypeId])
@@ -502,19 +504,19 @@ enum AlertSeverity {
 }
 
 model VitalAlertRule {
-  id                   String        @id @default(uuid())
-  elderId              String
-  elder                ElderProfile  @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  vitalTypeId          String
-  vitalType            VitalType     @relation(fields: [vitalTypeId], references: [id])
-  minValue             Float?
-  maxValue             Float?
-  consecutiveReadings  Int           @default(1)
-  timeWindowMinutes    Int?
-  severity             AlertSeverity
-  notifyFamily         Boolean       @default(true)
-  notifyClinician      Boolean       @default(false)
-  autoEscalateEmergency Boolean      @default(false)
+  id                    String        @id @default(uuid())
+  elderId               String
+  elder                 ElderProfile  @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  vitalTypeId           String
+  vitalType             VitalType     @relation(fields: [vitalTypeId], references: [id])
+  minValue              Float?
+  maxValue              Float?
+  consecutiveReadings   Int           @default(1)
+  timeWindowMinutes     Int?
+  severity              AlertSeverity
+  notifyFamily          Boolean       @default(true)
+  notifyClinician       Boolean       @default(false)
+  autoEscalateEmergency Boolean       @default(false)
 
   @@index([elderId])
   @@index([vitalTypeId])
@@ -535,22 +537,22 @@ enum AlertType {
 }
 
 model Alert {
-  id                 String        @id @default(uuid())
-  elderId            String
-  elder              ElderProfile  @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  type               AlertType
-  severity           AlertSeverity
-  title              String
-  message            String
-  createdAt          DateTime      @default(now())
-  resolvedAt         DateTime?
-  resolvedByUserId   String?
-  resolvedBy         User?         @relation("AlertResolvedBy", fields: [resolvedByUserId], references: [id])
-  sourceEntityType   String?
-  sourceEntityId     String?
-  notifiedFamily     Boolean       @default(false)
-  notifiedClinician  Boolean       @default(false)
-  notifiedEmergency  Boolean       @default(false)
+  id                String        @id @default(uuid())
+  elderId           String
+  elder             ElderProfile  @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  type              AlertType
+  severity          AlertSeverity
+  title             String
+  message           String
+  createdAt         DateTime      @default(now())
+  resolvedAt        DateTime?
+  resolvedByUserId  String?
+  resolvedBy        User?         @relation("AlertResolvedBy", fields: [resolvedByUserId], references: [id])
+  sourceEntityType  String?
+  sourceEntityId    String?
+  notifiedFamily    Boolean       @default(false)
+  notifiedClinician Boolean       @default(false)
+  notifiedEmergency Boolean       @default(false)
 
   @@index([elderId])
   @@index([createdAt])
@@ -575,6 +577,43 @@ model NotificationPreference {
   @@map("notification_preferences")
 }
 
+enum NotificationType {
+  TASK_REMINDER
+  MEDICATION_REMINDER
+  VITAL_ALERT
+  APPOINTMENT_REMINDER
+  SYSTEM_ALERT
+  CUSTOM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model Notification {
+  id           String              @id @default(uuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         NotificationType
+  channel      NotificationChannel
+  status       NotificationStatus  @default(PENDING)
+  subject      String?
+  message      String
+  metadata     Json?
+  sentAt       DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  createdAt    DateTime            @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
 // ============================================
 // MEMORY CARE
 // ============================================
@@ -586,14 +625,14 @@ enum SundowningRisk {
 }
 
 model MemoryCareProfile {
-  id                   String         @id @default(uuid())
-  elderId              String         @unique
-  elder                ElderProfile   @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  preferredName        String
-  orientationNotes     String?
-  routineDescription   String?
-  sundowningRisk       SundowningRisk @default(LOW)
-  favoriteMusic        String?
+  id                    String         @id @default(uuid())
+  elderId               String         @unique
+  elder                 ElderProfile   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  preferredName         String
+  orientationNotes      String?
+  routineDescription    String?
+  sundowningRisk        SundowningRisk @default(LOW)
+  favoriteMusic         String?
   favoritePhotosAlbumId String?
 
   orientationCards OrientationCard[]
@@ -613,15 +652,15 @@ enum OrientationCardType {
 }
 
 model OrientationCard {
-  id           String               @id @default(uuid())
+  id           String              @id @default(uuid())
   elderId      String
-  elder        MemoryCareProfile    @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  elder        MemoryCareProfile   @relation(fields: [elderId], references: [id], onDelete: Cascade)
   type         OrientationCardType
   title        String
   content      String
   imageUrl     String?
   displayOrder Int
-  active       Boolean              @default(true)
+  active       Boolean             @default(true)
 
   @@index([elderId])
   @@index([displayOrder])
@@ -638,15 +677,15 @@ enum Mood {
 }
 
 model BehaviorLog {
-  id              String            @id @default(uuid())
-  elderId         String
-  elder           MemoryCareProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  loggedAt        DateTime
-  mood            Mood
-  behavior        String
-  trigger         String?
-  resolution      String?
-  loggedByUserId  String
+  id             String            @id @default(uuid())
+  elderId        String
+  elder          MemoryCareProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  loggedAt       DateTime
+  mood           Mood
+  behavior       String
+  trigger        String?
+  resolution     String?
+  loggedByUserId String
 
   @@index([elderId])
   @@index([loggedAt])
@@ -713,19 +752,19 @@ model AssessmentInstance {
 }
 
 model Appointment {
-  id                String            @id @default(uuid())
-  elderId           String
-  elder             ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  clinicianId       String?
-  clinician         ClinicianProfile? @relation(fields: [clinicianId], references: [id], onDelete: SetNull)
-  title             String
-  description       String?
-  location          String?
-  startTime         DateTime
-  endTime           DateTime
-  createdByUserId   String
-  notes             String?
-  createdAt         DateTime          @default(now())
+  id              String            @id @default(uuid())
+  elderId         String
+  elder           ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  clinicianId     String?
+  clinician       ClinicianProfile? @relation(fields: [clinicianId], references: [id], onDelete: SetNull)
+  title           String
+  description     String?
+  location        String?
+  startTime       DateTime
+  endTime         DateTime
+  createdByUserId String
+  notes           String?
+  createdAt       DateTime          @default(now())
 
   @@index([elderId])
   @@index([startTime])
@@ -741,17 +780,17 @@ enum CareNoteCategory {
 }
 
 model CareNote {
-  id                   String           @id @default(uuid())
-  elderId              String
-  elder                ElderProfile     @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  authorUserId         String
-  author               User             @relation(fields: [authorUserId], references: [id])
-  category             CareNoteCategory
-  content              String
-  createdAt            DateTime         @default(now())
-  visibleToFamily      Boolean          @default(true)
-  visibleToCaregivers  Boolean          @default(true)
-  visibleToClinicians  Boolean          @default(true)
+  id                  String           @id @default(uuid())
+  elderId             String
+  elder               ElderProfile     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  authorUserId        String
+  author              User             @relation(fields: [authorUserId], references: [id])
+  category            CareNoteCategory
+  content             String
+  createdAt           DateTime         @default(now())
+  visibleToFamily     Boolean          @default(true)
+  visibleToCaregivers Boolean          @default(true)
+  visibleToClinicians Boolean          @default(true)
 
   @@index([elderId])
   @@index([createdAt])
@@ -783,14 +822,14 @@ model NutritionProfile {
 }
 
 model MealPlan {
-  id                String       @id @default(uuid())
-  elderId           String
-  elder             ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  startDate         DateTime
-  endDate           DateTime
-  createdByUserId   String
-  notes             String?
-  createdAt         DateTime     @default(now())
+  id              String       @id @default(uuid())
+  elderId         String
+  elder           ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime
+  createdByUserId String
+  notes           String?
+  createdAt       DateTime     @default(now())
 
   mealItems MealItem[]
 
@@ -806,9 +845,9 @@ enum MealType {
 }
 
 model MealItem {
-  id                String     @id @default(uuid())
+  id                String   @id @default(uuid())
   mealPlanId        String
-  mealPlan          MealPlan   @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  mealPlan          MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
   date              DateTime
   mealType          MealType
   name              String
@@ -832,16 +871,16 @@ enum IntakeLevel {
 }
 
 model MealIntakeLog {
-  id              String       @id @default(uuid())
-  elderId         String
-  elder           ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  mealItemId      String
-  mealItem        MealItem     @relation(fields: [mealItemId], references: [id], onDelete: Cascade)
-  loggedAt        DateTime
-  intakeLevel     IntakeLevel
-  notes           String?
-  loggedByUserId  String
-  loggedBy        User         @relation(fields: [loggedByUserId], references: [id])
+  id             String       @id @default(uuid())
+  elderId        String
+  elder          ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  mealItemId     String
+  mealItem       MealItem     @relation(fields: [mealItemId], references: [id], onDelete: Cascade)
+  loggedAt       DateTime
+  intakeLevel    IntakeLevel
+  notes          String?
+  loggedByUserId String
+  loggedBy       User         @relation(fields: [loggedByUserId], references: [id])
 
   @@index([elderId])
   @@index([loggedAt])
