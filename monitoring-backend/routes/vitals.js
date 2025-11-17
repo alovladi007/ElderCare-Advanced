@@ -208,10 +208,7 @@ function checkVitalThresholds(readingType, values, settings) {
   return { isNormal, alertLevel, alertMessage };
 }
 
-// Helper function to send notifications (stub for now)
-async function sendAlertNotifications(alert, patient) {
-  // This would integrate with email/SMS/push notification services
-  console.log(`Would send notifications for alert ${alert._id} to patient ${patient.medicalRecordNumber} contacts`);
-}
+// Import notification service
+const { sendAlertNotifications } = require('../services/notificationService');
 
 module.exports = router;
