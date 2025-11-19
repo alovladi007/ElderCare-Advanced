@@ -53,6 +53,10 @@ model User {
   adminActions         MedicationAdministrationLog[]
   notifications        Notification[]
 
+  // Smart Home relations
+  createdAutomationRules AutomationRule[]  @relation("CreatedAutomationRules")
+  issuedActuatorCommands ActuatorCommand[] @relation("IssuedCommands")
+
   @@index([email])
   @@index([role])
   @@map("users")
@@ -109,6 +113,12 @@ model ElderProfile {
   mealPlans           MealPlan[]
   mealIntakeLogs      MealIntakeLog[]
   familyProfiles      FamilyProfile[]
+
+  // Smart Home relations
+  home                       Home?
+  inactivityProfiles         InactivityProfile[]
+  helpTriggers               HelpTrigger[]
+  emergencyScenarioInstances EmergencyScenarioInstance[]
 
   @@map("elder_profiles")
 }
@@ -533,6 +543,14 @@ enum AlertType {
   MED_MISSED
   CARE_TASK_MISSED
   WANDERING_EVENT
+  SMART_HOME_SMOKE
+  SMART_HOME_GAS
+  SMART_HOME_WATER_LEAK
+  SMART_HOME_FALL_UNRESPONSIVE
+  SMART_HOME_DOOR_OPEN_NIGHT
+  SMART_HOME_INACTIVITY
+  SMART_HOME_TEMPERATURE_EXTREME
+  SMART_HOME_CUSTOM
   OTHER
 }
 
@@ -885,4 +903,406 @@ model MealIntakeLog {
   @@index([elderId])
   @@index([loggedAt])
   @@map("meal_intake_logs")
+}
+
+// ============================================
+// SMART HOME & EXTREME SAFETY MODULE
+// ============================================
+
+// --- Home & Zones ---
+
+model Home {
+  id        String       @id @default(uuid())
+  elderId   String       @unique
+  elder     ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  name      String
+  address   String
+  timezone  String       @default("America/New_York")
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  zones                      HomeZone[]
+  smartDevices               SmartDevice[]
+  sensorEvents               SensorEvent[]
+  actuatorCommands           ActuatorCommand[]
+  automationRules            AutomationRule[]
+  emergencyScenarios         EmergencyScenario[]
+  inactivityProfiles         InactivityProfile[]
+  helpTriggers               HelpTrigger[]
+  iotTokens                  IotToken[]
+  emergencyScenarioInstances EmergencyScenarioInstance[]
+
+  @@index([elderId])
+  @@map("homes")
+}
+
+model HomeZone {
+  id             String  @id @default(uuid())
+  homeId         String
+  home           Home    @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  floor          String?
+  isCriticalArea Boolean @default(false)
+
+  smartDevices SmartDevice[]
+
+  @@index([homeId])
+  @@map("home_zones")
+}
+
+// --- Smart Device Types ---
+
+enum SmartDeviceCategory {
+  SENSOR
+  ACTUATOR
+  HYBRID
+}
+
+model SmartDeviceType {
+  id                 String              @id @default(uuid())
+  name               String
+  category           SmartDeviceCategory
+  capabilitiesJson   Json // list of sensors/actuators & metadata
+  vendor             String?
+  model              String?
+  notes              String?
+  isDefaultSupported Boolean             @default(true)
+
+  smartDevices SmartDevice[]
+
+  @@map("smart_device_types")
+}
+
+// --- Smart Devices ---
+
+enum SmartDeviceStatus {
+  ONLINE
+  OFFLINE
+  UNKNOWN
+}
+
+model SmartDevice {
+  id              String            @id @default(uuid())
+  homeId          String
+  home            Home              @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  zoneId          String?
+  zone            HomeZone?         @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  deviceTypeId    String
+  deviceType      SmartDeviceType   @relation(fields: [deviceTypeId], references: [id])
+  name            String
+  identifier      String            @unique // MAC, serial, hub address
+  status          SmartDeviceStatus @default(UNKNOWN)
+  batteryLevel    Int?
+  lastSeenAt      DateTime?
+  firmwareVersion String?
+  installedAt     DateTime
+  settingsJson    Json?
+  notes           String?
+
+  sensors          Sensor[]
+  actuators        Actuator[]
+  sensorEvents     SensorEvent[]
+  actuatorCommands ActuatorCommand[]
+  helpTriggers     HelpTrigger[]
+
+  @@index([homeId])
+  @@index([zoneId])
+  @@index([identifier])
+  @@map("smart_devices")
+}
+
+// --- Sensors ---
+
+enum SensorType {
+  MOTION
+  CONTACT_DOOR
+  CONTACT_WINDOW
+  SMOKE
+  CO2
+  GAS_LEAK
+  WATER_LEAK
+  FALL_DETECTOR
+  PRESENCE_BED
+  PRESENCE_CHAIR
+  TEMPERATURE
+  HUMIDITY
+  NOISE_LEVEL
+  POWER_USAGE
+  BUTTON_PANIC
+  CUSTOM
+}
+
+model Sensor {
+  id              String      @id @default(uuid())
+  deviceId        String
+  device          SmartDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  sensorType      SensorType
+  name            String
+  unit            String?
+  isCritical      Boolean     @default(false)
+  calibrationJson Json?
+
+  sensorEvents SensorEvent[]
+
+  @@index([deviceId])
+  @@index([sensorType])
+  @@map("sensors")
+}
+
+// --- Actuators ---
+
+enum ActuatorType {
+  LIGHT
+  DOOR_LOCK
+  THERMOSTAT
+  SIREN
+  SPEAKER_TTS
+  APPLIANCE_POWER
+  CURTAIN_BLINDS
+  NOTIFICATION_BRIDGE
+  CUSTOM
+}
+
+model Actuator {
+  id              String       @id @default(uuid())
+  deviceId        String
+  device          SmartDevice  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  actuatorType    ActuatorType
+  name            String
+  stateSchemaJson Json?
+  isCritical      Boolean      @default(false)
+
+  actuatorCommands ActuatorCommand[]
+
+  @@index([deviceId])
+  @@index([actuatorType])
+  @@map("actuators")
+}
+
+// --- Sensor Events ---
+
+enum SensorEventType {
+  VALUE_READING
+  STATE_CHANGE
+  ALERT
+  HEARTBEAT
+  ERROR
+  CUSTOM
+}
+
+enum EventSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model SensorEvent {
+  id             String          @id @default(uuid())
+  homeId         String
+  home           Home            @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  deviceId       String
+  device         SmartDevice     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  sensorId       String
+  sensor         Sensor          @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  eventType      SensorEventType
+  valueNumeric   Float?
+  valueText      String?
+  severity       EventSeverity   @default(INFO)
+  rawPayloadJson Json?
+  occurredAt     DateTime
+  ingestedAt     DateTime        @default(now())
+  processed      Boolean         @default(false)
+  processedAt    DateTime?
+
+  emergencyScenarioInstances EmergencyScenarioInstance[]
+
+  @@index([homeId])
+  @@index([deviceId])
+  @@index([sensorId])
+  @@index([occurredAt])
+  @@index([processed])
+  @@map("sensor_events")
+}
+
+// --- Actuator Commands ---
+
+enum ActuatorCommandStatus {
+  PENDING
+  SENT
+  ACKED
+  FAILED
+}
+
+model ActuatorCommand {
+  id                String                @id @default(uuid())
+  homeId            String
+  home              Home                  @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  deviceId          String
+  device            SmartDevice           @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  actuatorId        String
+  actuator          Actuator              @relation(fields: [actuatorId], references: [id], onDelete: Cascade)
+  commandName       String
+  commandParamsJson Json
+  issuedByUserId    String?
+  issuedByUser      User?                 @relation("IssuedCommands", fields: [issuedByUserId], references: [id])
+  issuedByRuleId    String?
+  issuedByRule      AutomationRule?       @relation(fields: [issuedByRuleId], references: [id])
+  status            ActuatorCommandStatus @default(PENDING)
+  createdAt         DateTime              @default(now())
+  sentAt            DateTime?
+  ackedAt           DateTime?
+  errorMessage      String?
+
+  @@index([homeId])
+  @@index([deviceId])
+  @@index([actuatorId])
+  @@index([status])
+  @@map("actuator_commands")
+}
+
+// --- Automation Rules ---
+
+enum AutomationTriggerType {
+  SENSOR_EVENT
+  SCHEDULED
+  INACTIVITY
+  COMPOSITE
+}
+
+model AutomationRule {
+  id                  String                @id @default(uuid())
+  homeId              String
+  home                Home                  @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name                String
+  description         String?
+  isEnabled           Boolean               @default(true)
+  triggerType         AutomationTriggerType
+  triggerConfigJson   Json
+  conditionConfigJson Json?
+  actionsConfigJson   Json
+  severity            EventSeverity         @default(INFO)
+  createdByUserId     String
+  createdByUser       User                  @relation("CreatedAutomationRules", fields: [createdByUserId], references: [id])
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  actuatorCommands ActuatorCommand[]
+
+  @@index([homeId])
+  @@index([isEnabled])
+  @@map("automation_rules")
+}
+
+// --- Emergency Scenarios ---
+
+enum EmergencyScenarioStatus {
+  ACTIVE
+  RESOLVED
+  ESCALATED
+  CANCELLED
+}
+
+model EmergencyScenario {
+  id                   String    @id @default(uuid())
+  homeId               String
+  home                 Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name                 String
+  description          String?
+  isEnabled            Boolean   @default(true)
+  triggerSignatureJson Json
+  stepwiseActionsJson  Json
+  lastTriggeredAt      DateTime?
+  notes                String?
+
+  instances EmergencyScenarioInstance[]
+
+  @@index([homeId])
+  @@index([isEnabled])
+  @@map("emergency_scenarios")
+}
+
+model EmergencyScenarioInstance {
+  id                   String                  @id @default(uuid())
+  scenarioId           String
+  scenario             EmergencyScenario       @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  homeId               String
+  home                 Home                    @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  elderId              String
+  elder                ElderProfile            @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  startedAt            DateTime                @default(now())
+  currentStepIndex     Int                     @default(0)
+  status               EmergencyScenarioStatus @default(ACTIVE)
+  relatedSensorEventId String?
+  relatedSensorEvent   SensorEvent?            @relation(fields: [relatedSensorEventId], references: [id])
+  cancelToken          String?
+  lastActionAt         DateTime?
+  resolvedAt           DateTime?
+  notes                String?
+
+  @@index([scenarioId])
+  @@index([homeId])
+  @@index([elderId])
+  @@index([status])
+  @@map("emergency_scenario_instances")
+}
+
+// --- Inactivity Profiles ---
+
+model InactivityProfile {
+  id         String       @id @default(uuid())
+  homeId     String
+  home       Home         @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  elderId    String
+  elder      ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  configJson Json
+
+  @@index([homeId])
+  @@index([elderId])
+  @@map("inactivity_profiles")
+}
+
+// --- Help Triggers ---
+
+enum HelpTriggerType {
+  BUTTON_PRESS
+  VOICE_KEYWORD
+  DEVICE_EVENT
+  UNKNOWN
+}
+
+model HelpTrigger {
+  id             String          @id @default(uuid())
+  homeId         String
+  home           Home            @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  elderId        String
+  elder          ElderProfile    @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  triggerType    HelpTriggerType
+  sourceDeviceId String?
+  sourceDevice   SmartDevice?    @relation(fields: [sourceDeviceId], references: [id])
+  rawPayloadJson Json?
+  occurredAt     DateTime        @default(now())
+  notes          String?
+
+  @@index([homeId])
+  @@index([elderId])
+  @@index([occurredAt])
+  @@map("help_triggers")
+}
+
+// --- IoT Authentication Tokens ---
+
+model IotToken {
+  id        String    @id @default(uuid())
+  homeId    String
+  home      Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  label     String
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([homeId])
+  @@index([token])
+  @@map("iot_tokens")
 }

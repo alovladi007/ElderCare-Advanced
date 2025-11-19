@@ -16,6 +16,7 @@ import { MemoryCareModule } from './memory-care/memory-care.module';
 import { AssessmentsModule } from './assessments/assessments.module';
 import { NutritionModule } from './nutrition/nutrition.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SmartHomeModule } from './smart-home/smart-home.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AssessmentsModule,
     NutritionModule,
     NotificationsModule,
+    SmartHomeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
