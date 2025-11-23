@@ -64,6 +64,9 @@ model ElderProfile {
   alerts             Alert[]
   inactivityProfiles InactivityProfile[]
   helpTriggers       HelpTrigger[]
+  carePlan           CarePlan?
+  appointments       Appointment[]
+  medications        Medication[]
 
   @@map("elder_profiles")
 }
@@ -569,4 +572,289 @@ model IotToken {
   home Home @relation(fields: [homeId], references: [id], onDelete: Cascade)
 
   @@map("iot_tokens")
+}
+
+// ============================================================================
+// SERVICES & BOOKINGS
+// ============================================================================
+
+enum ServiceCategory {
+  ELDER_CARE
+  HOME_CARE
+  REPAIR_SERVICES
+}
+
+enum ServiceType {
+  PERSONAL_CARE
+  COMPANIONSHIP
+  MEAL_PREPARATION
+  LIGHT_HOUSEKEEPING
+  SAFETY_SUPERVISION
+  TWENTY_FOUR_SEVEN_CARE
+  MEDICATION_MANAGEMENT
+  MEMORY_CARE
+  HEALTH_MONITORING
+  NUTRITION_MEAL_PREP
+  ELDER_COMPANIONSHIP
+  GENERAL_REPAIRS
+  ELECTRICAL_WORK
+  PLUMBING_SERVICES
+  SAFETY_MODIFICATIONS
+  SECURITY_UPGRADES
+  HANDYMAN_SERVICES
+}
+
+model Service {
+  id          String          @id @default(uuid())
+  name        String
+  category    ServiceCategory
+  type        ServiceType
+  description String
+  price       Float?
+  duration    Int?
+  isActive    Boolean         @default(true)
+  features    Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  bookings Booking[]
+
+  @@map("services")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PreferredTime {
+  MORNING
+  AFTERNOON
+  EVENING
+  FLEXIBLE
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  fullName      String
+  email         String
+  phone         String
+  serviceId     String?
+  serviceType   String
+  preferredDate DateTime
+  preferredTime PreferredTime
+  address       String?
+  specialNeeds  String?
+  status        BookingStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@map("bookings")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  replied   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_messages")
+}
+
+// ============================================================================
+// CARE PLANS & TASKS
+// ============================================================================
+
+model CarePlan {
+  id          String   @id @default(uuid())
+  elderId     String   @unique
+  title       String
+  description String?
+  goals       Json?
+  services    Json?
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  tasks CareTask[]
+
+  @@map("care_plans")
+}
+
+enum CareTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  CANCELLED
+}
+
+enum CareTaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model CareTask {
+  id          String           @id @default(uuid())
+  carePlanId  String
+  title       String
+  description String?
+  assignedTo  String?
+  priority    CareTaskPriority @default(MEDIUM)
+  status      CareTaskStatus   @default(PENDING)
+  dueDate     DateTime
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  carePlan CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  @@map("care_tasks")
+}
+
+// ============================================================================
+// APPOINTMENTS
+// ============================================================================
+
+enum AppointmentType {
+  MEDICAL_CHECKUP
+  THERAPY
+  SOCIAL_VISIT
+  HOME_SERVICE
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id          String            @id @default(uuid())
+  elderId     String
+  title       String
+  type        AppointmentType
+  description String?
+  location    String?
+  startTime   DateTime
+  endTime     DateTime
+  status      AppointmentStatus @default(SCHEDULED)
+  attendees   Json?
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+// ============================================================================
+// MEDICATIONS
+// ============================================================================
+
+enum MedicationFrequency {
+  ONCE_DAILY
+  TWICE_DAILY
+  THREE_TIMES_DAILY
+  FOUR_TIMES_DAILY
+  AS_NEEDED
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+model Medication {
+  id          String              @id @default(uuid())
+  elderId     String
+  name        String
+  dosage      String
+  frequency   MedicationFrequency
+  startDate   DateTime
+  endDate     DateTime?
+  instructions String?
+  sideEffects String?
+  prescribedBy String?
+  isActive    Boolean             @default(true)
+  notes       String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  elder  ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  doses  MedicationDose[]
+
+  @@map("medications")
+}
+
+enum DoseStatus {
+  PENDING
+  TAKEN
+  MISSED
+  SKIPPED
+}
+
+model MedicationDose {
+  id           String     @id @default(uuid())
+  medicationId String
+  scheduledAt  DateTime
+  takenAt      DateTime?
+  status       DoseStatus @default(PENDING)
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  medication Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+
+  @@map("medication_doses")
+}
+
+// ============================================================================
+// NOTES & DOCUMENTS
+// ============================================================================
+
+enum NoteType {
+  GENERAL
+  MEDICAL
+  CARE_PLAN
+  INCIDENT
+  PROGRESS
+  FAMILY_COMMUNICATION
+}
+
+model Note {
+  id          String   @id @default(uuid())
+  elderId     String
+  authorId    String
+  type        NoteType @default(GENERAL)
+  title       String
+  content     String
+  isPrivate   Boolean  @default(false)
+  tags        Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("notes")
 }
