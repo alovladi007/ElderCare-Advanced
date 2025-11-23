@@ -40,6 +40,9 @@ import ElderCompanionshipPage from './pages/ElderCompanionshipPage';
 import RemoteHealthMonitoringPage from './pages/RemoteHealthMonitoringPage';
 import MonitoringLoginPage from './pages/MonitoringLoginPage';
 import MonitoringDashboard from './pages/MonitoringDashboard';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import UnifiedDashboard from './pages/UnifiedDashboard';
 
 // Components
 import Navbar from './components/Navbar';
@@ -51,6 +54,11 @@ function App() {
     <Router>
       <div className="App min-h-screen flex flex-col">
         <Routes>
+          {/* Auth Routes (No Navbar/Footer) */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/dashboard" element={<UnifiedDashboard />} />
+
           {/* Employee Routes (No Navbar/Footer) */}
           <Route path="/employee-login" element={<EmployeeLoginPage />} />
           <Route path="/employee-dashboard" element={<EmployeeDashboard />} />

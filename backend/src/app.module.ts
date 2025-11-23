@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { SmartHomeModule } from './smart-home/smart-home.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { ElderProfileModule } from './elder-profile/elder-profile.module';
+import { ApiGatewayModule } from './api-gateway/api-gateway.module';
 import { RolesGuard } from './auth/roles.guard';
 
 @Module({
@@ -18,6 +19,7 @@ import { RolesGuard } from './auth/roles.guard';
     BookingsModule,
     ElderProfileModule,
     SmartHomeModule,
+    ApiGatewayModule,
   ],
   providers: [
     {

@@ -36,7 +36,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # NestJS Backend (Unified API + Smart Home)
+  # NestJS Backend (Unified API + Smart Home + API Gateway)
   backend:
     build:
       context: ./backend
@@ -48,11 +48,18 @@ services:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       IOT_TOKEN_SECRET: ${IOT_TOKEN_SECRET:-your-iot-gateway-secret-change-in-production}
+      # API Gateway Configuration
+      LEGACY_SERVER_URL: http://legacy-server:5000
+      MONITORING_SERVER_URL: http://monitoring-backend:4000
     ports:
       - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
+      legacy-server:
+        condition: service_started
+      monitoring-backend:
+        condition: service_started
     volumes:
       - ./backend:/app
       - /app/node_modules
