@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, User, Mail, Phone, AlertCircle, UserPlus, Home } from 'lucide-react';
-import { useAuth } from '../../../shared/hooks/useAuth';
+import { useAuth } from '../shared/hooks/useAuth';
 
 const RegisterPage = () => {
   const navigate = useNavigate();

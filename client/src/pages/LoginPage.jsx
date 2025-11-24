@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, User, AlertCircle, LogIn, Home } from 'lucide-react';
-import { useAuth } from '../../../shared/hooks/useAuth';
+import { useAuth } from '../shared/hooks/useAuth';
 
 const LoginPage = () => {
   const navigate = useNavigate();
