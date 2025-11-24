@@ -18,7 +18,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Configure allowed origins for CORS
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:3000')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:7500')
   .split(',')
   .map(origin => origin.trim());
 

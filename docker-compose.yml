@@ -66,6 +66,8 @@ services:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       IOT_TOKEN_SECRET: ${IOT_TOKEN_SECRET:-your-iot-gateway-secret-change-in-production}
+      # Frontend URL for CORS
+      FRONTEND_URL: http://localhost:7500
       # API Gateway Configuration
       LEGACY_SERVER_URL: http://legacy-server:5000
       MONITORING_SERVER_URL: http://monitoring-backend:4000
