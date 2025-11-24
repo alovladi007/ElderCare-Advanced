@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import ElderCarePage from './pages/ElderCarePage';
 import HomeCarePage from './pages/HomeCarePage';
 import RepairServicesPage from './pages/RepairServicesPage';
+import SmartHomeServicesPage from './pages/SmartHomeServicesPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import BookingPage from './pages/BookingPage';
@@ -43,6 +44,7 @@ import MonitoringDashboard from './pages/MonitoringDashboard';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UnifiedDashboard from './pages/UnifiedDashboard';
+import ElderPortalDashboard from './pages/ElderPortalDashboard';
 
 // Components
 import Navbar from './components/Navbar';
@@ -58,6 +60,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<UnifiedDashboard />} />
+          <Route path="/elder-dashboard" element={<ElderPortalDashboard />} />
 
           {/* Employee Routes (No Navbar/Footer) */}
           <Route path="/employee-login" element={<EmployeeLoginPage />} />
@@ -77,6 +80,7 @@ function App() {
                   <Route path="/elder-care" element={<ElderCarePage />} />
                   <Route path="/home-care" element={<HomeCarePage />} />
                   <Route path="/repair-services" element={<RepairServicesPage />} />
+                  <Route path="/smart-home-services" element={<SmartHomeServicesPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/booking" element={<BookingPage />} />
