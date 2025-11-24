@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: eldercare_password
       POSTGRES_DB: eldercare_db
     ports:
-      - "5432:5432"
+      - "5532:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -29,7 +29,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: eldercare
       MONGO_INITDB_ROOT_PASSWORD: eldercare_password
     ports:
-      - "27017:27017"
+      - "27117:27017"
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -44,7 +44,7 @@ services:
     container_name: eldercare-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6479:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -72,7 +72,7 @@ services:
       # Redis Configuration
       REDIS_URL: redis://redis:6379
     ports:
-      - "3001:3001"
+      - "3101:3001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -100,7 +100,7 @@ services:
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
     ports:
-      - "5000:5000"
+      - "5100:5000"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -120,10 +120,10 @@ services:
       PORT: 4000
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
-      CLIENT_URL: http://localhost:3000
+      CLIENT_URL: http://localhost:3100
       REDIS_URL: redis://redis:6379
     ports:
-      - "4000:4000"
+      - "4100:4000"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -141,9 +141,9 @@ services:
     container_name: eldercare-frontend-next
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_API_URL: http://localhost:3101/api
     ports:
-      - "3002:3000"
+      - "3102:3000"
     depends_on:
       - backend
     volumes:
@@ -159,10 +159,10 @@ services:
     container_name: eldercare-frontend-react
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: http://localhost:3001/api
-      REACT_APP_MONITORING_URL: http://localhost:4000
+      REACT_APP_API_URL: http://localhost:3101/api
+      REACT_APP_MONITORING_URL: http://localhost:4100
     ports:
-      - "3000:3000"
+      - "3100:3000"
     depends_on:
       - backend
       - monitoring-backend

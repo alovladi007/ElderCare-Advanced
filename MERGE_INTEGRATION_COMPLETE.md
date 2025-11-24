@@ -124,16 +124,18 @@ All services now have `restart: unless-stopped` for reliability.
 
 ## Services & Ports
 
-| Service | Port | Description |
-|---------|------|-------------|
-| React Client (Landing Page) | 3000 | Main website & public pages |
-| NestJS Backend | 3001 | Primary API server |
-| Next.js Frontend | 3002 | Smart home dashboard |
-| Monitoring Backend | 4000 | Health monitoring & WebSocket |
-| Legacy Server | 5000 | Service catalog & bookings |
-| PostgreSQL | 5432 | Primary database |
-| MongoDB | 27017 | Monitoring & legacy data |
-| Redis | 6379 | Caching & rate limiting |
+> **⚠️ PORT CONFIGURATION**: All services use alternative ports due to conflicts. See [PORT_CONFIGURATION.md](PORT_CONFIGURATION.md) for full details.
+
+| Service | Port | Old Port | Description |
+|---------|------|----------|-------------|
+| React Client (Landing Page) | **3100** | ~~3000~~ | Main website & public pages |
+| NestJS Backend | **3101** | ~~3001~~ | Primary API server |
+| Next.js Frontend | **3102** | ~~3002~~ | Smart home dashboard |
+| Monitoring Backend | **4100** | ~~4000~~ | Health monitoring & WebSocket |
+| Legacy Server | **5100** | ~~5000~~ | Service catalog & bookings |
+| PostgreSQL | **5532** | ~~5432~~ | Primary database |
+| MongoDB | **27117** | ~~27017~~ | Monitoring & legacy data |
+| Redis | **6479** | ~~6379~~ | Caching & rate limiting |
 
 ## Next Steps to Get Running
 
@@ -157,10 +159,10 @@ docker-compose logs -f
 ```
 
 Access the platform:
-- **Landing Page**: http://localhost:3000
-- **Smart Home UI**: http://localhost:3002
-- **API Documentation**: http://localhost:3001/api/docs
-- **Monitoring**: http://localhost:4000
+- **Landing Page**: http://localhost:3100
+- **Smart Home UI**: http://localhost:3102
+- **API Documentation**: http://localhost:3101/api/docs
+- **Monitoring**: http://localhost:4100
 
 ### Option 2: Manual Setup
 
@@ -260,13 +262,13 @@ npm start
 ## Testing
 
 ### Smart Home Simulator
-Access at: http://localhost:3002/admin/simulator
+Access at: http://localhost:3102/admin/simulator
 - Simulate falls, fires, gas leaks
 - Test automation rules
 - Monitor device events
 
 ### Health Monitoring
-Access at: http://localhost:3000/monitoring/login
+Access at: http://localhost:3100/monitoring/login
 - Real-time vital signs
 - Alert system
 - WebSocket updates

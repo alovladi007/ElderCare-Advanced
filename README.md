@@ -7,6 +7,12 @@
 ![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)
 ![React](https://img.shields.io/badge/react-18.2.0-61dafb)
 
+> **⚠️ PORT CONFIGURATION NOTICE**: Due to port conflicts, all services use alternative ports. See [PORT_CONFIGURATION.md](PORT_CONFIGURATION.md) for details.
+> - Landing Page: **http://localhost:3100** (was 3000)
+> - Backend API: **http://localhost:3101** (was 3001)
+> - Smart Home UI: **http://localhost:3102** (was 3002)
+> - Monitoring: **http://localhost:4100** (was 4000)
+
 ## 🎯 Platform Overview
 
 ElderCare Advanced is a fully integrated platform combining:
@@ -92,14 +98,14 @@ ElderCare Advanced is a fully integrated platform combining:
 
 ### Backend Services
 
-1. **NestJS Backend** (Port 3001) - **Primary API Server**
+1. **NestJS Backend** (Port 3101) - **Primary API Server**
    - Unified authentication (JWT)
    - Smart home management
    - Elder profile API
    - Booking system
    - PostgreSQL + Prisma ORM
 
-2. **Monitoring Backend** (Port 4000/5001)
+2. **Monitoring Backend** (Port 4100)
    - Real-time vital signs
    - WebSocket for live updates
    - Alert system
@@ -107,7 +113,7 @@ ElderCare Advanced is a fully integrated platform combining:
    - Device integration
    - MongoDB
 
-3. **Legacy Server** (Port 5000)
+3. **Legacy Server** (Port 5100)
    - Service catalog
    - Contact forms
    - Employee management
@@ -115,14 +121,14 @@ ElderCare Advanced is a fully integrated platform combining:
 
 ### Frontend Applications
 
-1. **React Client** (Port 3000)
+1. **React Client** (Port 3100)
    - Main website and landing page
    - Public pages
    - Booking interface
    - Employee dashboard
    - Monitoring dashboard (36+ page components)
 
-2. **Next.js Frontend** (Port 3002)
+2. **Next.js Frontend** (Port 3102)
    - Smart home dashboard
    - Elder help screen
    - Simulator interface
@@ -262,10 +268,10 @@ docker-compose exec backend npx prisma migrate deploy
 docker-compose exec backend npm run seed
 
 # Access the platform
-# Main Website: http://localhost:3000
-# Smart Home UI: http://localhost:3002
-# API Docs: http://localhost:3001/api/docs
-# Monitoring: http://localhost:4000 or http://localhost:5001
+# Main Website: http://localhost:3100
+# Smart Home UI: http://localhost:3102
+# API Docs: http://localhost:3101/api/docs
+# Monitoring: http://localhost:4100
 ```
 
 ### Option 2: Manual Setup
@@ -293,7 +299,7 @@ npm run seed
 
 # Start server
 npm run dev
-# Backend runs on http://localhost:3001
+# Backend runs on http://localhost:3101
 ```
 
 #### 2. Monitoring Backend Setup
@@ -313,7 +319,7 @@ npm run seed
 
 # Start server
 npm run dev
-# Runs on http://localhost:5001
+# Runs on http://localhost:4100
 ```
 
 #### 3. Frontend Setup
@@ -323,13 +329,13 @@ npm run dev
 cd client
 npm install
 npm start
-# Runs on http://localhost:3000
+# Runs on http://localhost:3100
 
 # Next.js Frontend (Smart Home UI)
 cd frontend
 npm install
 npm run dev
-# Runs on http://localhost:3002
+# Runs on http://localhost:3102
 ```
 
 #### 4. Legacy Server (Optional)
@@ -338,7 +344,7 @@ npm run dev
 cd server
 npm install
 npm start
-# Runs on http://localhost:5000
+# Runs on http://localhost:5100
 ```
 
 ## ⚙ Configuration
@@ -347,28 +353,28 @@ npm start
 
 **Backend (.env)**
 ```env
-DATABASE_URL=postgresql://eldercare:eldercare_password@localhost:5432/eldercare_db
-PORT=3001
+DATABASE_URL=postgresql://eldercare:eldercare_password@localhost:5532/eldercare_db
+PORT=3101
 NODE_ENV=development
 JWT_SECRET=your-secret-key-change-in-production
 IOT_TOKEN_SECRET=your-iot-secret
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3100
 ```
 
 **Monitoring Backend (.env)**
 ```env
 # Server Configuration
-PORT=5001
+PORT=4100
 NODE_ENV=development
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/evergreen-monitoring
+MONGODB_URI=mongodb://localhost:27117/evergreen-monitoring
 
 # JWT Secret (CHANGE IN PRODUCTION!)
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
 # Client URL
-CLIENT_URL=http://localhost:3000
+CLIENT_URL=http://localhost:3100
 
 # Email Configuration (Nodemailer)
 EMAIL_SERVICE=gmail
@@ -389,13 +395,13 @@ EMERGENCY_API_KEY=your-emergency-api-key
 
 **Frontend (.env.local)**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_URL=http://localhost:3101/api
 ```
 
 **Client (.env)**
 ```env
-REACT_APP_API_URL=http://localhost:3001/api
-REACT_APP_MONITORING_URL=http://localhost:5001
+REACT_APP_API_URL=http://localhost:3101/api
+REACT_APP_MONITORING_URL=http://localhost:4100
 ```
 
 ### Security Configuration
@@ -415,9 +421,9 @@ REACT_APP_MONITORING_URL=http://localhost:5001
 
 ### Base URLs
 
-- **Primary API**: `http://localhost:3001/api`
-- **Monitoring API**: `http://localhost:5001/api`
-- **Legacy API**: `http://localhost:5000/api`
+- **Primary API**: `http://localhost:3101/api`
+- **Monitoring API**: `http://localhost:4100/api`
+- **Legacy API**: `http://localhost:5100/api`
 
 ### Authentication
 
@@ -625,7 +631,7 @@ After seeding the database:
 
 ### Smart Home Simulator
 
-1. Access simulator: http://localhost:3002/admin/simulator
+1. Access simulator: http://localhost:3102/admin/simulator
 2. Copy Home ID from seed output
 3. Test scenarios:
    - Fall detection
@@ -636,14 +642,14 @@ After seeding the database:
 
 ### Health Monitoring
 
-1. Login at: http://localhost:3000/monitoring/login
+1. Login at: http://localhost:3100/monitoring/login
 2. Use demo credentials
 3. View real-time vitals
 4. Create test alerts
 
 ### Unified Dashboard
 
-1. Login at: http://localhost:3000
+1. Login at: http://localhost:3100
 2. Navigate to Elder Care section
 3. View integrated dashboard
 4. See all data in one place
@@ -680,9 +686,13 @@ docker-compose up -d --build
 # View service status
 docker-compose ps
 
-# Access database
+# Access database (use new ports if connecting from host)
 docker-compose exec postgres psql -U eldercare -d eldercare_db
 docker-compose exec mongodb mongosh -u eldercare -p eldercare_password
+
+# Or connect from host:
+# psql -h localhost -p 5532 -U eldercare -d eldercare_db
+# mongosh mongodb://eldercare:eldercare_password@localhost:27117
 ```
 
 ## 📈 Performance
@@ -719,7 +729,7 @@ npm run deploy
 docker build -t eldercare-advanced .
 
 # Run container
-docker run -p 5001:5001 --env-file .env eldercare-advanced
+docker run -p 4100:4100 --env-file .env eldercare-advanced
 ```
 
 ### Traditional Hosting (VPS/Cloud)
@@ -766,7 +776,8 @@ For support and questions:
 
 - **Documentation**: Check the `/docs` folder
 - **Issues**: Open an issue on GitHub
-- **API Docs**: http://localhost:3001/api/docs
+- **API Docs**: http://localhost:3101/api/docs
+- **Port Configuration**: [PORT_CONFIGURATION.md](PORT_CONFIGURATION.md)
 - **Email**: support@eldercare.com (example)
 
 ## 🎖 Credits
