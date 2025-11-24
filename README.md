@@ -8,9 +8,9 @@
 ![React](https://img.shields.io/badge/react-18.2.0-61dafb)
 
 > **⚠️ PORT CONFIGURATION NOTICE**: Due to port conflicts, all services use alternative ports. See [PORT_CONFIGURATION.md](PORT_CONFIGURATION.md) for details.
-> - Landing Page: **http://localhost:3100** (was 3000)
-> - Backend API: **http://localhost:3101** (was 3001)
-> - Smart Home UI: **http://localhost:3102** (was 3002)
+> - Landing Page: **http://localhost:7500** (was 3000)
+> - Backend API: **http://localhost:7501** (was 3001)
+> - Smart Home UI: **http://localhost:7502** (was 3002)
 > - Monitoring: **http://localhost:4100** (was 4000)
 
 ## 🎯 Platform Overview
@@ -98,7 +98,7 @@ ElderCare Advanced is a fully integrated platform combining:
 
 ### Backend Services
 
-1. **NestJS Backend** (Port 3101) - **Primary API Server**
+1. **NestJS Backend** (Port 7501) - **Primary API Server**
    - Unified authentication (JWT)
    - Smart home management
    - Elder profile API
@@ -121,14 +121,14 @@ ElderCare Advanced is a fully integrated platform combining:
 
 ### Frontend Applications
 
-1. **React Client** (Port 3100)
+1. **React Client** (Port 7500)
    - Main website and landing page
    - Public pages
    - Booking interface
    - Employee dashboard
    - Monitoring dashboard (36+ page components)
 
-2. **Next.js Frontend** (Port 3102)
+2. **Next.js Frontend** (Port 7502)
    - Smart home dashboard
    - Elder help screen
    - Simulator interface
@@ -268,9 +268,9 @@ docker-compose exec backend npx prisma migrate deploy
 docker-compose exec backend npm run seed
 
 # Access the platform
-# Main Website: http://localhost:3100
-# Smart Home UI: http://localhost:3102
-# API Docs: http://localhost:3101/api/docs
+# Main Website: http://localhost:7500
+# Smart Home UI: http://localhost:7502
+# API Docs: http://localhost:7501/api/docs
 # Monitoring: http://localhost:4100
 ```
 
@@ -299,7 +299,7 @@ npm run seed
 
 # Start server
 npm run dev
-# Backend runs on http://localhost:3101
+# Backend runs on http://localhost:7501
 ```
 
 #### 2. Monitoring Backend Setup
@@ -329,13 +329,13 @@ npm run dev
 cd client
 npm install
 npm start
-# Runs on http://localhost:3100
+# Runs on http://localhost:7500
 
 # Next.js Frontend (Smart Home UI)
 cd frontend
 npm install
 npm run dev
-# Runs on http://localhost:3102
+# Runs on http://localhost:7502
 ```
 
 #### 4. Legacy Server (Optional)
@@ -354,11 +354,11 @@ npm start
 **Backend (.env)**
 ```env
 DATABASE_URL=postgresql://eldercare:eldercare_password@localhost:5532/eldercare_db
-PORT=3101
+PORT=7501
 NODE_ENV=development
 JWT_SECRET=your-secret-key-change-in-production
 IOT_TOKEN_SECRET=your-iot-secret
-FRONTEND_URL=http://localhost:3100
+FRONTEND_URL=http://localhost:7500
 ```
 
 **Monitoring Backend (.env)**
@@ -374,7 +374,7 @@ MONGODB_URI=mongodb://localhost:27117/evergreen-monitoring
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
 # Client URL
-CLIENT_URL=http://localhost:3100
+CLIENT_URL=http://localhost:7500
 
 # Email Configuration (Nodemailer)
 EMAIL_SERVICE=gmail
@@ -395,12 +395,12 @@ EMERGENCY_API_KEY=your-emergency-api-key
 
 **Frontend (.env.local)**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3101/api
+NEXT_PUBLIC_API_URL=http://localhost:7501/api
 ```
 
 **Client (.env)**
 ```env
-REACT_APP_API_URL=http://localhost:3101/api
+REACT_APP_API_URL=http://localhost:7501/api
 REACT_APP_MONITORING_URL=http://localhost:4100
 ```
 
@@ -421,7 +421,7 @@ REACT_APP_MONITORING_URL=http://localhost:4100
 
 ### Base URLs
 
-- **Primary API**: `http://localhost:3101/api`
+- **Primary API**: `http://localhost:7501/api`
 - **Monitoring API**: `http://localhost:4100/api`
 - **Legacy API**: `http://localhost:5100/api`
 
@@ -631,7 +631,7 @@ After seeding the database:
 
 ### Smart Home Simulator
 
-1. Access simulator: http://localhost:3102/admin/simulator
+1. Access simulator: http://localhost:7502/admin/simulator
 2. Copy Home ID from seed output
 3. Test scenarios:
    - Fall detection
@@ -642,14 +642,14 @@ After seeding the database:
 
 ### Health Monitoring
 
-1. Login at: http://localhost:3100/monitoring/login
+1. Login at: http://localhost:7500/monitoring/login
 2. Use demo credentials
 3. View real-time vitals
 4. Create test alerts
 
 ### Unified Dashboard
 
-1. Login at: http://localhost:3100
+1. Login at: http://localhost:7500
 2. Navigate to Elder Care section
 3. View integrated dashboard
 4. See all data in one place
@@ -776,7 +776,7 @@ For support and questions:
 
 - **Documentation**: Check the `/docs` folder
 - **Issues**: Open an issue on GitHub
-- **API Docs**: http://localhost:3101/api/docs
+- **API Docs**: http://localhost:7501/api/docs
 - **Port Configuration**: [PORT_CONFIGURATION.md](PORT_CONFIGURATION.md)
 - **Email**: support@eldercare.com (example)
 

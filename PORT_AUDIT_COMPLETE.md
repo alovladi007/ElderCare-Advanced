@@ -13,9 +13,9 @@ I've completed a full system audit of all ports. Here are the results:
 
 | Service | External Port | Internal Port | Status | Verified |
 |---------|---------------|---------------|--------|----------|
-| **React Client** | 3100 | 3000 | ✅ AVAILABLE | YES |
-| **Backend API** | 3101 | 3001 | ✅ AVAILABLE | YES |
-| **Next.js Frontend** | 3102 | 3000 | ✅ AVAILABLE | YES |
+| **React Client** | 7500 | 3000 | ✅ AVAILABLE | YES |
+| **Backend API** | 7501 | 3001 | ✅ AVAILABLE | YES |
+| **Next.js Frontend** | 7502 | 3000 | ✅ AVAILABLE | YES |
 | **Monitoring Backend** | 4100 | 4000 | ✅ AVAILABLE | YES |
 | **Legacy Server** | 5100 | 5000 | ✅ AVAILABLE | YES |
 | **PostgreSQL** | 5532 | 5432 | ✅ AVAILABLE | YES |
@@ -46,7 +46,7 @@ React Client:  "3100:3000"   ✅ Correct
 ```env
 PORT=3101                                              ✅ Correct
 DATABASE_URL=postgresql://...@localhost:5532/...      ✅ Correct
-FRONTEND_URL=http://localhost:3100                    ✅ Correct
+FRONTEND_URL=http://localhost:7500                    ✅ Correct
 ```
 
 ### ✅ monitoring-backend/.env Configuration
@@ -54,7 +54,7 @@ FRONTEND_URL=http://localhost:3100                    ✅ Correct
 ```env
 PORT=4100                                              ✅ Correct
 MONGODB_URI=mongodb://localhost:27117/...             ✅ Correct
-CLIENT_URL=http://localhost:3100                      ✅ Correct
+CLIENT_URL=http://localhost:7500                      ✅ Correct
 ```
 
 ---
@@ -80,20 +80,20 @@ The following ports were detected as in use and have been avoided:
 Once you start the services, these URLs will work:
 
 ### Main Applications
-- **Landing Page**: http://localhost:3100
-- **Backend API Docs**: http://localhost:3101/api/docs
-- **Smart Home Dashboard**: http://localhost:3102
+- **Landing Page**: http://localhost:7500
+- **Backend API Docs**: http://localhost:7501/api/docs
+- **Smart Home Dashboard**: http://localhost:7502
 - **Monitoring API**: http://localhost:4100
 
 ### Login Pages
-- **Main Login**: http://localhost:3100/login
-- **Monitoring Login**: http://localhost:3100/monitoring/login
-- **Registration**: http://localhost:3100/register
+- **Main Login**: http://localhost:7500/login
+- **Monitoring Login**: http://localhost:7500/monitoring/login
+- **Registration**: http://localhost:7500/register
 
 ### API Endpoints
-- **Backend Auth**: http://localhost:3101/api/auth
-- **Elder Profiles**: http://localhost:3101/api/elder-profile
-- **Smart Home**: http://localhost:3101/api/homes
+- **Backend Auth**: http://localhost:7501/api/auth
+- **Elder Profiles**: http://localhost:7501/api/elder-profile
+- **Smart Home**: http://localhost:7501/api/homes
 - **Monitoring Vitals**: http://localhost:4100/api/vitals
 - **Alerts**: http://localhost:4100/api/alerts
 
@@ -176,7 +176,7 @@ docker-compose logs -f
 ### ✅ Step 7: Access the Platform
 
 Open your browser to:
-- http://localhost:3100 (Landing page)
+- http://localhost:7500 (Landing page)
 
 Login with:
 - **Email**: `admin@eldercare.com`
@@ -260,7 +260,7 @@ Ports available: **65473**
 
 ### Ports Assigned (All Available)
 ```
-3100, 3101, 3102    → Frontend services
+3100, 7501, 7502    → Frontend services
 4100                → Monitoring
 5100                → Legacy server
 5532                → PostgreSQL
@@ -292,7 +292,7 @@ Ports available: **65473**
 3. **Run**: `docker-compose up -d`
 4. **Wait**: 30-60 seconds for services to start
 5. **Initialize**: Run database migrations and seed
-6. **Access**: Open http://localhost:3100
+6. **Access**: Open http://localhost:7500
 
 ---
 
@@ -322,9 +322,9 @@ docker-compose exec mongodb mongosh -u eldercare -p eldercare_password
 
 ### URLs
 ```
-Landing:    http://localhost:3100
-API Docs:   http://localhost:3101/api/docs
-Smart Home: http://localhost:3102
+Landing:    http://localhost:7500
+API Docs:   http://localhost:7501/api/docs
+Smart Home: http://localhost:7502
 Monitoring: http://localhost:4100
 ```
 

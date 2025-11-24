@@ -77,9 +77,9 @@ You should see 8 containers running:
 
 Now these URLs should work:
 
-- **Landing Page**: http://localhost:3100
-- **Backend API Docs**: http://localhost:3101/api/docs
-- **Smart Home UI**: http://localhost:3102
+- **Landing Page**: http://localhost:7500
+- **Backend API Docs**: http://localhost:7501/api/docs
+- **Smart Home UI**: http://localhost:7502
 - **Monitoring**: http://localhost:4100
 
 ---
@@ -131,7 +131,7 @@ npm run seed
 npm run dev
 ```
 
-**Wait for**: "Application is running on: http://localhost:3101"
+**Wait for**: "Application is running on: http://localhost:7501"
 
 ### Terminal 3 - Monitoring Backend (Port 4100)
 
@@ -162,7 +162,7 @@ npm install
 npm start
 ```
 
-**Wait for**: Browser should open to http://localhost:3100
+**Wait for**: Browser should open to http://localhost:7500
 
 ### Terminal 5 - Next.js Frontend (Port 3102)
 
@@ -176,7 +176,7 @@ npm install
 npm run dev
 ```
 
-**Wait for**: "Ready on http://localhost:3102"
+**Wait for**: "Ready on http://localhost:7502"
 
 ---
 
@@ -198,9 +198,9 @@ npm run dev
 docker-compose down
 
 # Check what's using the ports
-lsof -i :3100
-lsof -i :3101
-lsof -i :3102
+lsof -i :7500
+lsof -i :7501
+lsof -i :7502
 lsof -i :4100
 
 # Kill process (replace PID with actual process ID)
@@ -329,9 +329,9 @@ You'll know everything is working when:
 1. **Docker**: All 8 containers show as "Up" in `docker-compose ps`
 2. **Manual**: Each terminal shows the service is listening on its port
 3. **Browser**:
-   - http://localhost:3100 shows the landing page
-   - http://localhost:3101/api/docs shows Swagger documentation
-   - http://localhost:3102 shows the Smart Home UI
+   - http://localhost:7500 shows the landing page
+   - http://localhost:7501/api/docs shows Swagger documentation
+   - http://localhost:7502 shows the Smart Home UI
    - http://localhost:4100 (should respond, even if just with JSON)
 
 ---

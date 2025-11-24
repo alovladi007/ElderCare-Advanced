@@ -72,7 +72,7 @@ services:
       # Redis Configuration
       REDIS_URL: redis://redis:6379
     ports:
-      - "3101:3001"
+      - "7501:3001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -120,7 +120,7 @@ services:
       PORT: 4000
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
-      CLIENT_URL: http://localhost:3100
+      CLIENT_URL: http://localhost:7500
       REDIS_URL: redis://redis:6379
     ports:
       - "4100:4000"
@@ -141,9 +141,9 @@ services:
     container_name: eldercare-frontend-next
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3101/api
+      NEXT_PUBLIC_API_URL: http://localhost:7501/api
     ports:
-      - "3102:3000"
+      - "7502:3000"
     depends_on:
       - backend
     volumes:
@@ -159,10 +159,10 @@ services:
     container_name: eldercare-frontend-react
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: http://localhost:3101/api
+      REACT_APP_API_URL: http://localhost:7501/api
       REACT_APP_MONITORING_URL: http://localhost:4100
     ports:
-      - "3100:3000"
+      - "7500:3000"
     depends_on:
       - backend
       - monitoring-backend

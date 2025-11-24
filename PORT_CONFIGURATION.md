@@ -10,9 +10,9 @@ The following standard ports were already in use and have been remapped:
 
 | Standard Port | Service Type | Status | New Port |
 |--------------|--------------|--------|----------|
-| 3000 | React Client | ❌ IN USE | **3100** |
-| 3001 | Backend API | ❌ IN USE | **3101** |
-| 3002 | Next.js Frontend | ❌ IN USE | **3102** |
+| 3000 | React Client | ❌ IN USE | **7500** |
+| 3001 | Backend API | ❌ IN USE | **7501** |
+| 3002 | Next.js Frontend | ❌ IN USE | **7502** |
 | 4000 | Monitoring Backend | ❌ IN USE | **4100** |
 | 5000 | Legacy Server | ❌ IN USE | **5100** |
 | 5432 | PostgreSQL | ❌ IN USE | **5532** |
@@ -25,21 +25,21 @@ The following standard ports were already in use and have been remapped:
 
 | Service | New URL | Description |
 |---------|---------|-------------|
-| **Landing Page (React)** | http://localhost:3100 | Main website entry point |
-| **Smart Home Dashboard** | http://localhost:3102 | Next.js smart home UI |
-| **Backend API** | http://localhost:3101 | Primary NestJS API |
-| **API Documentation** | http://localhost:3101/api/docs | Swagger docs |
+| **Landing Page (React)** | http://localhost:7500 | Main website entry point |
+| **Smart Home Dashboard** | http://localhost:7502 | Next.js smart home UI |
+| **Backend API** | http://localhost:7501 | Primary NestJS API |
+| **API Documentation** | http://localhost:7501/api/docs | Swagger docs |
 | **Monitoring API** | http://localhost:4100 | Health monitoring |
 | **Legacy Server** | http://localhost:5100 | Service catalog |
 
 ### API Endpoints
 
-**Backend API (Port 3101):**
-- Authentication: http://localhost:3101/api/auth
-- Elder Profiles: http://localhost:3101/api/elder-profile
-- Smart Home: http://localhost:3101/api/homes
-- Devices: http://localhost:3101/api/devices
-- Bookings: http://localhost:3101/api/bookings
+**Backend API (Port 7501):**
+- Authentication: http://localhost:7501/api/auth
+- Elder Profiles: http://localhost:7501/api/elder-profile
+- Smart Home: http://localhost:7501/api/homes
+- Devices: http://localhost:7501/api/devices
+- Bookings: http://localhost:7501/api/bookings
 
 **Monitoring API (Port 4100):**
 - Patients: http://localhost:4100/api/patients
@@ -72,15 +72,15 @@ The following files have been updated with the new ports:
 
 ### ✅ Backend Configuration
 - [backend/.env](backend/.env)
-  - `PORT=3101`
+  - `PORT=7501`
   - `DATABASE_URL=postgresql://...@localhost:5532/...`
-  - `FRONTEND_URL=http://localhost:3100`
+  - `FRONTEND_URL=http://localhost:7500`
 
 ### ✅ Monitoring Backend Configuration
 - [monitoring-backend/.env](monitoring-backend/.env)
   - `PORT=4100`
   - `MONGODB_URI=mongodb://localhost:27117/...`
-  - `CLIENT_URL=http://localhost:3100`
+  - `CLIENT_URL=http://localhost:7500`
 
 ## 🚀 Starting the Platform
 
@@ -98,9 +98,9 @@ docker-compose exec backend npm run seed
 docker-compose ps
 
 # Access the platform
-open http://localhost:3100  # Landing page
-open http://localhost:3101/api/docs  # API docs
-open http://localhost:3102  # Smart home UI
+open http://localhost:7500  # Landing page
+open http://localhost:7501/api/docs  # API docs
+open http://localhost:7502  # Smart home UI
 ```
 
 ### Option 2: Manual Setup
@@ -113,7 +113,7 @@ npm run prisma:migrate
 npm run prisma:generate
 npm run seed
 npm run dev
-# Runs on port 3101
+# Runs on port 7501
 ```
 
 **Terminal 2 - Monitoring Backend:**
@@ -129,7 +129,7 @@ npm run dev
 cd frontend
 npm install
 npm run dev
-# Runs on port 3102
+# Runs on port 7502
 ```
 
 **Terminal 4 - React Client:**
@@ -137,7 +137,7 @@ npm run dev
 cd client
 npm install
 npm start
-# Runs on port 3100
+# Runs on port 7500
 ```
 
 ## 🔍 Health Checks
@@ -146,25 +146,25 @@ Verify all services are running:
 
 ```bash
 # Landing page
-curl http://localhost:3100
+curl http://localhost:7500
 
 # Backend API health
-curl http://localhost:3101/api/docs
+curl http://localhost:7501/api/docs
 
 # Monitoring API
 curl http://localhost:4100/api/patients
 
 # Smart Home UI
-curl http://localhost:3102
+curl http://localhost:7502
 ```
 
 ## 🔐 Login URLs
 
-- **Main Login**: http://localhost:3100/login
-- **Monitoring Login**: http://localhost:3100/monitoring/login
-- **Registration**: http://localhost:3100/register
-- **Admin Dashboard**: http://localhost:3100/dashboard
-- **Smart Home Simulator**: http://localhost:3102/admin/simulator
+- **Main Login**: http://localhost:7500/login
+- **Monitoring Login**: http://localhost:7500/monitoring/login
+- **Registration**: http://localhost:7500/register
+- **Admin Dashboard**: http://localhost:7500/dashboard
+- **Smart Home Simulator**: http://localhost:7502/admin/simulator
 
 ## 🧪 Demo Credentials
 
@@ -184,8 +184,8 @@ Elder:     elder@eldercare.com / elder123
 If you still get port conflicts:
 
 ```bash
-# Check what's using a port (example for 3100)
-lsof -i :3100
+# Check what's using a port (example for 7500)
+lsof -i :7500
 
 # Kill the process (replace PID with actual process ID)
 kill -9 PID
@@ -225,9 +225,9 @@ docker-compose ps
 ## 📊 Port Mapping Summary
 
 **Frontend Services:**
-- React Client: `3000` → `3100`
-- Backend API: `3001` → `3101`
-- Next.js UI: `3002` → `3102`
+- React Client: `3000` → `7500`
+- Backend API: `3001` → `7501`
+- Next.js UI: `3002` → `7502`
 
 **Backend Services:**
 - Monitoring: `4000` → `4100`
@@ -260,9 +260,9 @@ If you want to use standard ports later (after freeing them up):
 **Save this for quick access:**
 
 ```
-Landing Page:     http://localhost:3100
-Smart Home UI:    http://localhost:3102
-API Docs:         http://localhost:3101/api/docs
+Landing Page:     http://localhost:7500
+Smart Home UI:    http://localhost:7502
+API Docs:         http://localhost:7501/api/docs
 Monitoring:       http://localhost:4100
 
 PostgreSQL:       localhost:5532

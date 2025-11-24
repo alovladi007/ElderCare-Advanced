@@ -125,9 +125,9 @@ docker-compose logs postgres
 
 Open your browser and try these URLs:
 
-1. **http://localhost:3100** - Should show landing page
-2. **http://localhost:3101/api/docs** - Should show API documentation
-3. **http://localhost:3102** - Should show Smart Home UI
+1. **http://localhost:7500** - Should show landing page
+2. **http://localhost:7501/api/docs** - Should show API documentation
+3. **http://localhost:7502** - Should show Smart Home UI
 
 ### If you get "This site can't be reached":
 
@@ -167,8 +167,8 @@ docker-compose logs backend
 docker-compose down
 
 # Check what's using the ports
-lsof -i :3100
-lsof -i :3101
+lsof -i :7500
+lsof -i :7501
 
 # If you see a process, kill it:
 # kill -9 <PID>
@@ -286,7 +286,7 @@ ls -la docker-compose.yml
 pwd
 
 # Check port availability
-lsof -i :3100
+lsof -i :7500
 ```
 
 ### Step 3: Complete Reset
@@ -330,7 +330,7 @@ docker-compose exec backend npm run seed
 - [ ] `docker-compose up -d` completed without errors
 - [ ] `docker-compose ps` shows all 8 services "Up"
 - [ ] Waited at least 2 minutes
-- [ ] http://localhost:3100 loads in browser
+- [ ] http://localhost:7500 loads in browser
 - [ ] Can login with admin@eldercare.com / admin123
 
 If all checked: ✅ **YOU'RE RUNNING!**
