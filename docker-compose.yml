@@ -5,6 +5,7 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: eldercare-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: eldercare
       POSTGRES_PASSWORD: eldercare_password
@@ -23,6 +24,7 @@ services:
   mongodb:
     image: mongo:6-focal
     container_name: eldercare-mongodb
+    restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: eldercare
       MONGO_INITDB_ROOT_PASSWORD: eldercare_password
@@ -36,12 +38,28 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: eldercare-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   # NestJS Backend (Unified API + Smart Home + API Gateway)
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: eldercare-backend
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://eldercare:eldercare_password@postgres:5432/eldercare_db?schema=public
       PORT: 3001
@@ -51,10 +69,14 @@ services:
       # API Gateway Configuration
       LEGACY_SERVER_URL: http://legacy-server:5000
       MONITORING_SERVER_URL: http://monitoring-backend:4000
+      # Redis Configuration
+      REDIS_URL: redis://redis:6379
     ports:
       - "3001:3001"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       legacy-server:
         condition: service_started
@@ -71,6 +93,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: eldercare-legacy-server
+    restart: unless-stopped
     environment:
       MONGODB_URI: mongodb://eldercare:eldercare_password@mongodb:27017/eldercare?authSource=admin
       PORT: 5000
@@ -91,16 +114,20 @@ services:
       context: ./monitoring-backend
       dockerfile: Dockerfile
     container_name: eldercare-monitoring
+    restart: unless-stopped
     environment:
       MONGODB_URI: mongodb://eldercare:eldercare_password@mongodb:27017/monitoring?authSource=admin
       PORT: 4000
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       CLIENT_URL: http://localhost:3000
+      REDIS_URL: redis://redis:6379
     ports:
       - "4000:4000"
     depends_on:
       mongodb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./monitoring-backend:/app
@@ -112,6 +139,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: eldercare-frontend-next
+    restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001/api
     ports:
@@ -129,6 +157,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
     container_name: eldercare-frontend-react
+    restart: unless-stopped
     environment:
       REACT_APP_API_URL: http://localhost:3001/api
       REACT_APP_MONITORING_URL: http://localhost:4000
@@ -145,6 +174,7 @@ services:
   nginx:
     image: nginx:alpine
     container_name: eldercare-nginx
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
@@ -163,6 +193,7 @@ services:
 volumes:
   postgres_data:
   mongodb_data:
+  redis_data:
 
 networks:
   default:
