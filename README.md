@@ -2,6 +2,16 @@
 
 > **Comprehensive elder care platform integrating smart home safety, real-time health monitoring, care management, and family coordination.**
 
+---
+
+## 🚀 GETTING STARTED? → [**START_HERE.md**](START_HERE.md)
+
+**Having trouble starting the platform?** Follow the simple 3-step guide in [START_HERE.md](START_HERE.md)
+
+**All issues resolved?** Check [FINAL_VERIFICATION.md](FINAL_VERIFICATION.md) for complete verification
+
+---
+
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)
