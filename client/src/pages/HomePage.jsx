@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Heart, Home, Wrench, Shield, Clock, Users, Star,
-  CheckCircle, Phone, ArrowRight, Award, TrendingUp,
+  Heart, Home, Shield, Clock, Users, Star,
+  CheckCircle, Phone, ArrowRight, Award,
   Activity, UserCog, Smartphone
 } from 'lucide-react';
 
