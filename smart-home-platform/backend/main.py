@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, get_db, Base
 import models
-from routers import auth_router, devices_router, scenes_router, automations_router, events_router
+from routers import auth_router, devices_router, scenes_router, automations_router, events_router, alerts_router
 import automation_engine
 
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,7 @@ app.include_router(devices_router.router)
 app.include_router(scenes_router.router)
 app.include_router(automations_router.router)
 app.include_router(events_router.router)
+app.include_router(alerts_router.router)
 
 @app.on_event("startup")
 async def startup():

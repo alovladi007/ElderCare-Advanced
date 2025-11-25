@@ -154,3 +154,24 @@ class Event(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
     device = relationship("Device", back_populates="events")
+
+class AlertSeverity(str, enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+class AlertStatus(str, enum.Enum):
+    OPEN = "open"
+    ACKNOWLEDGED = "acknowledged"
+    RESOLVED = "resolved"
+
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    severity = Column(SQLEnum(AlertSeverity), nullable=False)
+    message = Column(String, nullable=False)
+    status = Column(SQLEnum(AlertStatus), default=AlertStatus.OPEN, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    resolved_at = Column(DateTime, nullable=True)
