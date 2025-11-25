@@ -19,7 +19,7 @@ const Navbar = () => {
     { path: '/', label: 'Home' },
     { path: '/elder-care', label: 'Elder Care' },
     { path: '/home-care', label: 'Home Care' },
-    { path: '/repair-services', label: 'Repairs & Maintenance' },
+    { path: '/smart-home', label: 'Smart Home' },
     { path: '/about', label: 'About Us' },
     { path: '/contact', label: 'Contact' },
   ];

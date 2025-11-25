@@ -19,6 +19,7 @@ const EmployeeDashboard = lazy(() => import('./pages/EmployeeDashboard'));
 const MonitoringLoginPage = lazy(() => import('./pages/MonitoringLoginPage'));
 const MonitoringDashboard = lazy(() => import('./pages/MonitoringDashboard'));
 const SmartHomeDashboard = lazy(() => import('./pages/SmartHomeDashboard'));
+const SmartHomeRedirectPage = lazy(() => import('./pages/SmartHomeRedirectPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // Lazy-loaded service pages
@@ -90,6 +91,7 @@ function App() {
 
             {/* Smart Home Routes (No Navbar/Footer) */}
             <Route path="/smart-home-dashboard" element={<SmartHomeDashboard />} />
+            <Route path="/smart-home" element={<SmartHomeRedirectPage />} />
 
             {/* Public Routes (With Navbar/Footer) */}
             <Route path="/*" element={

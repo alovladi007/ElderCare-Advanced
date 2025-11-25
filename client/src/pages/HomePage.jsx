@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Heart, Home, Shield, Clock, Users, Star,
   CheckCircle, Phone, ArrowRight, Award,
-  Activity, UserCog, Smartphone
+  Activity, UserCog, Smartphone, Zap
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -234,7 +234,7 @@ const HomePage = () => {
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
             {[
               {
                 icon: Users,
@@ -263,6 +263,14 @@ const HomePage = () => {
                 description: 'Caregiver schedules and task management',
                 link: '/employee-dashboard',
                 color: 'from-indigo-400 to-indigo-600'
+              },
+              {
+                icon: Zap,
+                title: 'Smart Home Platform',
+                description: 'Control devices, automations, and home monitoring',
+                link: 'http://localhost:6100',
+                color: 'from-orange-400 to-orange-600',
+                external: true
               }
             ].map((portal, index) => (
               <motion.div
@@ -271,21 +279,41 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Link
-                  to={portal.link}
-                  className="block h-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all hover:scale-105 group"
-                >
-                  <div className={`w-16 h-16 bg-gradient-to-br ${portal.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    <portal.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{portal.title}</h3>
-                  <p className="text-blue-100 text-sm mb-4">{portal.description}</p>
-                  <div className="flex items-center text-white font-medium">
-                    <ArrowRight className="w-5 h-5 mr-2" />
-                    Access Dashboard
-                    <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
+                {portal.external ? (
+                  <a
+                    href={portal.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block h-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all hover:scale-105 group"
+                  >
+                    <div className={`w-16 h-16 bg-gradient-to-br ${portal.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <portal.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{portal.title}</h3>
+                    <p className="text-blue-100 text-sm mb-4">{portal.description}</p>
+                    <div className="flex items-center text-white font-medium">
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      Access Dashboard
+                      <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </a>
+                ) : (
+                  <Link
+                    to={portal.link}
+                    className="block h-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all hover:scale-105 group"
+                  >
+                    <div className={`w-16 h-16 bg-gradient-to-br ${portal.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <portal.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{portal.title}</h3>
+                    <p className="text-blue-100 text-sm mb-4">{portal.description}</p>
+                    <div className="flex items-center text-white font-medium">
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      Access Dashboard
+                      <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                )}
               </motion.div>
             ))}
           </div>
