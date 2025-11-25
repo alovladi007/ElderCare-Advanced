@@ -95,9 +95,15 @@ const SmartHomeServicesPage = () => {
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
               Transform your home into a safe, connected, and intelligent environment with our comprehensive smart home solutions designed specifically for elder care and independent living.
             </p>
-            <Link to="/booking" className="btn-primary bg-white text-blue-600 hover:bg-gray-100 inline-block">
-              Get Started <ArrowRight className="inline ml-2" size={20} />
-            </Link>
+            <div className="flex flex-wrap gap-4">
+              <Link to="/smart-home-dashboard" className="btn-primary bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 inline-flex items-center">
+                <Home className="mr-2" size={20} />
+                Launch Dashboard
+              </Link>
+              <Link to="/booking" className="btn-primary bg-white text-blue-600 hover:bg-gray-100 inline-flex items-center">
+                Get Started <ArrowRight className="inline ml-2" size={20} />
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>

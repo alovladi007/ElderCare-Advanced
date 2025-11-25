@@ -17,6 +17,9 @@ const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
 const smarthomeRoutes = require('./routes/smarthome');
 
+// Import services
+const automationEngine = require('./services/AutomationEngine');
+
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -48,6 +51,14 @@ const connectDB = async () => {
 };
 
 connectDB();
+
+// Start Automation Engine
+if (process.env.MONGODB_URI) {
+  // Only start automation engine if database is available
+  setTimeout(() => {
+    automationEngine.start();
+  }, 2000); // Wait 2 seconds for DB connection
+}
 
 // Routes
 app.use('/api/bookings', bookingRoutes);

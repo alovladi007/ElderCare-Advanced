@@ -45,6 +45,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UnifiedDashboard from './pages/UnifiedDashboard';
 import ElderPortalDashboard from './pages/ElderPortalDashboard';
+import SmartHomeDashboard from './pages/SmartHomeDashboard';
 
 // Components
 import Navbar from './components/Navbar';
@@ -69,6 +70,9 @@ function App() {
           {/* Monitoring System Routes (No Navbar/Footer) */}
           <Route path="/monitoring/login" element={<MonitoringLoginPage />} />
           <Route path="/monitoring/dashboard" element={<MonitoringDashboard />} />
+
+          {/* Smart Home Routes (No Navbar/Footer) */}
+          <Route path="/smart-home-dashboard" element={<SmartHomeDashboard />} />
 
           {/* Public Routes (With Navbar/Footer) */}
           <Route path="/*" element={

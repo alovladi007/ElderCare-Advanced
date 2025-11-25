@@ -341,6 +341,22 @@ router.get('/dashboard', auth, async (req, res) => {
   }
 });
 
+// ===== AI SUGGESTIONS =====
+
+// Get automation suggestions based on usage patterns
+router.get('/suggestions', auth, async (req, res) => {
+  try {
+    const automationEngine = require('../services/AutomationEngine');
+    const suggestions = await automationEngine.getAutomationSuggestions(
+      req.user._id,
+      parseInt(req.query.limit) || 5
+    );
+    res.json({ success: true, data: suggestions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ===== SEEDING DEMO DATA =====
 
 router.post('/seed-demo', async (req, res) => {
