@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   Clock, LogOut, FileText, Calendar, User, CheckCircle,
-  ClipboardList, AlertCircle, TrendingUp, PlayCircle, StopCircle, Home
+  ClipboardList, AlertCircle, TrendingUp, PlayCircle, StopCircle, Home,
+  Users, Briefcase, ListTodo, Edit3, Plus, Search, Filter, ArrowUpDown,
+  MessageSquare, Phone, Mail, MapPin, ChevronRight, X, Save, Trash2
 } from 'lucide-react';
 
 const EmployeeDashboard = () => {
@@ -18,13 +20,17 @@ const EmployeeDashboard = () => {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    // Check authentication
-    const auth = localStorage.getItem('employeeAuth');
-    if (!auth) {
-      navigate('/employee-login');
-      return;
-    }
-    setEmployee(JSON.parse(auth));
+    // Bypass authentication - demo mode
+    const mockEmployee = {
+      name: 'Demo Employee',
+      email: 'employee@demo.com',
+      role: 'Caregiver',
+      employeeId: 'EMP001'
+    };
+    setEmployee(mockEmployee);
+    // const auth = localStorage.getItem('employeeAuth');
+    // if (!auth) { navigate('/employee-login'); return; }
+    // setEmployee(JSON.parse(auth));
 
     // Check if already clocked in
     const clockData = localStorage.getItem('clockData');

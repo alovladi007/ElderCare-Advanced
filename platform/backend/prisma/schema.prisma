@@ -1,0 +1,1308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USERS & ROLES
+// ============================================
+
+enum UserRole {
+  ELDER
+  FAMILY
+  CAREGIVER
+  CLINICIAN
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations based on role
+  elderProfile     ElderProfile?
+  familyProfile    FamilyProfile?
+  caregiverProfile CaregiverProfile?
+  clinicianProfile ClinicianProfile?
+
+  // Activity tracking
+  careTeamMemberships  ElderCareTeamMember[]
+  createdCarePlans     CarePlan[]
+  completedTasks       CareTaskInstance[]
+  reportedIncidents    Incident[]
+  assessmentsPerformed AssessmentInstance[]
+  careNotesAuthored    CareNote[]
+  mealsLogged          MealIntakeLog[]
+  resolvedAlerts       Alert[]                       @relation("AlertResolvedBy")
+  recordedVitals       VitalReading[]
+  adminActions         MedicationAdministrationLog[]
+  notifications        Notification[]
+
+  // Smart Home relations
+  createdAutomationRules AutomationRule[]  @relation("CreatedAutomationRules")
+  issuedActuatorCommands ActuatorCommand[] @relation("IssuedCommands")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// ============================================
+// ELDER PROFILES
+// ============================================
+
+enum CognitiveStatus {
+  NORMAL
+  MILD_IMPAIRMENT
+  DEMENTIA
+  ALZHEIMERS
+  OTHER
+}
+
+enum MobilityLevel {
+  INDEPENDENT
+  NEEDS_ASSISTANCE
+  WHEELCHAIR
+  BEDBOUND
+}
+
+model ElderProfile {
+  id                    String          @id @default(uuid())
+  userId                String          @unique
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth           DateTime
+  gender                String
+  primaryDiagnosis      String?
+  cognitiveStatus       CognitiveStatus @default(NORMAL)
+  mobilityLevel         MobilityLevel   @default(INDEPENDENT)
+  address               String
+  emergencyContactName  String
+  emergencyContactPhone String
+  notes                 String?
+
+  // Relations
+  careTeamMembers     ElderCareTeamMember[]
+  carePlans           CarePlan[]
+  careTaskInstances   CareTaskInstance[]
+  incidents           Incident[]
+  medications         Medication[]
+  devices             Device[]
+  vitalReadings       VitalReading[]
+  vitalAlertRules     VitalAlertRule[]
+  alerts              Alert[]
+  memoryCareProfile   MemoryCareProfile?
+  assessmentInstances AssessmentInstance[]
+  appointments        Appointment[]
+  careNotes           CareNote[]
+  nutritionProfile    NutritionProfile?
+  mealPlans           MealPlan[]
+  mealIntakeLogs      MealIntakeLog[]
+  familyProfiles      FamilyProfile[]
+
+  // Smart Home relations
+  home                       Home?
+  inactivityProfiles         InactivityProfile[]
+  helpTriggers               HelpTrigger[]
+  emergencyScenarioInstances EmergencyScenarioInstance[]
+
+  @@map("elder_profiles")
+}
+
+model FamilyProfile {
+  id                  String       @id @default(uuid())
+  userId              String       @unique
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relationshipToElder String
+  associatedElderId   String
+  associatedElder     ElderProfile @relation(fields: [associatedElderId], references: [id], onDelete: Restrict)
+
+  @@index([associatedElderId])
+  @@map("family_profiles")
+}
+
+model CaregiverProfile {
+  id          String  @id @default(uuid())
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentials String?
+  agencyName  String?
+  notes       String?
+
+  assignedTasks CareTaskInstance[]
+
+  @@map("caregiver_profiles")
+}
+
+model ClinicianProfile {
+  id            String  @id @default(uuid())
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty     String
+  licenseNumber String?
+  organization  String?
+
+  appointments Appointment[]
+
+  @@map("clinician_profiles")
+}
+
+enum CareTeamRole {
+  PRIMARY_FAMILY
+  SECONDARY_FAMILY
+  PRIMARY_CAREGIVER
+  BACKUP_CAREGIVER
+  PRIMARY_CLINICIAN
+  OTHER
+}
+
+model ElderCareTeamMember {
+  id         String       @id @default(uuid())
+  elderId    String
+  elder      ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleInTeam CareTeamRole
+
+  @@unique([elderId, userId])
+  @@index([elderId])
+  @@index([userId])
+  @@map("elder_care_team_members")
+}
+
+// ============================================
+// CARE PLANS & TASKS
+// ============================================
+
+enum CarePlanStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+model CarePlan {
+  id              String         @id @default(uuid())
+  elderId         String
+  elder           ElderProfile   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  name            String
+  description     String
+  status          CarePlanStatus @default(ACTIVE)
+  createdByUserId String
+  createdBy       User           @relation(fields: [createdByUserId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  taskTemplates CareTaskTemplate[]
+  taskInstances CareTaskInstance[]
+
+  @@index([elderId])
+  @@index([status])
+  @@map("care_plans")
+}
+
+enum CareTaskCategory {
+  BATHING
+  DRESSING
+  GROOMING
+  MOBILITY
+  TOILETING
+  HYGIENE
+  EXERCISE
+  CHECK_IN
+  CUSTOM
+}
+
+enum FrequencyType {
+  ONCE_DAILY
+  TWICE_DAILY
+  HOURLY
+  WEEKLY
+  CUSTOM_CRON
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model CareTaskTemplate {
+  id              String           @id @default(uuid())
+  carePlanId      String
+  carePlan        CarePlan         @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  category        CareTaskCategory
+  title           String
+  description     String
+  frequencyType   FrequencyType
+  timeWindowStart String // stored as HH:mm
+  timeWindowEnd   String // stored as HH:mm
+  daysOfWeek      String[] // ["MON", "TUE", etc.]
+  priority        TaskPriority     @default(MEDIUM)
+  instructions    String?
+
+  taskInstances CareTaskInstance[]
+
+  @@index([carePlanId])
+  @@map("care_task_templates")
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+model CareTaskInstance {
+  id                  String            @id @default(uuid())
+  elderId             String
+  elder               ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  carePlanId          String
+  carePlan            CarePlan          @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  templateId          String?
+  template            CareTaskTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  scheduledAt         DateTime
+  dueBy               DateTime
+  assignedCaregiverId String?
+  assignedCaregiver   CaregiverProfile? @relation(fields: [assignedCaregiverId], references: [id], onDelete: SetNull)
+  status              TaskStatus        @default(PENDING)
+  completedAt         DateTime?
+  completedBy         User?             @relation(fields: [completedByUserId], references: [id])
+  completedByUserId   String?
+  notes               String?
+  incidentReported    Boolean           @default(false)
+
+  incidents Incident[]
+
+  @@index([elderId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("care_task_instances")
+}
+
+enum IncidentType {
+  FALL
+  NEAR_FALL
+  BEHAVIORAL
+  CONFUSION
+  WANDERING
+  MEDICATION_ERROR
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+model Incident {
+  id                 String            @id @default(uuid())
+  elderId            String
+  elder              ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  careTaskInstanceId String?
+  careTaskInstance   CareTaskInstance? @relation(fields: [careTaskInstanceId], references: [id], onDelete: SetNull)
+  type               IncidentType
+  severity           IncidentSeverity
+  description        String
+  occurredAt         DateTime
+  reportedByUserId   String
+  reportedBy         User              @relation(fields: [reportedByUserId], references: [id])
+  followUpActions    String?
+  createdAt          DateTime          @default(now())
+
+  @@index([elderId])
+  @@index([occurredAt])
+  @@map("incidents")
+}
+
+// ============================================
+// MEDICATION MANAGEMENT
+// ============================================
+
+enum MedicationForm {
+  TABLET
+  CAPSULE
+  LIQUID
+  INJECTION
+  PATCH
+  OTHER
+}
+
+enum MedicationRoute {
+  ORAL
+  SUBLINGUAL
+  TOPICAL
+  INJECTION
+  INHALATION
+  OTHER
+}
+
+model Medication {
+  id           String          @id @default(uuid())
+  elderId      String
+  elder        ElderProfile    @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  name         String
+  genericName  String?
+  strength     String
+  form         MedicationForm
+  route        MedicationRoute
+  prescribedBy String?
+  indication   String?
+  notes        String?
+  active       Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  schedules         MedicationSchedule[]
+  administrationLog MedicationAdministrationLog[]
+
+  @@index([elderId])
+  @@index([active])
+  @@map("medications")
+}
+
+enum MedicationFrequencyType {
+  ONCE_DAILY
+  TWICE_DAILY
+  TID
+  QID
+  EVERY_X_HOURS
+  SPECIFIC_TIMES
+}
+
+model MedicationSchedule {
+  id            String                  @id @default(uuid())
+  medicationId  String
+  medication    Medication              @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  dosage        String
+  frequencyType MedicationFrequencyType
+  timesOfDay    String[] // stored as HH:mm
+  startDate     DateTime
+  endDate       DateTime?
+  requiresFood  Boolean                 @default(false)
+  isCritical    Boolean                 @default(false)
+
+  administrationLog MedicationAdministrationLog[]
+
+  @@index([medicationId])
+  @@map("medication_schedules")
+}
+
+enum MedAdministrationStatus {
+  TAKEN
+  MISSED
+  REFUSED
+  SKIPPED
+  UNKNOWN
+}
+
+model MedicationAdministrationLog {
+  id                   String                  @id @default(uuid())
+  medicationId         String
+  medication           Medication              @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  scheduleId           String?
+  schedule             MedicationSchedule?     @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  elderId              String
+  administeredByUserId String?
+  administeredBy       User?                   @relation(fields: [administeredByUserId], references: [id])
+  plannedTime          DateTime
+  status               MedAdministrationStatus
+  actualTime           DateTime?
+  notes                String?
+  createdAt            DateTime                @default(now())
+
+  @@index([medicationId])
+  @@index([elderId])
+  @@index([plannedTime])
+  @@map("medication_administration_logs")
+}
+
+// ============================================
+// VITALS & DEVICES
+// ============================================
+
+enum DeviceType {
+  BLOOD_PRESSURE_CUFF
+  GLUCOMETER
+  HEART_RATE_MONITOR
+  PULSE_OX
+  WEARABLE
+  SCALE
+  OTHER
+}
+
+model Device {
+  id                  String       @id @default(uuid())
+  elderId             String
+  elder               ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  type                DeviceType
+  manufacturer        String?
+  model               String?
+  identifier          String?
+  integrationProvider String?
+  active              Boolean      @default(true)
+  lastSyncAt          DateTime?
+  createdAt           DateTime     @default(now())
+
+  vitalReadings VitalReading[]
+
+  @@index([elderId])
+  @@map("devices")
+}
+
+model VitalType {
+  id   String @id @default(uuid())
+  name String
+  code String @unique
+  unit String
+
+  vitalReadings   VitalReading[]
+  vitalAlertRules VitalAlertRule[]
+
+  @@map("vital_types")
+}
+
+enum VitalSource {
+  MANUAL_ENTRY
+  DEVICE_SYNC
+  IMPORTED
+}
+
+model VitalReading {
+  id               String       @id @default(uuid())
+  elderId          String
+  elder            ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  deviceId         String?
+  device           Device?      @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  vitalTypeId      String
+  vitalType        VitalType    @relation(fields: [vitalTypeId], references: [id])
+  value            Float
+  valueSecondary   Float? // for BP diastolic
+  recordedAt       DateTime
+  source           VitalSource
+  recordedByUserId String?
+  recordedBy       User?        @relation(fields: [recordedByUserId], references: [id])
+  notes            String?
+  createdAt        DateTime     @default(now())
+
+  @@index([elderId])
+  @@index([vitalTypeId])
+  @@index([recordedAt])
+  @@map("vital_readings")
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model VitalAlertRule {
+  id                    String        @id @default(uuid())
+  elderId               String
+  elder                 ElderProfile  @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  vitalTypeId           String
+  vitalType             VitalType     @relation(fields: [vitalTypeId], references: [id])
+  minValue              Float?
+  maxValue              Float?
+  consecutiveReadings   Int           @default(1)
+  timeWindowMinutes     Int?
+  severity              AlertSeverity
+  notifyFamily          Boolean       @default(true)
+  notifyClinician       Boolean       @default(false)
+  autoEscalateEmergency Boolean       @default(false)
+
+  @@index([elderId])
+  @@index([vitalTypeId])
+  @@map("vital_alert_rules")
+}
+
+// ============================================
+// ALERTS & NOTIFICATIONS
+// ============================================
+
+enum AlertType {
+  VITAL_OUT_OF_RANGE
+  FALL_DETECTED
+  MED_MISSED
+  CARE_TASK_MISSED
+  WANDERING_EVENT
+  SMART_HOME_SMOKE
+  SMART_HOME_GAS
+  SMART_HOME_WATER_LEAK
+  SMART_HOME_FALL_UNRESPONSIVE
+  SMART_HOME_DOOR_OPEN_NIGHT
+  SMART_HOME_INACTIVITY
+  SMART_HOME_TEMPERATURE_EXTREME
+  SMART_HOME_CUSTOM
+  OTHER
+}
+
+model Alert {
+  id                String        @id @default(uuid())
+  elderId           String
+  elder             ElderProfile  @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  type              AlertType
+  severity          AlertSeverity
+  title             String
+  message           String
+  createdAt         DateTime      @default(now())
+  resolvedAt        DateTime?
+  resolvedByUserId  String?
+  resolvedBy        User?         @relation("AlertResolvedBy", fields: [resolvedByUserId], references: [id])
+  sourceEntityType  String?
+  sourceEntityId    String?
+  notifiedFamily    Boolean       @default(false)
+  notifiedClinician Boolean       @default(false)
+  notifiedEmergency Boolean       @default(false)
+
+  @@index([elderId])
+  @@index([createdAt])
+  @@index([resolvedAt])
+  @@map("alerts")
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+model NotificationPreference {
+  id               String              @id @default(uuid())
+  userId           String
+  channel          NotificationChannel
+  enabled          Boolean             @default(true)
+  forAlertSeverity AlertSeverity
+
+  @@unique([userId, channel, forAlertSeverity])
+  @@map("notification_preferences")
+}
+
+enum NotificationType {
+  TASK_REMINDER
+  MEDICATION_REMINDER
+  VITAL_ALERT
+  APPOINTMENT_REMINDER
+  SYSTEM_ALERT
+  CUSTOM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model Notification {
+  id           String              @id @default(uuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         NotificationType
+  channel      NotificationChannel
+  status       NotificationStatus  @default(PENDING)
+  subject      String?
+  message      String
+  metadata     Json?
+  sentAt       DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  createdAt    DateTime            @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================
+// MEMORY CARE
+// ============================================
+
+enum SundowningRisk {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model MemoryCareProfile {
+  id                    String         @id @default(uuid())
+  elderId               String         @unique
+  elder                 ElderProfile   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  preferredName         String
+  orientationNotes      String?
+  routineDescription    String?
+  sundowningRisk        SundowningRisk @default(LOW)
+  favoriteMusic         String?
+  favoritePhotosAlbumId String?
+
+  orientationCards OrientationCard[]
+  behaviorLogs     BehaviorLog[]
+  wanderingEvents  WanderingEvent[]
+
+  @@map("memory_care_profiles")
+}
+
+enum OrientationCardType {
+  DATE_TIME
+  WEATHER
+  FAMILY_PHOTO
+  DAILY_PLAN
+  AFFIRMATION
+  CUSTOM
+}
+
+model OrientationCard {
+  id           String              @id @default(uuid())
+  elderId      String
+  elder        MemoryCareProfile   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  type         OrientationCardType
+  title        String
+  content      String
+  imageUrl     String?
+  displayOrder Int
+  active       Boolean             @default(true)
+
+  @@index([elderId])
+  @@index([displayOrder])
+  @@map("orientation_cards")
+}
+
+enum Mood {
+  CALM
+  HAPPY
+  ANXIOUS
+  AGITATED
+  CONFUSED
+  OTHER
+}
+
+model BehaviorLog {
+  id             String            @id @default(uuid())
+  elderId        String
+  elder          MemoryCareProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  loggedAt       DateTime
+  mood           Mood
+  behavior       String
+  trigger        String?
+  resolution     String?
+  loggedByUserId String
+
+  @@index([elderId])
+  @@index([loggedAt])
+  @@map("behavior_logs")
+}
+
+model WanderingEvent {
+  id               String            @id @default(uuid())
+  elderId          String
+  elder            MemoryCareProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  startedAt        DateTime
+  endedAt          DateTime?
+  locationInfo     String?
+  resolvedByUserId String?
+
+  @@index([elderId])
+  @@index([startedAt])
+  @@map("wandering_events")
+}
+
+// ============================================
+// ASSESSMENTS & HEALTH MONITORING
+// ============================================
+
+enum AssessmentType {
+  ADL_IADL
+  FALL_RISK
+  MOOD
+  PAIN_SCALE
+  GENERAL
+}
+
+model AssessmentTemplate {
+  id          String         @id @default(uuid())
+  name        String
+  description String
+  type        AssessmentType
+  schemaJson  Json // questions, scale, etc.
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  assessmentInstances AssessmentInstance[]
+
+  @@map("assessment_templates")
+}
+
+model AssessmentInstance {
+  id                String             @id @default(uuid())
+  templateId        String
+  template          AssessmentTemplate @relation(fields: [templateId], references: [id])
+  elderId           String
+  elder             ElderProfile       @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  performedByUserId String?
+  performedBy       User?              @relation(fields: [performedByUserId], references: [id])
+  performedAt       DateTime
+  responsesJson     Json
+  totalScore        Float?
+  notes             String?
+  createdAt         DateTime           @default(now())
+
+  @@index([elderId])
+  @@index([performedAt])
+  @@map("assessment_instances")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  elderId         String
+  elder           ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  clinicianId     String?
+  clinician       ClinicianProfile? @relation(fields: [clinicianId], references: [id], onDelete: SetNull)
+  title           String
+  description     String?
+  location        String?
+  startTime       DateTime
+  endTime         DateTime
+  createdByUserId String
+  notes           String?
+  createdAt       DateTime          @default(now())
+
+  @@index([elderId])
+  @@index([startTime])
+  @@map("appointments")
+}
+
+enum CareNoteCategory {
+  GENERAL
+  NURSING
+  CLINICAL
+  FAMILY_UPDATE
+  THERAPY
+}
+
+model CareNote {
+  id                  String           @id @default(uuid())
+  elderId             String
+  elder               ElderProfile     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  authorUserId        String
+  author              User             @relation(fields: [authorUserId], references: [id])
+  category            CareNoteCategory
+  content             String
+  createdAt           DateTime         @default(now())
+  visibleToFamily     Boolean          @default(true)
+  visibleToCaregivers Boolean          @default(true)
+  visibleToClinicians Boolean          @default(true)
+
+  @@index([elderId])
+  @@index([createdAt])
+  @@map("care_notes")
+}
+
+// ============================================
+// NUTRITION & MEAL PREP
+// ============================================
+
+enum TextureLevel {
+  REGULAR
+  SOFT
+  PUREED
+}
+
+model NutritionProfile {
+  id                  String       @id @default(uuid())
+  elderId             String       @unique
+  elder               ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  dietaryRestrictions String?
+  allergies           String?
+  preferredCuisines   String?
+  textureLevel        TextureLevel @default(REGULAR)
+  dailyCalorieTarget  Int?
+  notes               String?
+
+  @@map("nutrition_profiles")
+}
+
+model MealPlan {
+  id              String       @id @default(uuid())
+  elderId         String
+  elder           ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime
+  createdByUserId String
+  notes           String?
+  createdAt       DateTime     @default(now())
+
+  mealItems MealItem[]
+
+  @@index([elderId])
+  @@map("meal_plans")
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+model MealItem {
+  id                String   @id @default(uuid())
+  mealPlanId        String
+  mealPlan          MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  date              DateTime
+  mealType          MealType
+  name              String
+  description       String?
+  estimatedCalories Int?
+  notes             String?
+
+  intakeLogs MealIntakeLog[]
+
+  @@index([mealPlanId])
+  @@index([date])
+  @@map("meal_items")
+}
+
+enum IntakeLevel {
+  FULL
+  MOSTLY
+  HALF
+  LITTLE
+  NONE
+}
+
+model MealIntakeLog {
+  id             String       @id @default(uuid())
+  elderId        String
+  elder          ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  mealItemId     String
+  mealItem       MealItem     @relation(fields: [mealItemId], references: [id], onDelete: Cascade)
+  loggedAt       DateTime
+  intakeLevel    IntakeLevel
+  notes          String?
+  loggedByUserId String
+  loggedBy       User         @relation(fields: [loggedByUserId], references: [id])
+
+  @@index([elderId])
+  @@index([loggedAt])
+  @@map("meal_intake_logs")
+}
+
+// ============================================
+// SMART HOME & EXTREME SAFETY MODULE
+// ============================================
+
+// --- Home & Zones ---
+
+model Home {
+  id        String       @id @default(uuid())
+  elderId   String       @unique
+  elder     ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  name      String
+  address   String
+  timezone  String       @default("America/New_York")
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  zones                      HomeZone[]
+  smartDevices               SmartDevice[]
+  sensorEvents               SensorEvent[]
+  actuatorCommands           ActuatorCommand[]
+  automationRules            AutomationRule[]
+  emergencyScenarios         EmergencyScenario[]
+  inactivityProfiles         InactivityProfile[]
+  helpTriggers               HelpTrigger[]
+  iotTokens                  IotToken[]
+  emergencyScenarioInstances EmergencyScenarioInstance[]
+
+  @@index([elderId])
+  @@map("homes")
+}
+
+model HomeZone {
+  id             String  @id @default(uuid())
+  homeId         String
+  home           Home    @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  floor          String?
+  isCriticalArea Boolean @default(false)
+
+  smartDevices SmartDevice[]
+
+  @@index([homeId])
+  @@map("home_zones")
+}
+
+// --- Smart Device Types ---
+
+enum SmartDeviceCategory {
+  SENSOR
+  ACTUATOR
+  HYBRID
+}
+
+model SmartDeviceType {
+  id                 String              @id @default(uuid())
+  name               String
+  category           SmartDeviceCategory
+  capabilitiesJson   Json // list of sensors/actuators & metadata
+  vendor             String?
+  model              String?
+  notes              String?
+  isDefaultSupported Boolean             @default(true)
+
+  smartDevices SmartDevice[]
+
+  @@map("smart_device_types")
+}
+
+// --- Smart Devices ---
+
+enum SmartDeviceStatus {
+  ONLINE
+  OFFLINE
+  UNKNOWN
+}
+
+model SmartDevice {
+  id              String            @id @default(uuid())
+  homeId          String
+  home            Home              @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  zoneId          String?
+  zone            HomeZone?         @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  deviceTypeId    String
+  deviceType      SmartDeviceType   @relation(fields: [deviceTypeId], references: [id])
+  name            String
+  identifier      String            @unique // MAC, serial, hub address
+  status          SmartDeviceStatus @default(UNKNOWN)
+  batteryLevel    Int?
+  lastSeenAt      DateTime?
+  firmwareVersion String?
+  installedAt     DateTime
+  settingsJson    Json?
+  notes           String?
+
+  sensors          Sensor[]
+  actuators        Actuator[]
+  sensorEvents     SensorEvent[]
+  actuatorCommands ActuatorCommand[]
+  helpTriggers     HelpTrigger[]
+
+  @@index([homeId])
+  @@index([zoneId])
+  @@index([identifier])
+  @@map("smart_devices")
+}
+
+// --- Sensors ---
+
+enum SensorType {
+  MOTION
+  CONTACT_DOOR
+  CONTACT_WINDOW
+  SMOKE
+  CO2
+  GAS_LEAK
+  WATER_LEAK
+  FALL_DETECTOR
+  PRESENCE_BED
+  PRESENCE_CHAIR
+  TEMPERATURE
+  HUMIDITY
+  NOISE_LEVEL
+  POWER_USAGE
+  BUTTON_PANIC
+  CUSTOM
+}
+
+model Sensor {
+  id              String      @id @default(uuid())
+  deviceId        String
+  device          SmartDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  sensorType      SensorType
+  name            String
+  unit            String?
+  isCritical      Boolean     @default(false)
+  calibrationJson Json?
+
+  sensorEvents SensorEvent[]
+
+  @@index([deviceId])
+  @@index([sensorType])
+  @@map("sensors")
+}
+
+// --- Actuators ---
+
+enum ActuatorType {
+  LIGHT
+  DOOR_LOCK
+  THERMOSTAT
+  SIREN
+  SPEAKER_TTS
+  APPLIANCE_POWER
+  CURTAIN_BLINDS
+  NOTIFICATION_BRIDGE
+  CUSTOM
+}
+
+model Actuator {
+  id              String       @id @default(uuid())
+  deviceId        String
+  device          SmartDevice  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  actuatorType    ActuatorType
+  name            String
+  stateSchemaJson Json?
+  isCritical      Boolean      @default(false)
+
+  actuatorCommands ActuatorCommand[]
+
+  @@index([deviceId])
+  @@index([actuatorType])
+  @@map("actuators")
+}
+
+// --- Sensor Events ---
+
+enum SensorEventType {
+  VALUE_READING
+  STATE_CHANGE
+  ALERT
+  HEARTBEAT
+  ERROR
+  CUSTOM
+}
+
+enum EventSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model SensorEvent {
+  id             String          @id @default(uuid())
+  homeId         String
+  home           Home            @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  deviceId       String
+  device         SmartDevice     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  sensorId       String
+  sensor         Sensor          @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  eventType      SensorEventType
+  valueNumeric   Float?
+  valueText      String?
+  severity       EventSeverity   @default(INFO)
+  rawPayloadJson Json?
+  occurredAt     DateTime
+  ingestedAt     DateTime        @default(now())
+  processed      Boolean         @default(false)
+  processedAt    DateTime?
+
+  emergencyScenarioInstances EmergencyScenarioInstance[]
+
+  @@index([homeId])
+  @@index([deviceId])
+  @@index([sensorId])
+  @@index([occurredAt])
+  @@index([processed])
+  @@map("sensor_events")
+}
+
+// --- Actuator Commands ---
+
+enum ActuatorCommandStatus {
+  PENDING
+  SENT
+  ACKED
+  FAILED
+}
+
+model ActuatorCommand {
+  id                String                @id @default(uuid())
+  homeId            String
+  home              Home                  @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  deviceId          String
+  device            SmartDevice           @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  actuatorId        String
+  actuator          Actuator              @relation(fields: [actuatorId], references: [id], onDelete: Cascade)
+  commandName       String
+  commandParamsJson Json
+  issuedByUserId    String?
+  issuedByUser      User?                 @relation("IssuedCommands", fields: [issuedByUserId], references: [id])
+  issuedByRuleId    String?
+  issuedByRule      AutomationRule?       @relation(fields: [issuedByRuleId], references: [id])
+  status            ActuatorCommandStatus @default(PENDING)
+  createdAt         DateTime              @default(now())
+  sentAt            DateTime?
+  ackedAt           DateTime?
+  errorMessage      String?
+
+  @@index([homeId])
+  @@index([deviceId])
+  @@index([actuatorId])
+  @@index([status])
+  @@map("actuator_commands")
+}
+
+// --- Automation Rules ---
+
+enum AutomationTriggerType {
+  SENSOR_EVENT
+  SCHEDULED
+  INACTIVITY
+  COMPOSITE
+}
+
+model AutomationRule {
+  id                  String                @id @default(uuid())
+  homeId              String
+  home                Home                  @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name                String
+  description         String?
+  isEnabled           Boolean               @default(true)
+  triggerType         AutomationTriggerType
+  triggerConfigJson   Json
+  conditionConfigJson Json?
+  actionsConfigJson   Json
+  severity            EventSeverity         @default(INFO)
+  createdByUserId     String
+  createdByUser       User                  @relation("CreatedAutomationRules", fields: [createdByUserId], references: [id])
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  actuatorCommands ActuatorCommand[]
+
+  @@index([homeId])
+  @@index([isEnabled])
+  @@map("automation_rules")
+}
+
+// --- Emergency Scenarios ---
+
+enum EmergencyScenarioStatus {
+  ACTIVE
+  RESOLVED
+  ESCALATED
+  CANCELLED
+}
+
+model EmergencyScenario {
+  id                   String    @id @default(uuid())
+  homeId               String
+  home                 Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name                 String
+  description          String?
+  isEnabled            Boolean   @default(true)
+  triggerSignatureJson Json
+  stepwiseActionsJson  Json
+  lastTriggeredAt      DateTime?
+  notes                String?
+
+  instances EmergencyScenarioInstance[]
+
+  @@index([homeId])
+  @@index([isEnabled])
+  @@map("emergency_scenarios")
+}
+
+model EmergencyScenarioInstance {
+  id                   String                  @id @default(uuid())
+  scenarioId           String
+  scenario             EmergencyScenario       @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  homeId               String
+  home                 Home                    @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  elderId              String
+  elder                ElderProfile            @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  startedAt            DateTime                @default(now())
+  currentStepIndex     Int                     @default(0)
+  status               EmergencyScenarioStatus @default(ACTIVE)
+  relatedSensorEventId String?
+  relatedSensorEvent   SensorEvent?            @relation(fields: [relatedSensorEventId], references: [id])
+  cancelToken          String?
+  lastActionAt         DateTime?
+  resolvedAt           DateTime?
+  notes                String?
+
+  @@index([scenarioId])
+  @@index([homeId])
+  @@index([elderId])
+  @@index([status])
+  @@map("emergency_scenario_instances")
+}
+
+// --- Inactivity Profiles ---
+
+model InactivityProfile {
+  id         String       @id @default(uuid())
+  homeId     String
+  home       Home         @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  elderId    String
+  elder      ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  configJson Json
+
+  @@index([homeId])
+  @@index([elderId])
+  @@map("inactivity_profiles")
+}
+
+// --- Help Triggers ---
+
+enum HelpTriggerType {
+  BUTTON_PRESS
+  VOICE_KEYWORD
+  DEVICE_EVENT
+  UNKNOWN
+}
+
+model HelpTrigger {
+  id             String          @id @default(uuid())
+  homeId         String
+  home           Home            @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  elderId        String
+  elder          ElderProfile    @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  triggerType    HelpTriggerType
+  sourceDeviceId String?
+  sourceDevice   SmartDevice?    @relation(fields: [sourceDeviceId], references: [id])
+  rawPayloadJson Json?
+  occurredAt     DateTime        @default(now())
+  notes          String?
+
+  @@index([homeId])
+  @@index([elderId])
+  @@index([occurredAt])
+  @@map("help_triggers")
+}
+
+// --- IoT Authentication Tokens ---
+
+model IotToken {
+  id        String    @id @default(uuid())
+  homeId    String
+  home      Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  label     String
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([homeId])
+  @@index([token])
+  @@map("iot_tokens")
+}

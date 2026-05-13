@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #F39C12;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .header.critical {
+      background-color: #C0392B;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 30px 20px;
+    }
+    .alert-card {
+      background-color: #fff8e6;
+      border-left: 4px solid #F39C12;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .alert-card.critical {
+      background-color: #ffe8e8;
+      border-left-color: #C0392B;
+    }
+    .alert-card h3 {
+      margin-top: 0;
+      color: #F39C12;
+    }
+    .alert-card.critical h3 {
+      color: #C0392B;
+    }
+    .vital-reading {
+      font-size: 24px;
+      font-weight: bold;
+      color: #F39C12;
+      margin: 10px 0;
+    }
+    .vital-reading.critical {
+      color: #C0392B;
+    }
+    .action-required {
+      background-color: #ffe8e8;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+      border: 2px solid #C0392B;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #f9f9f9;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header {{#if isCritical}}critical{{/if}}">
+      <h1>⚠️ Vital Signs Alert</h1>
+    </div>
+    <div class="content">
+      <p>Hello {{recipientName}},</p>
+      <p>{{message}}</p>
+
+      <div class="alert-card {{#if isCritical}}critical{{/if}}">
+        <h3>{{vitalType}}</h3>
+        <div class="vital-reading {{#if isCritical}}critical{{/if}}">
+          {{value}} {{unit}}
+        </div>
+        {{#if recordedAt}}
+        <p><strong>Recorded:</strong> {{recordedAt}}</p>
+        {{/if}}
+        {{#if elderName}}
+        <p><strong>Patient:</strong> {{elderName}}</p>
+        {{/if}}
+      </div>
+
+      {{#if isCritical}}
+      <div class="action-required">
+        <strong>🚨 IMMEDIATE ACTION REQUIRED</strong>
+        <p>This is a critical alert. Please check on the patient immediately or contact emergency services if necessary.</p>
+      </div>
+      {{/if}}
+
+      <p>Please review this alert and take appropriate action. If you have any concerns, contact the care team or healthcare provider.</p>
+    </div>
+    <div class="footer">
+      <p>This is an automated message from ElderCare Platform</p>
+      <p>© 2025 ElderCare Platform. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

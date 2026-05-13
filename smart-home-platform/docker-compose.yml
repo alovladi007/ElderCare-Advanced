@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: smarthome
+      POSTGRES_PASSWORD: smarthome123
+      POSTGRES_DB: smarthome
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smarthome"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - "18000:9000"
+    environment:
+      DATABASE_URL: postgresql://smarthome:smarthome123@postgres:5432/smarthome
+      HUB_URL: http://hub:9001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+
+  hub:
+    build: ./hub
+    ports:
+      - "8001:9001"
+    volumes:
+      - ./hub:/app
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "6100:3000"
+    environment:
+      - VITE_API_URL=http://localhost:18000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

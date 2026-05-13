@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Heart, Home, Wrench, Shield, Clock, Users, Star,
-  CheckCircle, Phone, ArrowRight, Award, TrendingUp
+  Heart, Home, Shield, Clock, Users, Star,
+  CheckCircle, Phone, ArrowRight, Award,
+  Activity, UserCog, Smartphone, Zap
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -25,11 +26,11 @@ const HomePage = () => {
       color: 'from-purple-500 to-purple-600'
     },
     {
-      icon: <Wrench className="w-12 h-12" />,
-      title: 'Repairs & Maintenance',
-      description: 'Professional home repair and maintenance services to keep your home safe and functional.',
-      features: ['Emergency Repairs', 'Preventive Maintenance', 'Safety Modifications', 'Handyman Services'],
-      link: '/repair-services',
+      icon: <Home className="w-12 h-12" />,
+      title: 'Smart Home Technology',
+      description: 'Connected home automation and monitoring systems for enhanced safety, comfort, and independence.',
+      features: ['Home Automation', 'Safety Monitoring', 'Voice Control', 'Emergency Alerts'],
+      link: '/smart-home-services',
       color: 'from-orange-500 to-orange-600'
     }
   ];
@@ -209,6 +210,129 @@ const HomePage = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Platform Access Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-bold text-white mb-4"
+            >
+              Access Your Platform
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-xl text-blue-100 max-w-3xl mx-auto"
+            >
+              Login to access your personalized dashboard, health monitoring, and care management tools
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
+            {[
+              {
+                icon: Users,
+                title: 'Family Portal',
+                description: 'Access care plans, appointments, and elder profiles',
+                link: '/dashboard',
+                color: 'from-blue-400 to-blue-600'
+              },
+              {
+                icon: Smartphone,
+                title: 'Elder Portal',
+                description: 'View your care schedule and health information',
+                link: '/elder-dashboard',
+                color: 'from-purple-400 to-purple-600'
+              },
+              {
+                icon: Activity,
+                title: 'Health Monitoring',
+                description: 'Real-time health tracking and vital sign monitoring',
+                link: '/monitoring/dashboard',
+                color: 'from-pink-400 to-pink-600'
+              },
+              {
+                icon: UserCog,
+                title: 'Employee Portal',
+                description: 'Caregiver schedules and task management',
+                link: '/employee-dashboard',
+                color: 'from-indigo-400 to-indigo-600'
+              },
+              {
+                icon: Zap,
+                title: 'Smart Home Platform',
+                description: 'Control devices, automations, and home monitoring',
+                link: 'http://localhost:6100',
+                color: 'from-orange-400 to-orange-600',
+                external: true
+              }
+            ].map((portal, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                {portal.external ? (
+                  <a
+                    href={portal.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block h-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all hover:scale-105 group"
+                  >
+                    <div className={`w-16 h-16 bg-gradient-to-br ${portal.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <portal.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{portal.title}</h3>
+                    <p className="text-blue-100 text-sm mb-4">{portal.description}</p>
+                    <div className="flex items-center text-white font-medium">
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      Access Dashboard
+                      <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </a>
+                ) : (
+                  <Link
+                    to={portal.link}
+                    className="block h-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/20 transition-all hover:scale-105 group"
+                  >
+                    <div className={`w-16 h-16 bg-gradient-to-br ${portal.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <portal.icon className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{portal.title}</h3>
+                    <p className="text-blue-100 text-sm mb-4">{portal.description}</p>
+                    <div className="flex items-center text-white font-medium">
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      Access Dashboard
+                      <ArrowRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                )}
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-center mt-12"
+          >
+            <Link
+              to="/admin"
+              className="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm border-2 border-white text-white rounded-lg hover:bg-white/30 transition-all font-medium"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              Admin Access
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 

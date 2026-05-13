@@ -15,6 +15,10 @@ const contactRoutes = require('./routes/contact');
 const serviceRoutes = require('./routes/services');
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
+const smarthomeRoutes = require('./routes/smarthome');
+
+// Import services
+const automationEngine = require('./services/AutomationEngine');
 
 // Initialize Express app
 const app = express();
@@ -48,12 +52,21 @@ const connectDB = async () => {
 
 connectDB();
 
+// Start Automation Engine
+if (process.env.MONGODB_URI) {
+  // Only start automation engine if database is available
+  setTimeout(() => {
+    automationEngine.start();
+  }, 2000); // Wait 2 seconds for DB connection
+}
+
 // Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
+app.use('/api/smarthome', smarthomeRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -75,6 +88,7 @@ app.get('/', (req, res) => {
       contact: '/api/contact',
       services: '/api/services',
       auth: '/api/auth',
+      smarthome: '/api/smarthome',
       health: '/api/health'
     }
   });

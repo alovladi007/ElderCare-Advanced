@@ -25,7 +25,7 @@ const MonitoringLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', formData);
+      const response = await axios.post('http://localhost:4100/api/auth/login', formData);
 
       // Store auth data
       localStorage.setItem('monitoring_token', response.data.data.token);
@@ -46,7 +46,7 @@ const MonitoringLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', { email, password });
+      const response = await axios.post('http://localhost:4100/api/auth/login', { email, password });
 
       localStorage.setItem('monitoring_token', response.data.data.token);
       localStorage.setItem('monitoring_user', JSON.stringify(response.data.data));
@@ -194,7 +194,7 @@ const MonitoringLoginPage = () => {
               cd monitoring-backend && npm run dev
             </code>
             <p className="text-blue-200 text-sm mt-2">
-              Backend should be running on http://localhost:5001
+              Backend should be running on http://localhost:4100
             </p>
           </div>
         </motion.div>

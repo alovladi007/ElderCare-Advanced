@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const compression = require('compression');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 
@@ -15,20 +16,64 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app);
+
+// Configure allowed origins for CORS
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:7500')
+  .split(',')
+  .map(origin => origin.trim());
+
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST'],
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true
   }
 });
 
-// Middleware
+// Import middleware
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
+const {
+  sanitizeInput,
+  detectSuspiciousActivity,
+  hipaaSecurityHeaders,
+  requestSizeLimiter
+} = require('./middleware/security');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
+
+// Security Middleware
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(hipaaSecurityHeaders);
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(requestSizeLimiter('10mb'));
+
+// Logging
 app.use(morgan('dev'));
+
+// Security: Input sanitization and suspicious activity detection
+app.use(sanitizeInput);
+app.use(detectSuspiciousActivity);
+
+// Rate limiting
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // Make io accessible to routes
 app.use((req, res, next) => {
@@ -41,10 +86,35 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/vitals', require('./routes/vitals'));
 app.use('/api/alerts', require('./routes/alerts'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/devices', require('./routes/devices'));
+
+// API Info
+app.get('/', (req, res) => {
+  res.json({
+    name: 'ElderCare Advanced Monitoring API',
+    version: '1.0.0',
+    status: 'OK',
+    endpoints: {
+      auth: '/api/auth',
+      patients: '/api/patients',
+      vitals: '/api/vitals',
+      alerts: '/api/alerts',
+      analytics: '/api/analytics',
+      devices: '/api/devices'
+    },
+    documentation: 'See README.md for full API documentation'
+  });
+});
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // WebSocket connection handling
@@ -120,11 +190,11 @@ io.on('connection', (socket) => {
 // Export io for use in other files
 global.io = io;
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
-});
+// 404 handler - must be after all routes
+app.use(notFound);
+
+// Global error handler - must be last
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
 

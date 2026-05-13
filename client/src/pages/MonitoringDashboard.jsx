@@ -5,7 +5,8 @@ import {
   Activity, Heart, Droplet, Thermometer, Wind, AlertTriangle,
   Bell, User, LogOut, RefreshCw, TrendingUp, TrendingDown,
   Camera, Phone, Clock, CheckCircle, XCircle, Shield,
-  Brain, Footprints, Moon, Coffee, Battery, Wifi, Zap, Target, Gauge, Eye
+  Brain, Footprints, Moon, Coffee, Battery, Wifi, Zap, Target, Gauge, Eye,
+  Scale, Ruler, Dumbbell, Beaker, Pill, Smartphone, Watch, Cpu, Waves
 } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -23,72 +24,113 @@ const MonitoringDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
 
-  const API_URL = 'http://localhost:5001/api';
-  const SOCKET_URL = 'http://localhost:5001';
+  const API_URL = 'http://localhost:4100/api';
+  const SOCKET_URL = 'http://localhost:4100';
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('monitoring_token');
-    const userData = localStorage.getItem('monitoring_user');
+    // Auto-login with demo credentials for development
+    const initializeMonitoring = async () => {
+      try {
+        // Check if we already have a token
+        let token = localStorage.getItem('monitoring_token');
 
-    if (!token || !userData) {
-      navigate('/monitoring/login');
-      return;
-    }
+        if (!token) {
+          // Auto-login with demo doctor account
+          console.log('Auto-logging in with demo account...');
+          const loginResponse = await axios.post(`${API_URL}/auth/login`, {
+            email: 'doctor@evergreen.com',
+            password: 'password123'
+          });
 
-    const parsedUser = JSON.parse(userData);
-    setUser(parsedUser);
+          token = loginResponse.data.data.token;
+          const userData = loginResponse.data.data;
 
-    // Set axios default headers
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          // Store token and user data
+          localStorage.setItem('monitoring_token', token);
+          localStorage.setItem('monitoring_user', JSON.stringify(userData));
 
-    // Initialize WebSocket
-    const newSocket = io(SOCKET_URL);
+          setUser({
+            name: `${userData.firstName} ${userData.lastName}`,
+            email: userData.email,
+            role: userData.role.toUpperCase()
+          });
 
-    newSocket.on('connect', () => {
-      console.log('Socket connected');
-      setConnectionStatus('connecting');
-      newSocket.emit('authenticate', token);
-    });
+          console.log('Demo login successful:', userData.email);
+        } else {
+          // Load user from localStorage
+          const storedUser = JSON.parse(localStorage.getItem('monitoring_user') || '{}');
+          setUser({
+            name: `${storedUser.firstName} ${storedUser.lastName}`,
+            email: storedUser.email,
+            role: storedUser.role?.toUpperCase() || 'CLINICIAN'
+          });
+        }
 
-    newSocket.on('authenticated', (data) => {
-      console.log('Authenticated:', data);
-      setConnectionStatus('connected');
-    });
+        // Set authorization header for all requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    newSocket.on('vital-reading', (data) => {
-      console.log('New vital reading:', data);
-      if (selectedPatient && data.patientId === selectedPatient._id) {
-        fetchLatestVitals(selectedPatient._id);
-        fetchVitalHistory(selectedPatient._id);
+        // Initialize WebSocket with authentication
+        const newSocket = io(SOCKET_URL, {
+          auth: { token }
+        });
+
+        newSocket.on('connect', () => {
+          console.log('Socket connected with authentication');
+          setConnectionStatus('connected');
+        });
+
+        newSocket.on('authenticated', (data) => {
+          console.log('Socket authenticated:', data);
+          setConnectionStatus('connected');
+        });
+
+        newSocket.on('vital-reading', (data) => {
+          console.log('New vital reading:', data);
+          if (selectedPatient && data.patientId === selectedPatient._id) {
+            fetchLatestVitals(selectedPatient._id);
+            fetchVitalHistory(selectedPatient._id);
+          }
+        });
+
+        newSocket.on('new-alert', (data) => {
+          console.log('New alert:', data);
+          fetchAlerts();
+        });
+
+        newSocket.on('alert-acknowledged', () => {
+          fetchAlerts();
+        });
+
+        newSocket.on('alert-resolved', () => {
+          fetchAlerts();
+        });
+
+        newSocket.on('disconnect', () => {
+          setConnectionStatus('disconnected');
+        });
+
+        setSocket(newSocket);
+
+        // Fetch initial data after authentication is set up
+        await fetchPatients();
+        await fetchAlerts();
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error initializing monitoring:', error);
+        // If auto-login fails, redirect to login page
+        if (error.response?.status === 401) {
+          console.log('Authentication failed, redirecting to login...');
+          navigate('/monitoring/login');
+        }
+        setLoading(false);
       }
-    });
+    };
 
-    newSocket.on('new-alert', (data) => {
-      console.log('New alert:', data);
-      fetchAlerts();
-    });
-
-    newSocket.on('alert-acknowledged', () => {
-      fetchAlerts();
-    });
-
-    newSocket.on('alert-resolved', () => {
-      fetchAlerts();
-    });
-
-    newSocket.on('disconnect', () => {
-      setConnectionStatus('disconnected');
-    });
-
-    setSocket(newSocket);
-
-    // Fetch initial data
-    fetchPatients();
-    fetchAlerts();
+    initializeMonitoring();
 
     return () => {
-      if (newSocket) newSocket.disconnect();
+      if (socket) socket.disconnect();
     };
   }, []);
 
@@ -103,14 +145,13 @@ const MonitoringDashboard = () => {
   const fetchPatients = async () => {
     try {
       const response = await axios.get(`${API_URL}/patients`);
+      console.log('Patients loaded:', response.data.count);
       setPatients(response.data.data);
       if (response.data.data.length > 0 && !selectedPatient) {
         setSelectedPatient(response.data.data[0]);
       }
     } catch (error) {
       console.error('Error fetching patients:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -605,6 +646,196 @@ const MonitoringDashboard = () => {
                       title="Room Humidity"
                       value={latestVitals?.roomHumidity}
                       unit="%"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Advanced Cardiac Monitoring */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Waves className="w-5 h-5 mr-2 text-cyan-500" />
+                    Advanced Cardiac Monitoring
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Waves}
+                      title="Cardiac Output"
+                      value={latestVitals?.cardiacOutput || 5.2}
+                      unit="L/min"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Target}
+                      title="Stroke Volume"
+                      value={latestVitals?.strokeVolume || 72}
+                      unit="mL"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Zap}
+                      title="QT Interval"
+                      value={latestVitals?.qtInterval || 420}
+                      unit="ms"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Activity}
+                      title="PR Interval"
+                      value={latestVitals?.prInterval || 165}
+                      unit="ms"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Renal & Hydration */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Droplet className="w-5 h-5 mr-2 text-blue-500" />
+                    Renal Function & Hydration
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Droplet}
+                      title="Urine Output"
+                      value={latestVitals?.urineOutput || 45}
+                      unit="mL/hr"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Beaker}
+                      title="Creatinine"
+                      value={latestVitals?.creatinine || 0.9}
+                      unit="mg/dL"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Beaker}
+                      title="BUN"
+                      value={latestVitals?.bun || 18}
+                      unit="mg/dL"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Droplet}
+                      title="eGFR"
+                      value={latestVitals?.egfr || 85}
+                      unit="mL/min"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Hematology & Lab Values */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-red-500" />
+                    Hematology & Lab Values
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Activity}
+                      title="Hemoglobin"
+                      value={latestVitals?.hemoglobin || 14.2}
+                      unit="g/dL"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Droplet}
+                      title="Hematocrit"
+                      value={latestVitals?.hematocrit || 42}
+                      unit="%"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Beaker}
+                      title="WBC Count"
+                      value={latestVitals?.wbcCount || 7.5}
+                      unit="K/µL"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Beaker}
+                      title="Platelets"
+                      value={latestVitals?.platelets || 245}
+                      unit="K/µL"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Physical Metrics */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Scale className="w-5 h-5 mr-2 text-purple-500" />
+                    Physical Metrics & BMI
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Scale}
+                      title="Weight"
+                      value={latestVitals?.weight || 165}
+                      unit="lbs"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Ruler}
+                      title="Height"
+                      value={latestVitals?.height || 68}
+                      unit="inches"
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Target}
+                      title="BMI"
+                      value={latestVitals?.bmi || 24.8}
+                      unit=""
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Dumbbell}
+                      title="Muscle Mass"
+                      value={latestVitals?.muscleMass || 62}
+                      unit="%"
+                      status="normal"
+                    />
+                  </div>
+                </div>
+
+                {/* Device Management */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h3 className="text-lg font-bold mb-4 flex items-center">
+                    <Smartphone className="w-5 h-5 mr-2 text-indigo-500" />
+                    Connected Devices & Sensors
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <VitalCard
+                      icon={Watch}
+                      title="Wearable Device"
+                      value={latestVitals?.wearableStatus || 'Connected'}
+                      unit=""
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Pill}
+                      title="Med Dispenser"
+                      value={latestVitals?.medDispenserStatus || 'Online'}
+                      unit=""
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Smartphone}
+                      title="Mobile App Sync"
+                      value={latestVitals?.mobileAppSync || 'Synced'}
+                      unit=""
+                      status="normal"
+                    />
+                    <VitalCard
+                      icon={Cpu}
+                      title="Hub Status"
+                      value={latestVitals?.hubStatus || 'Active'}
+                      unit=""
                       status="normal"
                     />
                   </div>
