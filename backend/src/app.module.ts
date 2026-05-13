@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { LoggerModule } from './common/logging/logger.module';
+import { LoggingInterceptor } from './common/logging/logging.interceptor';
 import { AuthModule } from './auth/auth.module';
 import { SmartHomeModule } from './smart-home/smart-home.module';
 import { BookingsModule } from './bookings/bookings.module';
@@ -14,6 +16,7 @@ import { RolesGuard } from './auth/roles.guard';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    LoggerModule, // Global logging module
     PrismaModule,
     AuthModule,
     BookingsModule,
@@ -25,6 +28,10 @@ import { RolesGuard } from './auth/roles.guard';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
   ],
 })

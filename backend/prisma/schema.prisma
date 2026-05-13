@@ -50,7 +50,6 @@ model ElderProfile {
   address         String?
   emergencyContact Json?    // { name, relationship, phone }
   medicalConditions Json?   // Array of conditions
-  medications      Json?    // Array of medications
   allergies        Json?    // Array of allergies
   notes           String?
   status          String    @default("ACTIVE") // ACTIVE, INACTIVE, HOSPITALIZED
