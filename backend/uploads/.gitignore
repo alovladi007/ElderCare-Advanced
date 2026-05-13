@@ -1,0 +1,11 @@
+# Ignore all files in uploads directory
+*
+
+# Except this .gitignore file
+!.gitignore
+
+# Keep the directory structure
+!avatars/.gitkeep
+!documents/.gitkeep
+!medical-records/.gitkeep
+!temp/.gitkeep

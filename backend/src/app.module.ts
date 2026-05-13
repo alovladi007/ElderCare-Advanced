@@ -5,6 +5,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { LoggerModule } from './common/logging/logger.module';
 import { EmailModule } from './common/email/email.module';
+import { StorageModule } from './common/storage/storage.module';
 import { LoggingInterceptor } from './common/logging/logging.interceptor';
 import { AuthModule } from './auth/auth.module';
 import { SmartHomeModule } from './smart-home/smart-home.module';
@@ -30,6 +31,7 @@ import { RolesGuard } from './auth/roles.guard';
     }]),
     LoggerModule, // Global logging module
     EmailModule, // Global email module
+    StorageModule, // Global storage module
     PrismaModule,
     AuthModule,
     BookingsModule,

@@ -2,13 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { LoggerService } from './common/logging/logger.service';
 import * as cors from 'cors';
 import helmet from 'helmet';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Use Winston logger
   const logger = app.get(LoggerService);
@@ -49,6 +51,11 @@ async function bootstrap() {
     exposedHeaders: ['X-Correlation-ID'],
     maxAge: 86400, // 24 hours
   }));
+
+  // Serve uploaded files statically (for development)
+  app.useStaticAssets(path.join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Global validation pipe
   app.useGlobalPipes(
