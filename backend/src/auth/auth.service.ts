@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { LoggerService } from '../common/logging/logger.service';
+import { EmailService } from '../common/email/email.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private logger: LoggerService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -91,6 +93,18 @@ export class AuthService {
         role: data.role as any,
         isActive: true,
       },
+    });
+
+    // Send welcome email (async, don't wait for it)
+    this.emailService.sendWelcomeEmail({
+      to: user.email,
+      firstName: user.firstName,
+      role: user.role,
+    }).catch(error => {
+      this.logger.error('Failed to send welcome email', 'AuthService', {
+        userId: user.id,
+        error: error.message,
+      });
     });
 
     const { password: _, ...result } = user;
@@ -204,7 +218,13 @@ export class AuthService {
       email,
       tokenGenerated: true,
     });
-    // TODO: Send email with reset link (will be implemented in Phase 1.3)
+
+    // Send password reset email
+    await this.emailService.sendPasswordResetEmail({
+      to: user.email,
+      firstName: user.firstName,
+      resetToken,
+    });
 
     return { message: 'If the email exists, a password reset link has been sent' };
   }
