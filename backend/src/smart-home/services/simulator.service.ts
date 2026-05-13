@@ -295,7 +295,7 @@ export class SimulatorService {
       return existingSensor;
     }
 
-    console.log(`Creating simulated ${sensorType} sensor...`);
+    this.logger.debug('Creating simulated sensor', 'SimulatorService', { sensorType });
 
     // Find or create a device type
     let deviceType = await this.prisma.deviceType.findFirst({
@@ -393,7 +393,7 @@ export class SimulatorService {
       },
     });
 
-    console.log(`Removed ${result.count} simulated devices`);
+    this.logger.debug('Removed simulated devices', 'SimulatorService', { count: result.count });
 
     return result;
   }

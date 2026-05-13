@@ -37,7 +37,11 @@ export class IoTController {
 
     // In a real system, validate the token against IotToken table
     // For now, we'll accept any token for demo purposes
-    console.log(`📡 IoT event received from device: ${body.deviceIdentifier}`);
+    this.logger.debug('IoT event received from device', 'IoTController', {
+      deviceIdentifier: body.deviceIdentifier,
+      homeId: body.homeId,
+      sensorType: body.sensorType,
+    });
 
     // Find device by identifier
     const device = await this.deviceService.getDeviceByIdentifier(

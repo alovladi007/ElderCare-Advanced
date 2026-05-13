@@ -26,7 +26,10 @@ export class AutomationEngineService {
       },
     });
 
-    console.log(`🔍 Evaluating ${rules.length} automation rules for event ${event.id}`);
+    this.logger.debug('Evaluating automation rules for event', 'AutomationEngineService', {
+      rulesCount: rules.length,
+      eventId: event.id,
+    });
 
     for (const rule of rules) {
       await this.evaluateRule(rule, event);
@@ -61,7 +64,10 @@ export class AutomationEngineService {
       }
     }
 
-    console.log(`✅ Rule "${rule.name}" triggered by event ${event.id}`);
+    this.logger.logEvent('Automation rule triggered', 'AutomationRule', rule.id, {
+      ruleName: rule.name,
+      eventId: event.id,
+    });
 
     // Execute actions
     await this.executeActions(rule, event);
@@ -177,7 +183,12 @@ export class AutomationEngineService {
       try {
         await this.executeAction(action, rule, event);
       } catch (error) {
-        console.error(`Error executing action:`, error);
+        this.logger.error('Error executing automation action', 'AutomationEngineService', {
+          ruleId: rule.id,
+          ruleName: rule.name,
+          actionType: action.type,
+          error: error.message,
+        });
       }
     }
   }
@@ -208,7 +219,9 @@ export class AutomationEngineService {
         break;
 
       default:
-        console.log(`Unknown action type: ${action.type}`);
+        this.logger.warn('Unknown automation action type', 'AutomationEngineService', {
+          actionType: action.type,
+        });
     }
   }
 
@@ -225,7 +238,12 @@ export class AutomationEngineService {
       issuedByRuleId: rule.id,
     });
 
-    console.log(`🎛️ Actuator command issued by rule "${rule.name}"`);
+    this.logger.debug('Actuator command issued by automation rule', 'AutomationEngineService', {
+      ruleName: rule.name,
+      ruleId: rule.id,
+      actuatorId: action.actuatorId,
+      commandName: action.commandName,
+    });
   }
 
   /**
@@ -245,7 +263,11 @@ export class AutomationEngineService {
       },
     });
 
-    console.log(`🚨 Alert created by rule "${rule.name}"`);
+    this.logger.logEvent('Alert created by automation rule', 'Alert', '', {
+      ruleName: rule.name,
+      ruleId: rule.id,
+      alertType: action.alertType || 'SMART_HOME_CUSTOM',
+    });
   }
 
   /**
@@ -280,7 +302,10 @@ export class AutomationEngineService {
       });
     }
 
-    console.log(`🔊 TTS announcement: "${action.message}"`);
+    this.logger.debug('TTS announcement triggered by automation', 'AutomationEngineService', {
+      message: action.message,
+      actuatorCount: ttsActuators.length,
+    });
   }
 
   /**
@@ -319,7 +344,10 @@ export class AutomationEngineService {
       });
     }
 
-    console.log(`💡 Lights turned on by rule "${rule.name}"`);
+    this.logger.debug('Lights controlled by automation rule', 'AutomationEngineService', {
+      ruleName: rule.name,
+      lightCount: lightActuators.length,
+    });
   }
 
   /**
@@ -351,7 +379,11 @@ export class AutomationEngineService {
       });
     }
 
-    console.log(`🔒 Doors ${action.locked ? 'locked' : 'unlocked'} by rule "${rule.name}"`);
+    this.logger.debug('Door locks controlled by automation rule', 'AutomationEngineService', {
+      ruleName: rule.name,
+      action: action.locked ? 'locked' : 'unlocked',
+      doorCount: lockActuators.length,
+    });
   }
 
   /**
@@ -413,7 +445,10 @@ export class AutomationEngineService {
     });
 
     if (!lastMotion) {
-      console.log(`⚠️ Inactivity detected for elder ${profile.elderId}`);
+      this.logger.warn('Inactivity detected', 'AutomationEngineService', {
+        elderId: profile.elderId,
+        maxNoMotionMinutes,
+      });
 
       // Check if we already have an active inactivity alert
       const existingAlert = await this.prisma.alert.findFirst({
@@ -440,7 +475,10 @@ export class AutomationEngineService {
           },
         });
 
-        console.log(`🚨 Inactivity alert created for elder ${profile.elderId}`);
+        this.logger.logEvent('Inactivity alert created', 'Alert', '', {
+          elderId: profile.elderId,
+          maxNoMotionMinutes,
+        });
       }
     }
   }

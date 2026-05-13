@@ -346,7 +346,12 @@ export class DeviceService {
     });
 
     // In a real system, this would send the command to the IoT gateway/hub
-    console.log(`📤 Actuator command issued: ${data.commandName}`, data.commandParamsJson);
+    this.logger.debug('Actuator command issued', 'DeviceService', {
+      commandName: data.commandName,
+      commandParams: data.commandParamsJson,
+      deviceId: data.deviceId,
+      actuatorId: data.actuatorId,
+    });
 
     // Simulate sending the command
     await this.prisma.actuatorCommand.update({
