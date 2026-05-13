@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { LoggerService } from '../../common/logging/logger.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DeviceCategory, SensorType, ActuatorType } from '@prisma/client';
 
 @Injectable()
 export class DeviceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private logger: LoggerService,
+  ) {}
 
   // ============================================================================
   // DEVICE TYPE MANAGEMENT

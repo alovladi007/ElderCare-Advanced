@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { LoggerService } from '../../common/logging/logger.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DeviceService } from './device.service';
 
@@ -9,6 +10,7 @@ export class EmergencyScenarioService {
   constructor(
     private prisma: PrismaService,
     private deviceService: DeviceService,
+    private logger: LoggerService,
   ) {}
 
   /**

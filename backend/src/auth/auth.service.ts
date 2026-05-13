@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { LoggerService } from '../common/logging/logger.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private logger: LoggerService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -198,8 +200,11 @@ export class AuthService {
       { expiresIn: '1h' },
     );
 
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-    // TODO: Send email with reset link
+    this.logger.logAuth('Password reset requested', user.id, true, {
+      email,
+      tokenGenerated: true,
+    });
+    // TODO: Send email with reset link (will be implemented in Phase 1.3)
 
     return { message: 'If the email exists, a password reset link has been sent' };
   }

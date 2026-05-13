@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { LoggerService } from '../../common/logging/logger.service';
 import { AutomationEngineService } from './automation-engine.service';
 import { EmergencyScenarioService } from './emergency-scenario.service';
 import { DeviceService } from './device.service';
@@ -12,6 +13,7 @@ export class EventProcessorService {
     private deviceService: DeviceService,
     private automationEngine: AutomationEngineService,
     private emergencyScenario: EmergencyScenarioService,
+    private logger: LoggerService,
   ) {}
 
   /**
@@ -61,14 +63,22 @@ export class EventProcessorService {
       },
     });
 
-    console.log(`📊 Sensor event received: ${event.sensor.sensorType} - ${data.eventType}`);
+    this.logger.logEvent('Sensor event received', 'SensorEvent', event.id, {
+      sensorType: event.sensor.sensorType,
+      eventType: data.eventType,
+      deviceId: data.deviceId,
+      homeId: data.homeId,
+    });
 
     // Update device heartbeat
     await this.deviceService.updateDeviceHeartbeat(data.deviceId);
 
     // Process the event asynchronously (in a real system, this would be queued)
     this.processEventAsync(event.id).catch(err => {
-      console.error(`Error processing event ${event.id}:`, err);
+      this.logger.error(`Error processing event ${event.id}`, err.stack, 'EventProcessor', {
+        eventId: event.id,
+        errorMessage: err.message,
+      });
     });
 
     return event;
@@ -99,7 +109,7 @@ export class EventProcessorService {
     });
 
     if (!event) {
-      console.error(`Event ${eventId} not found`);
+      this.logger.error(`Event not found`, undefined, 'EventProcessor', { eventId });
       return;
     }
 
@@ -119,9 +129,14 @@ export class EventProcessorService {
         },
       });
 
-      console.log(`✅ Event ${eventId} processed successfully`);
+      this.logger.logEvent('Event processed successfully', 'SensorEvent', eventId, {
+        processed: true,
+      });
     } catch (error) {
-      console.error(`❌ Error processing event ${eventId}:`, error);
+      this.logger.error(`Error processing event ${eventId}`, error.stack, 'EventProcessor', {
+        eventId,
+        errorMessage: error.message,
+      });
     }
   }
 
@@ -135,28 +150,44 @@ export class EventProcessorService {
     switch (sensor.sensorType) {
       case 'FALL_DETECTOR':
         if (event.eventType === 'ALERT' || event.valueText === 'FALL_DETECTED') {
-          console.log('⚠️ FALL DETECTED - Initiating emergency protocol');
+          this.logger.logSecurity('FALL DETECTED - Initiating emergency protocol', 'critical', {
+            homeId,
+            eventId: event.id,
+            sensorType: 'FALL_DETECTOR',
+          });
           await this.emergencyScenario.triggerScenario(homeId, 'FALL_UNRESPONSIVE', event.id);
         }
         break;
 
       case 'SMOKE':
         if (event.eventType === 'ALERT' || event.valueText === 'SMOKE_DETECTED') {
-          console.log('🔥 SMOKE DETECTED - Initiating emergency protocol');
+          this.logger.logSecurity('SMOKE DETECTED - Initiating emergency protocol', 'critical', {
+            homeId,
+            eventId: event.id,
+            sensorType: 'SMOKE',
+          });
           await this.emergencyScenario.triggerScenario(homeId, 'SMOKE_FIRE', event.id);
         }
         break;
 
       case 'GAS_LEAK':
         if (event.eventType === 'ALERT' || event.valueText === 'GAS_DETECTED') {
-          console.log('⚠️ GAS LEAK DETECTED - Initiating emergency protocol');
+          this.logger.logSecurity('GAS LEAK DETECTED - Initiating emergency protocol', 'critical', {
+            homeId,
+            eventId: event.id,
+            sensorType: 'GAS_LEAK',
+          });
           await this.emergencyScenario.triggerScenario(homeId, 'GAS_LEAK', event.id);
         }
         break;
 
       case 'WATER_LEAK':
         if (event.eventType === 'ALERT' || event.valueText === 'WATER_DETECTED') {
-          console.log('💧 WATER LEAK DETECTED - Creating alert');
+          this.logger.logSecurity('WATER LEAK DETECTED - Creating alert', 'high', {
+            homeId,
+            eventId: event.id,
+            sensorType: 'WATER_LEAK',
+          });
           await this.createSmartHomeAlert(
             event.sensor.device.home.elderId,
             'SMART_HOME_WATER_LEAK',
@@ -190,7 +221,12 @@ export class EventProcessorService {
 
     if (isNightTime && event.valueText === 'OPEN') {
       const zoneName = event.sensor.device.zone?.name || 'unknown location';
-      console.log(`🚪 Night wandering detected: ${zoneName} opened at night`);
+      this.logger.logSecurity('Night wandering detected', 'medium', {
+        zoneName,
+        sensorType: event.sensor.sensorType,
+        eventId: event.id,
+        homeId: event.sensor.device.home.id,
+      });
 
       await this.createSmartHomeAlert(
         event.sensor.device.home.elderId,
@@ -211,7 +247,13 @@ export class EventProcessorService {
       const tempF = event.unit === '°C' ? (event.valueNumeric * 9/5) + 32 : event.valueNumeric;
 
       if (tempF < 50 || tempF > 90) {
-        console.log(`🌡️ Extreme temperature detected: ${tempF}°F`);
+        this.logger.logSecurity('Extreme temperature detected', 'medium', {
+          temperature: tempF,
+          unit: '°F',
+          zoneName: event.sensor.device.zone?.name,
+          eventId: event.id,
+          homeId: event.sensor.device.home.id,
+        });
 
         await this.createSmartHomeAlert(
           event.sensor.device.home.elderId,
