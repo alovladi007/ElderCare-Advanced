@@ -14,6 +14,7 @@ import { SmartHomeModule } from './smart-home/smart-home.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { ElderProfileModule } from './elder-profile/elder-profile.module';
 import { CareManagementModule } from './care-management/care-management.module';
+import { PaymentModule } from './payments/payment.module';
 import { ApiGatewayModule } from './api-gateway/api-gateway.module';
 import { RolesGuard } from './auth/roles.guard';
 
@@ -41,6 +42,7 @@ import { RolesGuard } from './auth/roles.guard';
     BookingsModule,
     ElderProfileModule,
     CareManagementModule,
+    PaymentModule,
     SmartHomeModule,
     ApiGatewayModule,
   ],
