@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { LoggerModule } from './common/logging/logger.module';
 import { EmailModule } from './common/email/email.module';
@@ -17,6 +18,16 @@ import { RolesGuard } from './auth/roles.guard';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // Rate limiting - 100 requests per 15 minutes globally
+    ThrottlerModule.forRoot([{
+      name: 'default',
+      ttl: 60000, // 60 seconds
+      limit: 100, // 100 requests per minute
+    }, {
+      name: 'auth',
+      ttl: 900000, // 15 minutes
+      limit: 10, // 10 attempts per 15 minutes (for auth endpoints)
+    }]),
     LoggerModule, // Global logging module
     EmailModule, // Global email module
     PrismaModule,
@@ -27,10 +38,17 @@ import { RolesGuard } from './auth/roles.guard';
     ApiGatewayModule,
   ],
   providers: [
+    // Global rate limiting guard
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    // Global role-based access control
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
+    // Global HTTP request logging
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
