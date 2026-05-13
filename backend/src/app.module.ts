@@ -6,7 +6,9 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { LoggerModule } from './common/logging/logger.module';
 import { EmailModule } from './common/email/email.module';
 import { StorageModule } from './common/storage/storage.module';
+import { SentryModule } from './common/sentry/sentry.module';
 import { LoggingInterceptor } from './common/logging/logging.interceptor';
+import { SentryInterceptor } from './common/sentry/sentry.interceptor';
 import { AuthModule } from './auth/auth.module';
 import { SmartHomeModule } from './smart-home/smart-home.module';
 import { BookingsModule } from './bookings/bookings.module';
@@ -32,6 +34,7 @@ import { RolesGuard } from './auth/roles.guard';
     LoggerModule, // Global logging module
     EmailModule, // Global email module
     StorageModule, // Global storage module
+    SentryModule, // Global error tracking module
     PrismaModule,
     AuthModule,
     BookingsModule,
@@ -54,6 +57,11 @@ import { RolesGuard } from './auth/roles.guard';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    // Global error tracking with Sentry
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
     },
   ],
 })
