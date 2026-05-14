@@ -7,7 +7,6 @@ import { AlertType, AlertSeverity } from '@prisma/client';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
-  let prismaService: PrismaService;
   let loggerService: LoggerService;
   let notificationsGateway: NotificationsGateway;
 
@@ -67,7 +66,6 @@ describe('NotificationsService', () => {
     }).compile();
 
     service = module.get<NotificationsService>(NotificationsService);
-    prismaService = module.get<PrismaService>(PrismaService);
     loggerService = module.get<LoggerService>(LoggerService);
     notificationsGateway = module.get<NotificationsGateway>(NotificationsGateway);
   });
