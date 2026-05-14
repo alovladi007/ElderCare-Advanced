@@ -24,6 +24,13 @@ export { default as AutomationBuilder } from './smart-home/AutomationBuilder';
 export { default as EmergencyScenarios } from './smart-home/EmergencyScenarios';
 export { default as AlertCenter } from './smart-home/AlertCenter';
 
+// Elder Profile Components
+export { default as ProfilePhotoUpload } from './elder/ProfilePhotoUpload';
+export { default as BasicInfoForm } from './elder/BasicInfoForm';
+export { default as EmergencyContactManager } from './elder/EmergencyContactManager';
+export { default as MedicalHistoryForm } from './elder/MedicalHistoryForm';
+export { default as FamilyMemberManager } from './elder/FamilyMemberManager';
+
 // Existing Components
 export { default as Navbar } from './Navbar';
 export { default as Footer } from './Footer';
