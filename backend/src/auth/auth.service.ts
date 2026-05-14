@@ -101,9 +101,9 @@ export class AuthService {
       firstName: user.firstName,
       role: user.role,
     }).catch(error => {
-      this.logger.error('Failed to send welcome email', 'AuthService', {
+      this.logger.error('Failed to send welcome email', '', 'AuthService', {
         userId: user.id,
-        error: error.message,
+        error: (error as Error).message,
       });
     });
 

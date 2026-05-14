@@ -86,8 +86,8 @@ export class SentryService implements OnModuleInit {
         tracesSampleRate: environment === 'production' ? 0.1 : 1.0,
       });
     } catch (error) {
-      this.logger.error('Failed to initialize Sentry', 'SentryService', {
-        error: error.message,
+      this.logger.error('Failed to initialize Sentry', '', 'SentryService', {
+        error: (error as Error).message,
       });
     }
   }

@@ -3,7 +3,6 @@ import { LoggerService } from '../../common/logging/logger.service';
 import { ApiTags, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { EventProcessorService } from '../services/event-processor.service';
 import { DeviceService } from '../services/device.service';
-import * as crypto from 'crypto';
 
 @ApiTags('iot')
 @Controller('iot')

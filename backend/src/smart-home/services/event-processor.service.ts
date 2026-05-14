@@ -133,9 +133,10 @@ export class EventProcessorService {
         processed: true,
       });
     } catch (error) {
-      this.logger.error(`Error processing event ${eventId}`, error.stack, 'EventProcessor', {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error(`Error processing event ${eventId}`, err.stack, 'EventProcessor', {
         eventId,
-        errorMessage: error.message,
+        errorMessage: err.message,
       });
     }
   }
@@ -144,7 +145,7 @@ export class EventProcessorService {
    * Check if the event triggers any emergency scenarios
    */
   private async checkEmergencyConditions(event: any) {
-    const { sensor, homeId, severity } = event;
+    const { sensor, homeId, _severity } = event;
 
     // Handle critical sensor types that may trigger emergency scenarios
     switch (sensor.sensorType) {

@@ -134,8 +134,8 @@ export class StorageService {
 
       return fileInfo;
     } catch (error) {
-      this.logger.error('Failed to save file', 'StorageService', {
-        error: error.message,
+      this.logger.error('Failed to save file', '', 'StorageService', {
+        error: (error as Error).message,
         filename: file.originalname,
       });
       throw new BadRequestException('Failed to save file');
@@ -150,8 +150,8 @@ export class StorageService {
       await fs.unlink(filePath);
       this.logger.debug('File deleted', 'StorageService', { filePath });
     } catch (error) {
-      this.logger.error('Failed to delete file', 'StorageService', {
-        error: error.message,
+      this.logger.error('Failed to delete file', '', 'StorageService', {
+        error: (error as Error).message,
         filePath,
       });
       throw new BadRequestException('Failed to delete file');
@@ -165,8 +165,8 @@ export class StorageService {
     try {
       return await fs.readFile(filePath);
     } catch (error) {
-      this.logger.error('Failed to read file', 'StorageService', {
-        error: error.message,
+      this.logger.error('Failed to read file', '', 'StorageService', {
+        error: (error as Error).message,
         filePath,
       });
       throw new BadRequestException('File not found');
@@ -203,8 +203,8 @@ export class StorageService {
       });
       return targetPath;
     } catch (error) {
-      this.logger.error('Failed to move file', 'StorageService', {
-        error: error.message,
+      this.logger.error('Failed to move file', '', 'StorageService', {
+        error: (error as Error).message,
         from: currentPath,
         to: targetPath,
       });
@@ -242,8 +242,8 @@ export class StorageService {
 
       return deletedCount;
     } catch (error) {
-      this.logger.error('Failed to cleanup temp files', 'StorageService', {
-        error: error.message,
+      this.logger.error('Failed to cleanup temp files', '', 'StorageService', {
+        error: (error as Error).message,
       });
       return deletedCount;
     }

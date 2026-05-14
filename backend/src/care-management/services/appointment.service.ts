@@ -50,9 +50,9 @@ export class AppointmentService {
         clinicianName: data.attendees?.clinician || 'Healthcare Provider',
       },
     }).catch(error => {
-      this.logger.error('Failed to send appointment email', 'AppointmentService', {
+      this.logger.error('Failed to send appointment email', '', 'AppointmentService', {
         appointmentId: appointment.id,
-        error: error.message,
+        error: (error as Error).message,
       });
     });
 
@@ -270,9 +270,9 @@ export class AppointmentService {
           clinicianName: appointment.attendees?.clinician || 'Healthcare Provider',
         },
       }).catch(error => {
-        this.logger.error('Failed to send appointment reminder', 'AppointmentService', {
+        this.logger.error('Failed to send appointment reminder', '', 'AppointmentService', {
           appointmentId: appointment.id,
-          error: error.message,
+          error: (error as Error).message,
         });
       });
     }

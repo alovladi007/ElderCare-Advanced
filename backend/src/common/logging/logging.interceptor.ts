@@ -48,7 +48,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
           this.logger.error(
             `HTTP Error: ${method} ${url}`,
-            error.stack,
+            (error as Error).stack,
             'HTTP',
             {
               correlationId,
@@ -56,7 +56,7 @@ export class LoggingInterceptor implements NestInterceptor {
               responseTime,
               ip,
               userAgent,
-              errorMessage: error.message,
+              errorMessage: (error as Error).message,
             }
           );
         },

@@ -84,7 +84,7 @@ export class SentryInterceptor implements NestInterceptor {
             method,
             url,
             statusCode: error.status || 500,
-            message: error.message,
+            message: (error as Error).message,
             userId: user?.userId,
           });
         }

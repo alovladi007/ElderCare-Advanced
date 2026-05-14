@@ -48,7 +48,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // Log error
-    this.logger.error('Unhandled exception', 'AllExceptionsFilter', {
+    this.logger.error('Unhandled exception', '', 'AllExceptionsFilter', {
       statusCode: status,
       message: exception instanceof Error ? exception.message : 'Unknown error',
       stack: exception instanceof Error ? exception.stack : undefined,

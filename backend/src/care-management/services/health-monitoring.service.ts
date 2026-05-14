@@ -1,4 +1,3 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { LoggerService } from '../../common/logging/logger.service';
 import { VitalType } from '@prisma/client';
@@ -164,7 +163,7 @@ export class HealthMonitoringService {
    * Check vital thresholds and create alerts if abnormal
    */
   private async checkVitalThresholds(vital: any) {
-    const range = this.normalRanges[vital.vitalType];
+    const range = this.normalRanges[vital.vitalType as VitalType];
     let isAbnormal = false;
     let severity: 'INFO' | 'WARNING' | 'CRITICAL' = 'INFO';
     let message = '';
@@ -238,7 +237,7 @@ export class HealthMonitoringService {
     let criticalCount = 0;
 
     for (const vital of vitals) {
-      const range = this.normalRanges[vital.vitalType];
+      const range = this.normalRanges[vital.vitalType as VitalType];
       const value = vital.vitalType === 'BLOOD_PRESSURE' ? vital.systolic || vital.value : vital.value;
 
       if (range.critical_low && value <= range.critical_low) criticalCount++;

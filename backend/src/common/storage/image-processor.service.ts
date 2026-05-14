@@ -80,8 +80,8 @@ export class ImageProcessorService {
         size: processedBuffer.length,
       };
     } catch (error) {
-      this.logger.error('Failed to process image', 'ImageProcessorService', {
-        error: error.message,
+      this.logger.error('Failed to process image', '', 'ImageProcessorService', {
+        error: (error as Error).message,
       });
       throw new BadRequestException('Failed to process image');
     }
@@ -138,8 +138,8 @@ export class ImageProcessorService {
     try {
       return await sharp(buffer).metadata();
     } catch (error) {
-      this.logger.error('Failed to extract image metadata', 'ImageProcessorService', {
-        error: error.message,
+      this.logger.error('Failed to extract image metadata', '', 'ImageProcessorService', {
+        error: (error as Error).message,
       });
       throw new BadRequestException('Invalid image file');
     }
@@ -165,7 +165,7 @@ export class ImageProcessorService {
       return true;
     } catch (error) {
       this.logger.warn('Image validation failed', 'ImageProcessorService', {
-        error: error.message,
+        error: (error as Error).message,
       });
       return false;
     }
@@ -213,8 +213,8 @@ export class ImageProcessorService {
         size: watermarkedBuffer.length,
       };
     } catch (error) {
-      this.logger.error('Failed to add watermark', 'ImageProcessorService', {
-        error: error.message,
+      this.logger.error('Failed to add watermark', '', 'ImageProcessorService', {
+        error: (error as Error).message,
       });
       throw new BadRequestException('Failed to add watermark to image');
     }
@@ -240,8 +240,8 @@ export class ImageProcessorService {
         size: processedBuffer.length,
       };
     } catch (error) {
-      this.logger.error('Failed to convert to grayscale', 'ImageProcessorService', {
-        error: error.message,
+      this.logger.error('Failed to convert to grayscale', '', 'ImageProcessorService', {
+        error: (error as Error).message,
       });
       throw new BadRequestException('Failed to convert image');
     }

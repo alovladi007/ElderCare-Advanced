@@ -87,8 +87,8 @@ export class PaymentService {
         clientSecret: paymentIntent.client_secret!,
       };
     } catch (error) {
-      this.logger.error('Failed to create payment intent', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to create payment intent', '', 'PaymentService', {
+        error: (error as Error).message,
         amount: data.amount,
       });
       throw new BadRequestException('Failed to create payment intent');
@@ -113,8 +113,8 @@ export class PaymentService {
         metadata: paymentIntent.metadata,
       };
     } catch (error) {
-      this.logger.error('Failed to retrieve payment intent', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to retrieve payment intent', '', 'PaymentService', {
+        error: (error as Error).message,
         paymentIntentId,
       });
       throw new BadRequestException('Payment intent not found');
@@ -150,8 +150,8 @@ export class PaymentService {
         currency: paymentIntent.currency,
       };
     } catch (error) {
-      this.logger.error('Failed to confirm payment', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to confirm payment', '', 'PaymentService', {
+        error: (error as Error).message,
         paymentIntentId,
       });
       throw new BadRequestException('Failed to confirm payment');
@@ -174,8 +174,8 @@ export class PaymentService {
         status: paymentIntent.status,
       };
     } catch (error) {
-      this.logger.error('Failed to cancel payment', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to cancel payment', '', 'PaymentService', {
+        error: (error as Error).message,
         paymentIntentId,
       });
       throw new BadRequestException('Failed to cancel payment');
@@ -211,8 +211,8 @@ export class PaymentService {
         name: customer.name,
       };
     } catch (error) {
-      this.logger.error('Failed to create customer', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to create customer', '', 'PaymentService', {
+        error: (error as Error).message,
         email: data.email,
       });
       throw new BadRequestException('Failed to create customer');
@@ -240,8 +240,8 @@ export class PaymentService {
         metadata: customer.metadata,
       };
     } catch (error) {
-      this.logger.error('Failed to retrieve customer', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to retrieve customer', '', 'PaymentService', {
+        error: (error as Error).message,
         customerId,
       });
       throw new BadRequestException('Customer not found');
@@ -277,8 +277,8 @@ export class PaymentService {
         } : undefined,
       };
     } catch (error) {
-      this.logger.error('Failed to attach payment method', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to attach payment method', '', 'PaymentService', {
+        error: (error as Error).message,
         paymentMethodId,
         customerId,
       });
@@ -309,8 +309,8 @@ export class PaymentService {
         } : undefined,
       }));
     } catch (error) {
-      this.logger.error('Failed to list payment methods', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to list payment methods', '', 'PaymentService', {
+        error: (error as Error).message,
         customerId,
       });
       throw new BadRequestException('Failed to list payment methods');
@@ -330,8 +330,8 @@ export class PaymentService {
 
       return { success: true };
     } catch (error) {
-      this.logger.error('Failed to detach payment method', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to detach payment method', '', 'PaymentService', {
+        error: (error as Error).message,
         paymentMethodId,
       });
       throw new BadRequestException('Failed to detach payment method');
@@ -368,8 +368,8 @@ export class PaymentService {
         reason: refund.reason,
       };
     } catch (error) {
-      this.logger.error('Failed to create refund', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to create refund', '', 'PaymentService', {
+        error: (error as Error).message,
         paymentIntentId: data.paymentIntentId,
       });
       throw new BadRequestException('Failed to create refund');
@@ -397,8 +397,8 @@ export class PaymentService {
         metadata: pi.metadata,
       }));
     } catch (error) {
-      this.logger.error('Failed to retrieve payment history', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Failed to retrieve payment history', '', 'PaymentService', {
+        error: (error as Error).message,
         customerId,
       });
       throw new BadRequestException('Failed to retrieve payment history');
@@ -453,8 +453,8 @@ export class PaymentService {
 
       return { received: true };
     } catch (error) {
-      this.logger.error('Webhook verification failed', 'PaymentService', {
-        error: error.message,
+      this.logger.error('Webhook verification failed', '', 'PaymentService', {
+        error: (error as Error).message,
       });
       throw new BadRequestException('Webhook verification failed');
     }
@@ -485,8 +485,8 @@ export class PaymentService {
           paymentIntentId: paymentIntent.id,
         });
       } catch (error) {
-        this.logger.error('Failed to update booking status', 'PaymentService', {
-          error: error.message,
+        this.logger.error('Failed to update booking status', '', 'PaymentService', {
+          error: (error as Error).message,
           bookingId,
         });
       }
@@ -525,8 +525,8 @@ export class PaymentService {
           },
         });
       } catch (error) {
-        this.logger.error('Failed to update booking after cancellation', 'PaymentService', {
-          error: error.message,
+        this.logger.error('Failed to update booking after cancellation', '', 'PaymentService', {
+          error: (error as Error).message,
           bookingId,
         });
       }

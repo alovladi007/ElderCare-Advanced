@@ -76,7 +76,7 @@ export class AutomationEngineService {
   /**
    * Evaluate a sensor event trigger
    */
-  private evaluateSensorEventTrigger(triggerConfig: any, event: any): boolean {
+  private evaluateSensorEventTrigger(triggerConfig: any, event: any): Promise<boolean> {
     // Check sensor ID match
     if (triggerConfig.sensorId && triggerConfig.sensorId !== event.sensorId) {
       return false;
@@ -125,7 +125,7 @@ export class AutomationEngineService {
   /**
    * Evaluate composite trigger (multiple conditions)
    */
-  private async evaluateCompositeTrigger(triggerConfig: any, event: any): boolean {
+  private evaluateCompositeTrigger(triggerConfig: any, event: any): Promise<boolean> {
     // For now, implement simple AND logic
     // In a full implementation, this would support complex AND/OR/NOT logic
     const conditions = triggerConfig.conditions || [];
@@ -143,7 +143,7 @@ export class AutomationEngineService {
   /**
    * Evaluate additional conditions (time ranges, etc.)
    */
-  private evaluateConditions(conditionConfig: any, event: any): boolean {
+  private evaluateConditions(conditionConfig: any, event: any): Promise<boolean> {
     // Check time range
     if (conditionConfig.timeRange) {
       const currentHour = new Date().getHours();
@@ -183,11 +183,11 @@ export class AutomationEngineService {
       try {
         await this.executeAction(action, rule, event);
       } catch (error) {
-        this.logger.error('Error executing automation action', 'AutomationEngineService', {
+        this.logger.error('Error executing automation action', '', 'AutomationEngineService', {
           ruleId: rule.id,
           ruleName: rule.name,
           actionType: action.type,
-          error: error.message,
+          error: (error as Error).message,
         });
       }
     }
