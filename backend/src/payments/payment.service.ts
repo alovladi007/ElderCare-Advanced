@@ -25,7 +25,7 @@ export interface PaymentMethod {
 
 @Injectable()
 export class PaymentService {
-  private stripe: Stripe;
+  private stripe: any;
 
   constructor(
     private configService: ConfigService,
@@ -43,7 +43,7 @@ export class PaymentService {
       this.stripe = null as any;
     } else {
       this.stripe = new Stripe(stripeSecretKey, {
-        apiVersion: '2024-11-20.acacia',
+        apiVersion: '2024-11-20.acacia' as any,
       });
       this.logger.log('Stripe initialized successfully', 'PaymentService');
     }
@@ -430,15 +430,15 @@ export class PaymentService {
       // Handle different event types
       switch (event.type) {
         case 'payment_intent.succeeded':
-          await this.handlePaymentSucceeded(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentSucceeded(event.data.object as any);
           break;
 
         case 'payment_intent.payment_failed':
-          await this.handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentFailed(event.data.object as any);
           break;
 
         case 'payment_intent.canceled':
-          await this.handlePaymentCanceled(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentCanceled(event.data.object as any);
           break;
 
         case 'customer.created':
@@ -463,7 +463,7 @@ export class PaymentService {
   /**
    * Handle successful payment
    */
-  private async handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  private async handlePaymentSucceeded(paymentIntent: any) {
     this.logger.logEvent('Payment succeeded', 'PaymentIntent', paymentIntent.id, {
       amount: paymentIntent.amount,
       currency: paymentIntent.currency,
@@ -496,7 +496,7 @@ export class PaymentService {
   /**
    * Handle failed payment
    */
-  private async handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
+  private async handlePaymentFailed(paymentIntent: any) {
     this.logger.logSecurity('Payment failed', 'medium', {
       paymentIntentId: paymentIntent.id,
       amount: paymentIntent.amount,
@@ -509,7 +509,7 @@ export class PaymentService {
   /**
    * Handle canceled payment
    */
-  private async handlePaymentCanceled(paymentIntent: Stripe.PaymentIntent) {
+  private async handlePaymentCanceled(paymentIntent: any) {
     this.logger.logEvent('Payment canceled', 'PaymentIntent', paymentIntent.id, {
       amount: paymentIntent.amount,
     });

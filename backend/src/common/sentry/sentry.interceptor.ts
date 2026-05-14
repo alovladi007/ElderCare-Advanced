@@ -55,11 +55,7 @@ export class SentryInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        // Finish transaction on success
-        if (transaction) {
-          transaction.setHttpStatus(200);
-          transaction.finish();
-        }
+        // Transaction tracking removed for Sentry v8 compatibility
       }),
       catchError((error) => {
         // Capture error in Sentry
@@ -80,19 +76,13 @@ export class SentryInterceptor implements NestInterceptor {
           });
 
           // Log error
-          this.logger.error('HTTP Exception', context.getClass().name, {
+          this.logger.error('HTTP Exception', '', context.getClass().name, {
             method,
             url,
             statusCode: error.status || 500,
             message: (error as Error).message,
             userId: user?.userId,
           });
-        }
-
-        // Finish transaction with error
-        if (transaction) {
-          transaction.setHttpStatus(error.status || 500);
-          transaction.finish();
         }
 
         return throwError(() => error);

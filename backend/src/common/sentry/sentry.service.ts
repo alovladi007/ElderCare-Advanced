@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 import { LoggerService } from '../logging/logger.service';
 
 @Injectable()
@@ -39,15 +38,7 @@ export class SentryService implements OnModuleInit {
         environment,
 
         // Performance monitoring
-        tracesSampleRate: environment === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
-        profilesSampleRate: environment === 'production' ? 0.1 : 1.0,
-
-        // Integrations
-        integrations: [
-          new ProfilingIntegration(),
-          new Sentry.Integrations.Http({ tracing: true }),
-          new Sentry.Integrations.Express({ app: true }),
-        ],
+        tracesSampleRate: environment === 'production' ? 0.1 : 1.0,
 
         // Release tracking
         release: this.configService.get<string>('APP_VERSION') || 'unknown',
@@ -169,17 +160,15 @@ export class SentryService implements OnModuleInit {
   }
 
   /**
-   * Start a performance transaction
+   * Start a performance transaction (Sentry v8 uses startSpan)
    */
   startTransaction(name: string, op: string) {
     if (!this.isInitialized) {
       return null;
     }
 
-    return Sentry.startTransaction({
-      name,
-      op,
-    });
+    // In Sentry v8, use startSpan instead of startTransaction
+    return Sentry.startSpan({ name, op }, (span) => span);
   }
 
   /**

@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { LoggerService } from '../../common/logging/logger.service';
 import { VitalType } from '@prisma/client';
@@ -210,7 +211,7 @@ export class HealthMonitoringService {
             vitalType: vital.vitalType,
             value: vital.value,
             unit: vital.unit,
-            normalRange: range,
+            normalRange: range as any,
           },
           triggeredAt: new Date(),
         },

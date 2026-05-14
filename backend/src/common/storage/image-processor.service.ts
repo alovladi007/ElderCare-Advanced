@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { LoggerService } from '../logging/logger.service';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 export interface ImageProcessingOptions {
   width?: number;

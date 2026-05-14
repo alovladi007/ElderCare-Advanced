@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
+import DailyRotateFile = require('winston-daily-rotate-file');
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 
 const LOG_DIR = process.env.LOG_DIR || 'logs';

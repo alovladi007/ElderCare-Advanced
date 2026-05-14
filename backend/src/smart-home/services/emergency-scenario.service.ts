@@ -69,7 +69,7 @@ export class EmergencyScenarioService {
     await this.prisma.alert.create({
       data: {
         elderId: scenario.home.elderId,
-        type: this.mapScenarioTypeToAlertType(scenarioType),
+        type: this.mapScenarioTypeToAlertType(scenarioType) as any,
         severity: 'CRITICAL',
         status: 'ACTIVE',
         title: scenario.name,

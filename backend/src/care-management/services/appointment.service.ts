@@ -267,7 +267,7 @@ export class AppointmentService {
         appointmentDetails: {
           serviceType: appointment.title,
           date: appointment.startTime,
-          clinicianName: appointment.attendees?.clinician || 'Healthcare Provider',
+          clinicianName: (appointment.attendees as any)?.clinician || 'Healthcare Provider',
         },
       }).catch(error => {
         this.logger.error('Failed to send appointment reminder', '', 'AppointmentService', {

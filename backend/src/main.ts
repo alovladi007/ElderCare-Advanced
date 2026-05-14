@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { LoggerService } from './common/logging/logger.service';
-import * as cors from 'cors';
+import cors from 'cors';
 import helmet from 'helmet';
 import * as path from 'path';
 

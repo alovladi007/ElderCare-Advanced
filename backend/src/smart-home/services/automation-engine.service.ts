@@ -49,7 +49,7 @@ export class AutomationEngineService {
     if (rule.triggerType === 'SENSOR_EVENT') {
       triggered = this.evaluateSensorEventTrigger(triggerConfig, event);
     } else if (rule.triggerType === 'COMPOSITE') {
-      triggered = await this.evaluateCompositeTrigger(triggerConfig, event);
+      triggered = this.evaluateCompositeTrigger(triggerConfig, event);
     }
 
     if (!triggered) {
@@ -76,7 +76,7 @@ export class AutomationEngineService {
   /**
    * Evaluate a sensor event trigger
    */
-  private evaluateSensorEventTrigger(triggerConfig: any, event: any): Promise<boolean> {
+  private evaluateSensorEventTrigger(triggerConfig: any, event: any): boolean {
     // Check sensor ID match
     if (triggerConfig.sensorId && triggerConfig.sensorId !== event.sensorId) {
       return false;
@@ -125,7 +125,7 @@ export class AutomationEngineService {
   /**
    * Evaluate composite trigger (multiple conditions)
    */
-  private evaluateCompositeTrigger(triggerConfig: any, event: any): Promise<boolean> {
+  private evaluateCompositeTrigger(triggerConfig: any, event: any): boolean {
     // For now, implement simple AND logic
     // In a full implementation, this would support complex AND/OR/NOT logic
     const conditions = triggerConfig.conditions || [];
@@ -143,7 +143,7 @@ export class AutomationEngineService {
   /**
    * Evaluate additional conditions (time ranges, etc.)
    */
-  private evaluateConditions(conditionConfig: any, event: any): Promise<boolean> {
+  private evaluateConditions(conditionConfig: any, event: any): boolean {
     // Check time range
     if (conditionConfig.timeRange) {
       const currentHour = new Date().getHours();

@@ -78,7 +78,7 @@ export class CarePlanController {
 
   @Get(':id/stats')
   @ApiOperation({ summary: 'Get care plan statistics' })
-  async getCarePlanStats(@Param('id') _carePlanId: string) {
+  async getCarePlanStats(@Param('id') carePlanId: string) {
     // Need to get elderId from carePlan
     const carePlan = await this.carePlanService.getCarePlanByElder(''); // This needs refactoring
     return this.carePlanService.getCarePlanStats(carePlan!.elderId);
@@ -91,7 +91,7 @@ export class CarePlanController {
   @Post(':carePlanId/tasks')
   @ApiOperation({ summary: 'Create care task' })
   async createTask(
-    @Param('carePlanId') _carePlanId: string,
+    @Param('carePlanId') carePlanId: string,
     @Body()
     body: {
       title: string;
@@ -113,7 +113,7 @@ export class CarePlanController {
   @ApiOperation({ summary: 'Get tasks by care plan' })
   @ApiQuery({ name: 'includeCompleted', required: false, type: Boolean })
   async getTasksByCarePlan(
-    @Param('carePlanId') _carePlanId: string,
+    @Param('carePlanId') carePlanId: string,
     @Query('includeCompleted') includeCompleted?: boolean,
   ) {
     return this.carePlanService.getTasksByCarePlan(
