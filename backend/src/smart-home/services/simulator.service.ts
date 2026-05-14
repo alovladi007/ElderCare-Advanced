@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { LoggerService } from '../../common/logging/logger.service';
 import { EventProcessorService } from './event-processor.service';
 
 @Injectable()
@@ -7,13 +8,14 @@ export class SimulatorService {
   constructor(
     private prisma: PrismaService,
     private eventProcessor: EventProcessorService,
+    private logger: LoggerService,
   ) {}
 
   /**
    * Simulate a fall detection event
    */
   async simulateFall(homeId: string) {
-    console.log('🎭 Simulating fall detection...');
+    this.logger.debug('🎭 Simulating fall detection...', 'SimulatorService');
 
     // Find a fall detector sensor
     const fallSensor = await this.findOrCreateSensor(homeId, 'FALL_DETECTOR');
@@ -42,7 +44,7 @@ export class SimulatorService {
    * Simulate smoke detection event
    */
   async simulateSmoke(homeId: string) {
-    console.log('🎭 Simulating smoke detection...');
+    this.logger.debug('🎭 Simulating smoke detection...', 'SimulatorService');
 
     const smokeSensor = await this.findOrCreateSensor(homeId, 'SMOKE');
 
@@ -69,7 +71,7 @@ export class SimulatorService {
    * Simulate gas leak detection event
    */
   async simulateGasLeak(homeId: string) {
-    console.log('🎭 Simulating gas leak detection...');
+    this.logger.debug('🎭 Simulating gas leak detection...', 'SimulatorService');
 
     const gasSensor = await this.findOrCreateSensor(homeId, 'GAS_LEAK');
 
@@ -96,7 +98,7 @@ export class SimulatorService {
    * Simulate motion pattern (normal day)
    */
   async simulateMotionPattern(homeId: string, durationMinutes = 60) {
-    console.log(`🎭 Simulating ${durationMinutes} minutes of motion pattern...`);
+    this.logger.debug('Simulating motion pattern', 'SimulatorService', { durationMinutes });
 
     const motionSensor = await this.findOrCreateSensor(homeId, 'MOTION');
 
@@ -135,7 +137,7 @@ export class SimulatorService {
    * Simulate door opening (night wandering)
    */
   async simulateNightDoorOpen(homeId: string) {
-    console.log('🎭 Simulating nighttime door opening...');
+    this.logger.debug('🎭 Simulating nighttime door opening...', 'SimulatorService');
 
     const doorSensor = await this.findOrCreateSensor(homeId, 'CONTACT_DOOR');
 
@@ -166,7 +168,7 @@ export class SimulatorService {
    * Simulate water leak
    */
   async simulateWaterLeak(homeId: string) {
-    console.log('🎭 Simulating water leak...');
+    this.logger.debug('🎭 Simulating water leak...', 'SimulatorService');
 
     const waterSensor = await this.findOrCreateSensor(homeId, 'WATER_LEAK');
 
@@ -192,7 +194,7 @@ export class SimulatorService {
    * Simulate extreme temperature
    */
   async simulateExtremeTemp(homeId: string, tempF: number = 95) {
-    console.log(`🎭 Simulating extreme temperature: ${tempF}°F...`);
+    this.logger.debug('Simulating extreme temperature', 'SimulatorService', { tempF });
 
     const tempSensor = await this.findOrCreateSensor(homeId, 'TEMPERATURE');
 
@@ -219,7 +221,7 @@ export class SimulatorService {
    * Simulate inactivity (no motion for extended period)
    */
   async simulateInactivity(homeId: string, hours = 2) {
-    console.log(`🎭 Simulating ${hours} hours of inactivity...`);
+    this.logger.debug('Simulating inactivity', 'SimulatorService', { hours });
 
     // This doesn't create events, it just ensures no recent motion events exist
     // The inactivity checker job will detect this
@@ -249,7 +251,7 @@ export class SimulatorService {
    * Simulate panic button press
    */
   async simulatePanicButton(homeId: string) {
-    console.log('🎭 Simulating panic button press...');
+    this.logger.debug('🎭 Simulating panic button press...', 'SimulatorService');
 
     const panicSensor = await this.findOrCreateSensor(homeId, 'BUTTON_PANIC');
 
@@ -293,7 +295,7 @@ export class SimulatorService {
       return existingSensor;
     }
 
-    console.log(`Creating simulated ${sensorType} sensor...`);
+    this.logger.debug('Creating simulated sensor', 'SimulatorService', { sensorType });
 
     // Find or create a device type
     let deviceType = await this.prisma.deviceType.findFirst({
@@ -380,7 +382,7 @@ export class SimulatorService {
    * Reset simulation devices (remove all simulated devices)
    */
   async resetSimulation(homeId: string) {
-    console.log('🎭 Resetting simulation...');
+    this.logger.debug('🎭 Resetting simulation...', 'SimulatorService');
 
     const result = await this.prisma.device.deleteMany({
       where: {
@@ -391,7 +393,7 @@ export class SimulatorService {
       },
     });
 
-    console.log(`Removed ${result.count} simulated devices`);
+    this.logger.debug('Removed simulated devices', 'SimulatorService', { count: result.count });
 
     return result;
   }

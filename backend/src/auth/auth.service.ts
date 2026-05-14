@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { LoggerService } from '../common/logging/logger.service';
+import { EmailService } from '../common/email/email.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -8,6 +10,8 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private logger: LoggerService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -89,6 +93,18 @@ export class AuthService {
         role: data.role as any,
         isActive: true,
       },
+    });
+
+    // Send welcome email (async, don't wait for it)
+    this.emailService.sendWelcomeEmail({
+      to: user.email,
+      firstName: user.firstName,
+      role: user.role,
+    }).catch(error => {
+      this.logger.error('Failed to send welcome email', '', 'AuthService', {
+        userId: user.id,
+        error: (error as Error).message,
+      });
     });
 
     const { password: _, ...result } = user;
@@ -198,8 +214,17 @@ export class AuthService {
       { expiresIn: '1h' },
     );
 
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-    // TODO: Send email with reset link
+    this.logger.logAuth('Password reset requested', user.id, true, {
+      email,
+      tokenGenerated: true,
+    });
+
+    // Send password reset email
+    await this.emailService.sendPasswordResetEmail({
+      to: user.email,
+      firstName: user.firstName,
+      resetToken,
+    });
 
     return { message: 'If the email exists, a password reset link has been sent' };
   }
