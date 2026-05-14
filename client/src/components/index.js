@@ -17,6 +17,13 @@ export { default as Modal } from './feedback/Modal';
 export { default as Alert } from './feedback/Alert';
 export { default as Loading } from './feedback/Loading';
 
+// Smart Home Components
+export { default as DashboardOverview } from './smart-home/DashboardOverview';
+export { default as DeviceControlPanel } from './smart-home/DeviceControlPanel';
+export { default as AutomationBuilder } from './smart-home/AutomationBuilder';
+export { default as EmergencyScenarios } from './smart-home/EmergencyScenarios';
+export { default as AlertCenter } from './smart-home/AlertCenter';
+
 // Existing Components
 export { default as Navbar } from './Navbar';
 export { default as Footer } from './Footer';
