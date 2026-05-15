@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Activity, Thermometer, Wind, Droplet, TrendingUp, TrendingDown } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, Badge, Button, Loading, Alert, Select } from '..';
 import careService from '../../services/care.service';
 
@@ -271,25 +272,132 @@ const VitalSignsCharts = ({ elderId }) => {
         )}
       </Card>
 
-      {/* Simple Line Chart Placeholder */}
+      {/* Interactive Charts */}
       {vitalReadings.length > 0 && (
-        <Card
-          title="Vital Signs Trends"
-          padding="normal"
-          className="bg-white/10 backdrop-blur-md border-white/20"
-        >
-          <div className="h-64 flex items-center justify-center bg-white/5 rounded-lg">
-            <div className="text-center">
-              <Activity className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-400">
-                Chart visualization requires charting library
-              </p>
-              <p className="text-gray-500 text-sm">
-                Install recharts or chart.js for interactive graphs
-              </p>
-            </div>
-          </div>
-        </Card>
+        <>
+          {/* Heart Rate Chart */}
+          <Card
+            title="Heart Rate Trends"
+            padding="normal"
+            className="bg-white/10 backdrop-blur-md border-white/20"
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={vitalReadings
+                  .filter((r) => r.vitalType === 'HEART_RATE')
+                  .reverse()
+                  .slice(0, 20)}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                <XAxis
+                  dataKey="recordedAt"
+                  tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                  stroke="#9ca3af"
+                />
+                <YAxis stroke="#9ca3af" domain={[50, 120]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: '1px solid #374151',
+                    borderRadius: '0.5rem',
+                  }}
+                  labelFormatter={(value) => new Date(value).toLocaleString()}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  dot={{ fill: '#ef4444', r: 4 }}
+                  name="Heart Rate (bpm)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+
+          {/* Blood Pressure Chart */}
+          <Card
+            title="Blood Pressure Trends"
+            padding="normal"
+            className="bg-white/10 backdrop-blur-md border-white/20"
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart
+                data={vitalReadings
+                  .filter((r) => r.vitalType === 'BLOOD_PRESSURE')
+                  .reverse()
+                  .slice(0, 20)}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                <XAxis
+                  dataKey="recordedAt"
+                  tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                  stroke="#9ca3af"
+                />
+                <YAxis stroke="#9ca3af" domain={[80, 160]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: '1px solid #374151',
+                    borderRadius: '0.5rem',
+                  }}
+                  labelFormatter={(value) => new Date(value).toLocaleString()}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3b82f6"
+                  fill="#3b82f680"
+                  strokeWidth={2}
+                  name="Blood Pressure (mmHg)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card>
+
+          {/* Temperature Chart */}
+          <Card
+            title="Temperature Trends"
+            padding="normal"
+            className="bg-white/10 backdrop-blur-md border-white/20"
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={vitalReadings
+                  .filter((r) => r.vitalType === 'TEMPERATURE')
+                  .reverse()
+                  .slice(0, 20)}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                <XAxis
+                  dataKey="recordedAt"
+                  tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                  stroke="#9ca3af"
+                />
+                <YAxis stroke="#9ca3af" domain={[96, 101]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: '1px solid #374151',
+                    borderRadius: '0.5rem',
+                  }}
+                  labelFormatter={(value) => new Date(value).toLocaleString()}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#f59e0b"
+                  strokeWidth={2}
+                  dot={{ fill: '#f59e0b', r: 4 }}
+                  name="Temperature (°F)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        </>
       )}
 
       {/* Statistics Summary */}
