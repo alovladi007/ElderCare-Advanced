@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { LoggerService } from '../../common/logging/logger.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DeviceService } from './device.service';
 
@@ -9,6 +10,7 @@ export class EmergencyScenarioService {
   constructor(
     private prisma: PrismaService,
     private deviceService: DeviceService,
+    private logger: LoggerService,
   ) {}
 
   /**
@@ -35,11 +37,19 @@ export class EmergencyScenarioService {
     });
 
     if (!scenario) {
-      console.log(`⚠️ No enabled scenario found for type: ${scenarioType}`);
+      this.logger.warn('No enabled scenario found', 'EmergencyScenarioService', {
+        scenarioType,
+        homeId,
+      });
       return null;
     }
 
-    console.log(`🚨 Triggering emergency scenario: ${scenario.name}`);
+    this.logger.logSecurity('Emergency scenario triggered', 'critical', {
+      scenarioName: scenario.name,
+      scenarioId: scenario.id,
+      homeId,
+      elderId: scenario.home.elderId,
+    });
 
     // Create scenario instance
     const instance = await this.prisma.emergencyScenarioInstance.create({
@@ -59,7 +69,7 @@ export class EmergencyScenarioService {
     await this.prisma.alert.create({
       data: {
         elderId: scenario.home.elderId,
-        type: this.mapScenarioTypeToAlertType(scenarioType),
+        type: this.mapScenarioTypeToAlertType(scenarioType) as any,
         severity: 'CRITICAL',
         status: 'ACTIVE',
         title: scenario.name,
@@ -102,11 +112,18 @@ export class EmergencyScenarioService {
         });
 
         if (!instance || instance.status !== 'ACTIVE') {
-          console.log(`Scenario ${instanceId} is no longer active, skipping step ${i}`);
+          this.logger.debug('Emergency scenario no longer active, skipping step', 'EmergencyScenarioService', {
+            instanceId,
+            stepIndex: i,
+          });
           return;
         }
 
-        console.log(`⏱️ Executing step ${i} of scenario: ${step.action}`);
+        this.logger.debug('Executing emergency scenario step', 'EmergencyScenarioService', {
+          stepIndex: i,
+          action: step.action,
+          instanceId,
+        });
 
         await this.executeScenarioAction(instanceId, scenario, step, i);
 
@@ -163,11 +180,15 @@ export class EmergencyScenarioService {
 
       case 'CHECK_HELP_TRIGGER':
         // This is passive - just log that we're waiting
-        console.log(`⏳ Waiting for help trigger or cancel...`);
+        this.logger.debug('Waiting for help trigger or cancel', 'EmergencyScenarioService', {
+          instanceId: instance.id,
+        });
         break;
 
       default:
-        console.log(`Unknown scenario action: ${step.action}`);
+        this.logger.warn('Unknown emergency scenario action', 'EmergencyScenarioService', {
+          action: step.action,
+        });
     }
   }
 
@@ -199,7 +220,11 @@ export class EmergencyScenarioService {
       });
     }
 
-    console.log(`🔊 Emergency announcement: "${params.message}"`);
+    this.logger.debug('Emergency announcement sent', 'EmergencyScenarioService', {
+      message: params.message,
+      actuatorCount: ttsActuators.length,
+      homeId,
+    });
   }
 
   /**
@@ -229,7 +254,10 @@ export class EmergencyScenarioService {
       });
     }
 
-    console.log(`💡 All lights turned on for emergency`);
+    this.logger.debug('Emergency lights activated', 'EmergencyScenarioService', {
+      lightCount: lightActuators.length,
+      homeId,
+    });
   }
 
   /**
@@ -237,7 +265,10 @@ export class EmergencyScenarioService {
    */
   private async executeCallFamily(instance: any, params: any) {
     // In a real system, this would trigger phone calls, SMS, push notifications
-    console.log(`📞 ALERT: Calling family members for elder ${instance.elderId}`);
+    this.logger.logSecurity('Emergency: Contacting family members', 'critical', {
+      elderId: instance.elderId,
+      instanceId: instance.id,
+    });
 
     await this.prisma.alert.create({
       data: {
@@ -262,7 +293,10 @@ export class EmergencyScenarioService {
    */
   private async executeCallEmergency(instance: any, params: any) {
     // In a real system, this would call 911 or emergency services
-    console.log(`🚨 CRITICAL: Calling emergency services for elder ${instance.elderId}`);
+    this.logger.logSecurity('CRITICAL: Contacting emergency services (911)', 'critical', {
+      elderId: instance.elderId,
+      instanceId: instance.id,
+    });
 
     await this.prisma.alert.create({
       data: {
@@ -315,7 +349,10 @@ export class EmergencyScenarioService {
       });
     }
 
-    console.log(`🔓 All doors unlocked for emergency responders`);
+    this.logger.logSecurity('Emergency: Doors unlocked for responders', 'high', {
+      homeId,
+      doorCount: doorLocks.length,
+    });
   }
 
   /**
@@ -344,7 +381,11 @@ export class EmergencyScenarioService {
       });
     }
 
-    console.log(`🚨 Siren activated`);
+    this.logger.logSecurity('Emergency siren activated', 'high', {
+      homeId,
+      sirenCount: sirens.length,
+      duration: params.duration || 60,
+    });
   }
 
   /**
@@ -384,7 +425,9 @@ export class EmergencyScenarioService {
       },
     });
 
-    console.log(`✅ Emergency scenario ${instanceId} cancelled`);
+    this.logger.logEvent('Emergency scenario cancelled', 'EmergencyScenarioInstance', instanceId, {
+      cancelledBy: 'user',
+    });
 
     return instance;
   }
@@ -412,7 +455,11 @@ export class EmergencyScenarioService {
       },
     });
 
-    console.log(`🆘 Help trigger created: ${data.triggerType}`);
+    this.logger.logSecurity('Help trigger activated', 'critical', {
+      triggerType: data.triggerType,
+      elderId: data.elderId,
+      homeId: data.homeId,
+    });
 
     // Create alert
     const alert = await this.prisma.alert.create({

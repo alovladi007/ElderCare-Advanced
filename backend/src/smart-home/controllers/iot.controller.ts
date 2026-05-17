@@ -1,8 +1,8 @@
 import { Controller, Post, Body, Headers, UnauthorizedException } from '@nestjs/common';
+import { LoggerService } from '../../common/logging/logger.service';
 import { ApiTags, ApiOperation, ApiHeader } from '@nestjs/swagger';
 import { EventProcessorService } from '../services/event-processor.service';
 import { DeviceService } from '../services/device.service';
-import * as crypto from 'crypto';
 
 @ApiTags('iot')
 @Controller('iot')
@@ -10,6 +10,7 @@ export class IoTController {
   constructor(
     private eventProcessor: EventProcessorService,
     private deviceService: DeviceService,
+    private logger: LoggerService,
   ) {}
 
   @Post('events')
@@ -35,7 +36,11 @@ export class IoTController {
 
     // In a real system, validate the token against IotToken table
     // For now, we'll accept any token for demo purposes
-    console.log(`📡 IoT event received from device: ${body.deviceIdentifier}`);
+    this.logger.debug('IoT event received from device', 'IoTController', {
+      deviceIdentifier: body.deviceIdentifier,
+      homeId: body.homeId,
+      sensorType: body.sensorType,
+    });
 
     // Find device by identifier
     const device = await this.deviceService.getDeviceByIdentifier(

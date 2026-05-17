@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { LoggerService } from '../../common/logging/logger.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DeviceCategory, SensorType, ActuatorType } from '@prisma/client';
 
 @Injectable()
 export class DeviceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private logger: LoggerService,
+  ) {}
 
   // ============================================================================
   // DEVICE TYPE MANAGEMENT
@@ -342,7 +346,12 @@ export class DeviceService {
     });
 
     // In a real system, this would send the command to the IoT gateway/hub
-    console.log(`📤 Actuator command issued: ${data.commandName}`, data.commandParamsJson);
+    this.logger.debug('Actuator command issued', 'DeviceService', {
+      commandName: data.commandName,
+      commandParams: data.commandParamsJson,
+      deviceId: data.deviceId,
+      actuatorId: data.actuatorId,
+    });
 
     // Simulate sending the command
     await this.prisma.actuatorCommand.update({
