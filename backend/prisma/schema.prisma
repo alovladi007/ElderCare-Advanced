@@ -87,6 +87,12 @@ model ElderProfile {
   voiceExecutions     VoiceExecution[]
   voicePreference     VoicePreference?
 
+  // AI Companion Relations
+  companionSettings       CompanionSettings?
+  companionConversations  CompanionConversation[]
+  companionReminders      CompanionReminder[]
+  companionActivities     CompanionActivity[]
+
   @@map("elder_profiles")
 }
 
@@ -1165,4 +1171,91 @@ model VoicePreference {
   elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
 
   @@map("voice_preferences")
+}
+
+// ============================================================================
+// AI COMPANION & PERSONAL ASSISTANT
+// ============================================================================
+
+model CompanionSettings {
+  id                   String   @id @default(uuid())
+  elderId              String   @unique
+  enabled              Boolean  @default(true)
+
+  // Personality customization
+  personalityName      String   @default("Emma")
+  personalityTraits    Json     @default("[]") // Array of personality traits
+  personalityGender    String?  @default("female")
+
+  // Features
+  voiceEnabled         Boolean  @default(true)   // Text-to-speech responses
+  proactiveReminders   Boolean  @default(true)   // Send automatic reminders
+  emotionalSupport     Boolean  @default(true)   // Provide companionship
+  conversationHistory  Boolean  @default(true)   // Remember past conversations
+
+  // Reminder preferences
+  medicationReminders  Boolean  @default(true)
+  appointmentReminders Boolean  @default(true)
+  exerciseReminders    Boolean  @default(true)
+  checkInFrequency     String?  @default("daily") // daily, twice_daily, weekly
+
+  // Communication style
+  responseLength       String   @default("medium") // short, medium, long
+  formality            String   @default("friendly") // formal, friendly, casual
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_settings")
+}
+
+model CompanionConversation {
+  id                 String   @id @default(uuid())
+  elderId            String
+  userMessage        String   // What the elder said
+  companionResponse  String   // What the AI responded
+  sentiment          String?  // POSITIVE, NEUTRAL, NEGATIVE, CONCERNED
+  actionTriggered    Json?    // Any actions triggered (reminders, calls, etc.)
+  timestamp          DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_conversations")
+  @@index([elderId, timestamp])
+}
+
+model CompanionReminder {
+  id            String   @id @default(uuid())
+  elderId       String
+  reminderType  String   // MEDICATION, APPOINTMENT, EXERCISE, CHECK_IN, CUSTOM
+  title         String
+  message       String
+  scheduledFor  DateTime
+  delivered     Boolean  @default(false)
+  deliveredAt   DateTime?
+  acknowledged  Boolean  @default(false)
+  metadata      Json?    // Additional reminder data
+  createdAt     DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_reminders")
+  @@index([elderId, scheduledFor])
+}
+
+model CompanionActivity {
+  id           String   @id @default(uuid())
+  elderId      String
+  activityType String   // CONVERSATION, REMINDER, EXERCISE, CALL, MOOD_CHECK
+  description  String
+  mood         String?  // How the elder seemed during this activity
+  duration     Int?     // Duration in seconds
+  timestamp    DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_activities")
+  @@index([elderId, timestamp])
 }
