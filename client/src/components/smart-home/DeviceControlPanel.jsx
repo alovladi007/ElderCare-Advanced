@@ -3,8 +3,8 @@ import {
   Power, Plus, Filter, Search, Lightbulb, Thermometer,
   Lock, Camera, DoorClosed, Settings as SettingsIcon
 } from 'lucide-react';
-import { Card, Badge, Button, Loading, Alert, Input, Select, Modal } from '../..';
-import { smartHomeService } from '../../../services';
+import { Card, Badge, Button, Loading, Alert, Input, Select, Modal } from '..';
+import { smartHomeService } from '../../services';
 
 const DeviceControlPanel = ({ homeId }) => {
   const [loading, setLoading] = useState(true);

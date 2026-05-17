@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
-import { Card, Badge, Loading, Alert } from '../..';
-import { smartHomeService } from '../../../services';
+import { Card, Badge, Loading, Alert } from '..';
+import { smartHomeService } from '../../services';
 
 const DashboardOverview = ({ homeId }) => {
   const [loading, setLoading] = useState(true);

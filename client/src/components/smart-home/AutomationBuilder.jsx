@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Plus, Edit, Trash, Play, Pause } from 'lucide-react';
-import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '../..';
-import { smartHomeService } from '../../../services';
+import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
+import { smartHomeService } from '../../services';
 
 const AutomationBuilder = ({ homeId }) => {
   const [loading, setLoading] = useState(true);

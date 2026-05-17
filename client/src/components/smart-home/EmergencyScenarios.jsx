@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Plus, Play, X, AlertTriangle, CheckCircle } from 'lucide-react';
-import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '../..';
-import { smartHomeService } from '../../../services';
+import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
+import { smartHomeService } from '../../services';
 
 const EmergencyScenarios = ({ homeId }) => {
   const [loading, setLoading] = useState(true);

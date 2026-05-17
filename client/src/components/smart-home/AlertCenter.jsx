@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Filter, Search, CheckCheck, Trash2, AlertTriangle, Info, AlertCircle } from 'lucide-react';
-import { Card, Badge, Button, Loading, Alert, Input, Select } from '../..';
-import { smartHomeService } from '../../../services';
+import { Card, Badge, Button, Loading, Alert, Input, Select } from '..';
+import { smartHomeService } from '../../services';
 
 const AlertCenter = ({ homeId }) => {
   const [loading, setLoading] = useState(true);
