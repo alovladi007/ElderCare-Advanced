@@ -82,6 +82,11 @@ model ElderProfile {
   emergencyContacts   EmergencyContact[]
   monitoringConfig    MonitoringConfig?
 
+  // Voice Control Relations
+  voiceCommands       VoiceCommand[]
+  voiceExecutions     VoiceExecution[]
+  voicePreference     VoicePreference?
+
   @@map("elder_profiles")
 }
 
@@ -203,6 +208,8 @@ model Home {
   iotTokens                IotToken[]
   helpTriggers             HelpTrigger[]
   emergencyScenarioInstances EmergencyScenarioInstance[]
+  voiceCommands            VoiceCommand[]
+  voiceExecutions          VoiceExecution[]
 
   @@map("homes")
 }
@@ -1103,4 +1110,59 @@ model MonitoringConfig {
   elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
 
   @@map("monitoring_configs")
+}
+
+// ============================================================================
+// VOICE CONTROL & RECOGNITION
+// ============================================================================
+
+model VoiceCommand {
+  id         String   @id @default(uuid())
+  elderId    String
+  homeId     String
+  transcript String   // Speech-to-text transcription
+  confidence Float    // Recognition confidence (0.0 - 1.0)
+  timestamp  DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  home  Home         @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  @@map("voice_commands")
+  @@index([elderId, timestamp])
+}
+
+model VoiceExecution {
+  id          String   @id @default(uuid())
+  elderId     String
+  homeId      String
+  transcript  String   // Original voice command
+  action      String   // Parsed action type
+  status      String   // SUCCESS, FAILED, PARTIAL
+  result      Json?    // Execution result details
+  executedAt  DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  home  Home         @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  @@map("voice_executions")
+  @@index([elderId, executedAt])
+}
+
+model VoicePreference {
+  id                  String   @id @default(uuid())
+  elderId             String   @unique
+  enabled             Boolean  @default(true)
+  language            String   @default("en-US")
+  voiceSpeed          Float    @default(1.0)  // Speech output speed
+  voiceVolume         Float    @default(0.8)  // Speech output volume
+  confirmCommands     Boolean  @default(false) // Ask for confirmation before executing
+  enableEmergency     Boolean  @default(true)  // Allow emergency voice commands
+  enableDeviceControl Boolean  @default(true)  // Allow device control
+  wakeWord            String?  // Custom wake word (e.g., "Hey ElderCare")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("voice_preferences")
 }
