@@ -37,6 +37,7 @@ model User {
   elderProfile           ElderProfile?
   createdAutomationRules AutomationRule[]
   issuedActuatorCommands ActuatorCommand[]
+  roles                  UserRole[]
 
   @@map("users")
 }
@@ -47,7 +48,13 @@ model ElderProfile {
   dateOfBirth     DateTime
   gender          String
   medicalRecordNo String    @unique
+  firstName       String    // Added for emergency reports
+  lastName        String    // Added for emergency reports
+  bloodType       String?   // Added for emergency reports
   address         String?
+  city            String?   // Added for emergency reports
+  state           String?   // Added for emergency reports
+  zipCode         String?   // Added for emergency reports
   emergencyContact Json?    // { name, relationship, phone }
   medicalConditions Json?   // Array of conditions
   allergies        Json?    // Array of allergies
@@ -66,6 +73,31 @@ model ElderProfile {
   carePlan           CarePlan?
   appointments       Appointment[]
   medications        Medication[]
+
+  // Emergency Monitoring Relations
+  healthcareProviders HealthcareProvider[]
+  emergencyServices   EmergencyService[]
+  emergencyReports    EmergencyReport[]
+  emergencyDispatches EmergencyDispatch[]
+  medicalHistory      MedicalHistory?
+  emergencyContacts   EmergencyContact[]
+  monitoringConfig    MonitoringConfig?
+
+  // Voice Control Relations
+  voiceCommands       VoiceCommand[]
+  voiceExecutions     VoiceExecution[]
+  voicePreference     VoicePreference?
+
+  // AI Companion Relations
+  companionSettings       CompanionSettings?
+  companionConversations  CompanionConversation[]
+  companionReminders      CompanionReminder[]
+  companionActivities     CompanionActivity[]
+
+  // ML & Analytics Relations
+  mlPredictions           MLPrediction[]
+  gaitAnalyses            GaitAnalysis[]
+  locationTracking        LocationTracking[]
 
   @@map("elder_profiles")
 }
@@ -157,6 +189,7 @@ model Alert {
   elder                ElderProfile       @relation(fields: [elderId], references: [id], onDelete: Cascade)
   sourceSensorEvent    SensorEvent?       @relation(fields: [sourceSensorEventId], references: [id])
   sourceEmergencyScenario EmergencyScenario? @relation(fields: [sourceEmergencyScenarioId], references: [id])
+  emergencyNotifications EmergencyNotification[]
 
   @@map("alerts")
 }
@@ -187,6 +220,9 @@ model Home {
   iotTokens                IotToken[]
   helpTriggers             HelpTrigger[]
   emergencyScenarioInstances EmergencyScenarioInstance[]
+  voiceCommands            VoiceCommand[]
+  voiceExecutions          VoiceExecution[]
+  cameras                  Camera[]
 
   @@map("homes")
 }
@@ -804,6 +840,7 @@ model Medication {
 
   elder  ElderProfile      @relation(fields: [elderId], references: [id], onDelete: Cascade)
   doses  MedicationDose[]
+  logs   MedicationLog[]
 
   @@map("medications")
 }
@@ -856,4 +893,799 @@ model Note {
   updatedAt   DateTime @updatedAt
 
   @@map("notes")
+}
+
+// ============================================================================
+// 24/7 EMERGENCY MONITORING & ALERTING SYSTEM
+// ============================================================================
+
+enum HealthcareProviderType {
+  HOSPITAL
+  CLINIC
+  PRIMARY_CARE
+  SPECIALIST
+  URGENT_CARE
+  EMERGENCY_ROOM
+}
+
+model HealthcareProvider {
+  id       String                  @id @default(uuid())
+  elderId  String
+  type     HealthcareProviderType
+  name     String
+  email    String?
+  phone    String?
+  address  String?
+  city     String?
+  state    String?
+  zipCode  String?
+  priority Int                     @default(5) // 1 = highest priority
+  active   Boolean                 @default(true)
+  notes    String?
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("healthcare_providers")
+}
+
+enum EmergencyServiceType {
+  POLICE
+  FIRE
+  AMBULANCE
+  EMERGENCY_DISPATCH
+}
+
+model EmergencyService {
+  id        String               @id @default(uuid())
+  elderId   String
+  type      EmergencyServiceType
+  name      String               // e.g., "City Police Department"
+  email     String?
+  phone     String               // Emergency contact number
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  active    Boolean              @default(true)
+  notes     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_services")
+}
+
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PHONE_CALL
+  PUSH
+  DISPATCH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  QUEUED
+}
+
+model EmergencyNotification {
+  id               String             @id @default(uuid())
+  alertId          String
+  recipientType    String             // HOSPITAL, CLINIC, POLICE, FAMILY, etc.
+  recipientName    String
+  recipientContact String             // Email or phone
+  method           NotificationMethod
+  status           NotificationStatus @default(PENDING)
+  metadata         Json?              // Additional info about the notification
+  sentAt           DateTime           @default(now())
+  deliveredAt      DateTime?
+  failedReason     String?
+  createdAt        DateTime           @default(now())
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_notifications")
+}
+
+model EmergencyReport {
+  id          String        @id @default(uuid())
+  elderId     String
+  alertType   String        // MEDICAL, FALL, VITAL_ABNORMAL, etc.
+  severity    AlertSeverity
+  title       String
+  summary     String
+  reportData  Json          // Comprehensive report with all patient data
+  generatedAt DateTime      @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  dispatches EmergencyDispatch[]
+
+  @@map("emergency_reports")
+}
+
+enum DispatchPriority {
+  IMMEDIATE
+  URGENT
+  ROUTINE
+}
+
+enum DispatchStatus {
+  PENDING
+  DISPATCHED
+  EN_ROUTE
+  ON_SCENE
+  COMPLETED
+  CANCELLED
+}
+
+model EmergencyDispatch {
+  id               String           @id @default(uuid())
+  elderId          String
+  reportId         String
+  serviceType      String           // POLICE, FIRE, AMBULANCE
+  serviceName      String
+  serviceContact   String?
+  priority         DispatchPriority
+  status           DispatchStatus   @default(PENDING)
+  incidentType     String
+  incidentSeverity AlertSeverity
+  location         Json             // Address, coordinates
+  patientInfo      Json             // Name, age, gender, blood type
+  notes            String?
+  dispatchedAt     DateTime?
+  arrivedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  elder  ElderProfile    @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  report EmergencyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_dispatches")
+}
+
+model MedicalHistory {
+  id              String   @id @default(uuid())
+  elderId         String   @unique
+  conditions      Json     @default("[]") // Array of medical conditions
+  allergies       Json     @default("[]") // Array of allergies
+  surgeries       Json     @default("[]") // Array of past surgeries
+  chronicDiseases Json     @default("[]") // Array of chronic diseases
+  familyHistory   Json?    // Family medical history
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("medical_history")
+}
+
+model EmergencyContact {
+  id           String   @id @default(uuid())
+  elderId      String
+  name         String
+  relationship String   // "Daughter", "Son", "Spouse", etc.
+  phone        String
+  email        String?
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  isPrimary    Boolean  @default(false)
+  active       Boolean  @default(true)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_contacts")
+}
+
+// ============================================================================
+// 24/7 MONITORING CONFIGURATION
+// ============================================================================
+
+model MonitoringConfig {
+  id                    String   @id @default(uuid())
+  elderId               String   @unique
+  enabled               Boolean  @default(true)
+
+  // Vital thresholds (JSON with custom ranges)
+  vitalThresholds       Json?
+
+  // Alert preferences
+  notifyFamily          Boolean  @default(true)
+  notifyHealthcare      Boolean  @default(true)
+  notifyEmergency       Boolean  @default(true)
+
+  // Quiet hours (no non-critical alerts)
+  quietHoursStart       String?  // e.g., "22:00"
+  quietHoursEnd         String?  // e.g., "07:00"
+
+  // Monitoring intervals
+  vitalCheckInterval    Int      @default(300) // seconds (5 min default)
+  inactivityTimeout     Int      @default(3600) // seconds (1 hour default)
+
+  // Emergency escalation
+  autoEscalateCritical  Boolean  @default(true)
+  escalationDelay       Int      @default(300) // seconds (5 min before escalation)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("monitoring_configs")
+}
+
+// ============================================================================
+// VOICE CONTROL & RECOGNITION
+// ============================================================================
+
+model VoiceCommand {
+  id         String   @id @default(uuid())
+  elderId    String
+  homeId     String
+  transcript String   // Speech-to-text transcription
+  confidence Float    // Recognition confidence (0.0 - 1.0)
+  timestamp  DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  home  Home         @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  @@map("voice_commands")
+  @@index([elderId, timestamp])
+}
+
+model VoiceExecution {
+  id          String   @id @default(uuid())
+  elderId     String
+  homeId      String
+  transcript  String   // Original voice command
+  action      String   // Parsed action type
+  status      String   // SUCCESS, FAILED, PARTIAL
+  result      Json?    // Execution result details
+  executedAt  DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  home  Home         @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  @@map("voice_executions")
+  @@index([elderId, executedAt])
+}
+
+model VoicePreference {
+  id                  String   @id @default(uuid())
+  elderId             String   @unique
+  enabled             Boolean  @default(true)
+  language            String   @default("en-US")
+  voiceSpeed          Float    @default(1.0)  // Speech output speed
+  voiceVolume         Float    @default(0.8)  // Speech output volume
+  confirmCommands     Boolean  @default(false) // Ask for confirmation before executing
+  enableEmergency     Boolean  @default(true)  // Allow emergency voice commands
+  enableDeviceControl Boolean  @default(true)  // Allow device control
+  wakeWord            String?  // Custom wake word (e.g., "Hey ElderCare")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("voice_preferences")
+}
+
+// ============================================================================
+// AI COMPANION & PERSONAL ASSISTANT
+// ============================================================================
+
+model CompanionSettings {
+  id                   String   @id @default(uuid())
+  elderId              String   @unique
+  enabled              Boolean  @default(true)
+
+  // Personality customization
+  personalityName      String   @default("Emma")
+  personalityTraits    Json     @default("[]") // Array of personality traits
+  personalityGender    String?  @default("female")
+
+  // Features
+  voiceEnabled         Boolean  @default(true)   // Text-to-speech responses
+  proactiveReminders   Boolean  @default(true)   // Send automatic reminders
+  emotionalSupport     Boolean  @default(true)   // Provide companionship
+  conversationHistory  Boolean  @default(true)   // Remember past conversations
+
+  // Reminder preferences
+  medicationReminders  Boolean  @default(true)
+  appointmentReminders Boolean  @default(true)
+  exerciseReminders    Boolean  @default(true)
+  checkInFrequency     String?  @default("daily") // daily, twice_daily, weekly
+
+  // Communication style
+  responseLength       String   @default("medium") // short, medium, long
+  formality            String   @default("friendly") // formal, friendly, casual
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_settings")
+}
+
+model CompanionConversation {
+  id                 String   @id @default(uuid())
+  elderId            String
+  userMessage        String   // What the elder said
+  companionResponse  String   // What the AI responded
+  sentiment          String?  // POSITIVE, NEUTRAL, NEGATIVE, CONCERNED
+  actionTriggered    Json?    // Any actions triggered (reminders, calls, etc.)
+  timestamp          DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_conversations")
+  @@index([elderId, timestamp])
+}
+
+model CompanionReminder {
+  id            String   @id @default(uuid())
+  elderId       String
+  reminderType  String   // MEDICATION, APPOINTMENT, EXERCISE, CHECK_IN, CUSTOM
+  title         String
+  message       String
+  scheduledFor  DateTime
+  delivered     Boolean  @default(false)
+  deliveredAt   DateTime?
+  acknowledged  Boolean  @default(false)
+  metadata      Json?    // Additional reminder data
+  createdAt     DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_reminders")
+  @@index([elderId, scheduledFor])
+}
+
+model CompanionActivity {
+  id           String   @id @default(uuid())
+  elderId      String
+  activityType String   // CONVERSATION, REMINDER, EXERCISE, CALL, MOOD_CHECK
+  description  String
+  mood         String?  // How the elder seemed during this activity
+  duration     Int?     // Duration in seconds
+  timestamp    DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("companion_activities")
+  @@index([elderId, timestamp])
+}
+
+// ============================================================================
+// ML PREDICTIONS & ANALYTICS
+// ============================================================================
+
+model MLPrediction {
+  id              String   @id @default(uuid())
+  elderId         String
+  predictionType  String   // FALL_RISK, HEALTH_DETERIORATION, MEDICATION_ADHERENCE, COMPREHENSIVE
+  predictions     Json     // Structured prediction results
+  confidence      Float?   // Overall confidence score
+  generatedAt     DateTime @default(now())
+  validUntil      DateTime? // When prediction expires
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("ml_predictions")
+  @@index([elderId, generatedAt])
+}
+
+model GaitAnalysis {
+  id              String   @id @default(uuid())
+  elderId         String
+  gaitSpeed       Float    // meters per second
+  stepLength      Float    // centimeters
+  cadence         Float    // steps per minute
+  symmetry        Float    // 0-100
+  stability       Float    // 0-100
+  abnormalities   Json     @default("[]") // Array of detected issues
+  recommendations Json     @default("[]") // Array of recommendations
+  analyzedAt      DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("gait_analysis")
+  @@index([elderId, analyzedAt])
+}
+
+model LocationTracking {
+  id        String   @id @default(uuid())
+  elderId   String
+  location  Json     // { latitude, longitude, accuracy }
+  address   String?
+  activity  String?  // WALKING, STATIONARY, DRIVING
+  timestamp DateTime @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("location_tracking")
+  @@index([elderId, timestamp])
+}
+
+model MedicationLog {
+  id          String     @id @default(uuid())
+  medicationId String?
+  elderId     String?
+  scheduledAt DateTime
+  recordedAt  DateTime   @default(now())
+  status      DoseStatus @default(PENDING)
+  notes       String?
+
+  medication Medication? @relation(fields: [medicationId], references: [id], onDelete: SetNull)
+
+  @@map("medication_logs")
+  @@index([scheduledAt])
+}
+
+// ============================================================================
+// IOT DEVICES & EDGE COMPUTING
+// ============================================================================
+
+enum DeviceType {
+  MEDICAL_WEARABLE
+  ENVIRONMENTAL_SENSOR
+  SAFETY_DEVICE
+  ACTIVITY_MONITOR
+  CAMERA
+  ROBOT
+  GATEWAY
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+  ERROR
+}
+
+enum DeviceProtocol {
+  BLE
+  ZIGBEE
+  ZWAVE
+  WIFI
+  LORAWAN
+  ETHERNET
+}
+
+model Device {
+  id                  String         @id @default(uuid())
+  homeId              String?
+  type                DeviceType
+  protocol            DeviceProtocol
+  name                String
+  manufacturer        String?
+  modelNumber         String?
+  serialNumber        String?
+  firmwareVersion     String?
+  status              DeviceStatus   @default(OFFLINE)
+  batteryLevel        Float?         // 0-100
+  lastSeen            DateTime?
+  location            String?        // Room or area
+  capabilities        Json?          // Device capabilities
+  configuration       Json?          // Device configuration
+  metadata            Json?
+  encryptionEnabled   Boolean        @default(false)
+  lastSecurityUpdate  DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  home    Home?          @relation(fields: [homeId], references: [id], onDelete: SetNull)
+  readings SensorReading[]
+
+  @@map("devices")
+}
+
+model SensorReading {
+  id         String   @id @default(uuid())
+  deviceId   String
+  sensorType String   // TEMPERATURE, HUMIDITY, MOTION, DOOR, etc.
+  value      Float
+  unit       String?
+  metadata   Json?
+  timestamp  DateTime @default(now())
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("sensor_readings")
+  @@index([deviceId, timestamp])
+}
+
+model MotionSensor {
+  id        String   @id @default(uuid())
+  location  String
+  intensity Float    // 0-1
+  timestamp DateTime @default(now())
+
+  @@map("motion_sensors")
+}
+
+model Camera {
+  id         String   @id @default(uuid())
+  homeId     String
+  location   String
+  active     Boolean  @default(true)
+  privacyMode Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  home Home @relation(fields: [homeId], references: [id], onDelete: Cascade)
+
+  @@map("cameras")
+}
+
+model EdgeGateway {
+  id              String   @id @default(uuid())
+  homeId          String
+  name            String
+  ipAddress       String
+  status          String   @default("ONLINE") // ONLINE, OFFLINE, SYNCING
+  lastHeartbeat   DateTime?
+  capabilities    Json?    // Processing capabilities
+  resources       Json?    // CPU, memory, storage
+  version         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("edge_gateways")
+}
+
+// ============================================================================
+// ROBOTICS
+// ============================================================================
+
+enum RobotType {
+  COMPANION
+  TELEPRESENCE
+  ASSISTANT
+  THERAPEUTIC
+}
+
+model Robot {
+  id              String     @id @default(uuid())
+  homeId          String?
+  type            RobotType
+  name            String
+  manufacturer    String?
+  modelNumber     String?
+  status          String     @default("OFFLINE") // ONLINE, OFFLINE, CHARGING, MAINTENANCE
+  batteryLevel    Float?     // 0-100
+  location        String?
+  capabilities    Json?      // speak, listen, move, fetch, etc.
+  configuration   Json?
+  lastCommand     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("robots")
+}
+
+// ============================================================================
+// TELEMEDICINE
+// ============================================================================
+
+enum ConsultationStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model VideoConsultation {
+  id               String              @id @default(uuid())
+  elderId          String
+  doctorId         String?
+  doctorName       String
+  scheduledAt      DateTime
+  startedAt        DateTime?
+  endedAt          DateTime?
+  duration         Int?                // minutes
+  status           ConsultationStatus  @default(SCHEDULED)
+  roomId           String?             // Twilio/Agora room ID
+  recordingUrl     String?
+  notes            String?
+  diagnosis        String?
+  prescriptions    Json?               // Array of prescriptions
+  followUpRequired Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@map("video_consultations")
+}
+
+model RPMSession {
+  id                String   @id @default(uuid())
+  elderId           String
+  monthYear         String   // "2024-05" for May 2024
+  minutesLogged     Int      @default(0)
+  cptCode99453      Boolean  @default(false) // Device setup
+  cptCode99454      Boolean  @default(false) // Device supply
+  cptCode99457      Boolean  @default(false) // First 20 minutes
+  cptCode99458Count Int      @default(0)     // Additional 20-minute blocks
+  billable          Boolean  @default(false)
+  billedAt          DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("rpm_sessions")
+  @@unique([elderId, monthYear])
+}
+
+// ============================================================================
+// BLOCKCHAIN
+// ============================================================================
+
+model BlockchainRecord {
+  id                String   @id @default(uuid())
+  elderId           String
+  recordType        String   // VITAL, MEDICATION, APPOINTMENT, etc.
+  dataHash          String   // Hash of the encrypted data
+  ipfsHash          String?  // IPFS hash for encrypted data storage
+  blockchainTxHash  String   // Transaction hash on blockchain
+  blockNumber       Int?
+  smartContractAddr String?
+  encryptionKey     String?  // Encrypted with recipient's public key
+  createdAt         DateTime @default(now())
+
+  @@map("blockchain_records")
+  @@index([elderId])
+}
+
+model DataAccessLog {
+  id             String   @id @default(uuid())
+  elderId        String
+  accessorUserId String
+  accessorType   String   // FAMILY, DOCTOR, CAREGIVER, SYSTEM
+  resourceType   String   // VITALS, MEDICATIONS, MEDICAL_HISTORY
+  resourceId     String?
+  action         String   // READ, WRITE, UPDATE, DELETE
+  granted        Boolean
+  reason         String?
+  ipAddress      String?
+  timestamp      DateTime @default(now())
+
+  @@map("data_access_logs")
+  @@index([elderId, timestamp])
+}
+
+// ============================================================================
+// ZERO-TRUST SECURITY
+// ============================================================================
+
+model AccessLog {
+  id           String   @id @default(uuid())
+  userId       String
+  resourceId   String
+  resourceType String
+  action       String
+  granted      Boolean
+  reason       String?
+  ipAddress    String?
+  deviceId     String?
+  location     Json?    // { latitude, longitude }
+  userAgent    String?
+  timestamp    DateTime @default(now())
+
+  @@map("access_logs")
+  @@index([userId, timestamp])
+}
+
+model AuthAttempt {
+  id        String   @id @default(uuid())
+  userId    String?
+  email     String?
+  ipAddress String
+  success   Boolean
+  failReason String?
+  timestamp DateTime @default(now())
+
+  @@map("auth_attempts")
+  @@index([ipAddress, timestamp])
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  role   String // FAMILY_MEMBER, HEALTHCARE_PROVIDER, CAREGIVER, ADMIN
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_roles")
+  @@unique([userId, role])
+}
+
+model EncryptionKey {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  publicKey  String   // RSA public key (PEM format)
+  privateKey String?  // Encrypted private key (optional, user-controlled)
+  algorithm  String   @default("rsa-4096")
+  createdAt  DateTime @default(now())
+  rotatedAt  DateTime?
+
+  @@map("encryption_keys")
+}
+
+// ============================================================================
+// ANALYTICS & METRICS
+// ============================================================================
+
+model PlatformMetric {
+  id        String   @id @default(uuid())
+  metricType String  // API_LATENCY, ERROR_RATE, ACTIVE_USERS, etc.
+  value     Float
+  unit      String?
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  @@map("platform_metrics")
+  @@index([metricType, timestamp])
+}
+
+// ============================================================================
+// NLU & VOICE HEALTH
+// ============================================================================
+
+model NLUAnalysis {
+  id          String   @id @default(uuid())
+  elderId     String
+  input       String   // Original text/speech
+  intents     Json     // Detected intents with confidence
+  entities    Json     // Extracted entities
+  emotions    Json     // Detected emotions
+  suggestions Json?    // Contextual suggestions
+  urgency     String?  // LOW, MEDIUM, HIGH, CRITICAL
+  timestamp   DateTime @default(now())
+
+  @@map("nlu_analysis")
+  @@index([elderId, timestamp])
+}
+
+model VoiceHealthMetrics {
+  id                  String   @id @default(uuid())
+  elderId             String
+  pitchMean           Float?
+  pitchVariability    Float?
+  speakingRate        Float?
+  hesitationScore     Float?
+  clarityScore        Float?
+  respiratoryScore    Float?
+  cognitiveScore      Float?
+  emotionalScore      Float?
+  parkinsonsScore     Float?
+  strokeRiskScore     Float?
+  overallRiskLevel    String?  // LOW, MEDIUM, HIGH, CRITICAL
+  concerns            Json?    // Array of concerns
+  recommendations     Json?    // Array of recommendations
+  timestamp           DateTime @default(now())
+
+  @@map("voice_health_metrics")
+  @@index([elderId, timestamp])
+}
+
+model VoiceBaseline {
+  id               String   @id @default(uuid())
+  elderId          String   @unique
+  baselineMetrics  Json     // Average voice characteristics
+  sampleCount      Int      @default(0)
+  lastUpdated      DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  @@map("voice_baselines")
 }

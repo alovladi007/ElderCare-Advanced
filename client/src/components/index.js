@@ -31,6 +31,19 @@ export { default as EmergencyContactManager } from './elder/EmergencyContactMana
 export { default as MedicalHistoryForm } from './elder/MedicalHistoryForm';
 export { default as FamilyMemberManager } from './elder/FamilyMemberManager';
 
+// Care Management Components
+export { default as CareOverview } from './care/CareOverview';
+export { default as MedicationSchedule } from './care/MedicationSchedule';
+export { default as AppointmentCalendar } from './care/AppointmentCalendar';
+export { default as VitalSignsCharts } from './care/VitalSignsCharts';
+export { default as CareTaskList } from './care/CareTaskList';
+
+// Booking & Payment Components
+export { default as ServiceSelector } from './booking/ServiceSelector';
+export { default as BookingForm } from './booking/BookingForm';
+export { default as PaymentCheckout } from './booking/PaymentCheckout';
+export { default as PaymentHistory } from './booking/PaymentHistory';
+
 // Existing Components
 export { default as Navbar } from './Navbar';
 export { default as Footer } from './Footer';

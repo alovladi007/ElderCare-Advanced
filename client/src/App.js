@@ -22,6 +22,9 @@ const SmartHomeDashboard = lazy(() => import('./pages/SmartHomeDashboard'));
 const SmartHomeRedirectPage = lazy(() => import('./pages/SmartHomeRedirectPage'));
 const SmartHomeHub = lazy(() => import('./pages/smart-home/SmartHomeHub'));
 const ElderProfilePage = lazy(() => import('./pages/elder/ElderProfilePage'));
+const CareManagementDashboard = lazy(() => import('./pages/care/CareManagementDashboard'));
+const BookingDashboard = lazy(() => import('./pages/booking/BookingDashboard'));
+const EmergencyMonitoringPage = lazy(() => import('./pages/monitoring/EmergencyMonitoringPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // Lazy-loaded service pages
@@ -83,6 +86,9 @@ function App() {
             <Route path="/dashboard" element={<UnifiedDashboard />} />
             <Route path="/elder-dashboard" element={<ElderPortalDashboard />} />
             <Route path="/elder-profile/:elderId" element={<ElderProfilePage />} />
+            <Route path="/care-management/:elderId" element={<CareManagementDashboard />} />
+            <Route path="/emergency-monitoring/:elderId" element={<EmergencyMonitoringPage />} />
+            <Route path="/booking" element={<BookingDashboard />} />
 
             {/* Employee Routes (No Navbar/Footer) */}
             <Route path="/employee-login" element={<EmployeeLoginPage />} />
