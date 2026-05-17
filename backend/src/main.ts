@@ -88,13 +88,15 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
 
   logger.log(
     `ElderCare Advanced Backend started successfully`,
     'Bootstrap',
     {
       port,
+      host,
       nodeEnv: process.env.NODE_ENV || 'development',
       apiDocs: `http://localhost:${port}/api/docs`,
     }
