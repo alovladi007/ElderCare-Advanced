@@ -37,7 +37,7 @@ model User {
   elderProfile           ElderProfile?
   createdAutomationRules AutomationRule[]
   issuedActuatorCommands ActuatorCommand[]
-  roles                  UserRole[]
+  accessRoles            RoleAssignment[] @relation("accessRoles")
 
   @@map("users")
 }
@@ -276,6 +276,8 @@ enum DeviceStatus {
   ONLINE
   OFFLINE
   UNKNOWN
+  MAINTENANCE
+  ERROR
 }
 
 model Device {
@@ -304,6 +306,7 @@ model Device {
   sensorEvents     SensorEvent[]
   actuatorCommands ActuatorCommand[]
   helpTriggers     HelpTrigger[]
+  sensorReadings   SensorReading[]
 
   @@unique([homeId, identifier])
   @@map("devices")
@@ -1338,23 +1341,6 @@ model MedicationLog {
 // IOT DEVICES & EDGE COMPUTING
 // ============================================================================
 
-enum DeviceType {
-  MEDICAL_WEARABLE
-  ENVIRONMENTAL_SENSOR
-  SAFETY_DEVICE
-  ACTIVITY_MONITOR
-  CAMERA
-  ROBOT
-  GATEWAY
-}
-
-enum DeviceStatus {
-  ONLINE
-  OFFLINE
-  MAINTENANCE
-  ERROR
-}
-
 enum DeviceProtocol {
   BLE
   ZIGBEE
@@ -1362,34 +1348,6 @@ enum DeviceProtocol {
   WIFI
   LORAWAN
   ETHERNET
-}
-
-model Device {
-  id                  String         @id @default(uuid())
-  homeId              String?
-  type                DeviceType
-  protocol            DeviceProtocol
-  name                String
-  manufacturer        String?
-  modelNumber         String?
-  serialNumber        String?
-  firmwareVersion     String?
-  status              DeviceStatus   @default(OFFLINE)
-  batteryLevel        Float?         // 0-100
-  lastSeen            DateTime?
-  location            String?        // Room or area
-  capabilities        Json?          // Device capabilities
-  configuration       Json?          // Device configuration
-  metadata            Json?
-  encryptionEnabled   Boolean        @default(false)
-  lastSecurityUpdate  DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-
-  home    Home?          @relation(fields: [homeId], references: [id], onDelete: SetNull)
-  readings SensorReading[]
-
-  @@map("devices")
 }
 
 model SensorReading {
@@ -1599,12 +1557,12 @@ model AuthAttempt {
   @@index([ipAddress, timestamp])
 }
 
-model UserRole {
+model RoleAssignment {
   id     String @id @default(uuid())
   userId String
   role   String // FAMILY_MEMBER, HEALTHCARE_PROVIDER, CAREGIVER, ADMIN
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("accessRoles", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_roles")
   @@unique([userId, role])

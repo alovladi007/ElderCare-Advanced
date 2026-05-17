@@ -1,18 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
 import { LoggerService } from '../logging/logger.service';
+
+let sgMail: any = null;
+try {
+  sgMail = require('@sendgrid/mail');
+} catch (error) {
+  // SendGrid not available
+}
 
 @Injectable()
 export class EmailService {
+  private sendGridConfigured = false;
+
   constructor(
     private configService: ConfigService,
     private logger: LoggerService,
   ) {
     const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
-    if (apiKey) {
-      sgMail.setApiKey(apiKey);
-      this.logger.log('SendGrid configured successfully', 'EmailService');
+    if (apiKey && apiKey !== 'your_sendgrid_api_key_here' && sgMail) {
+      try {
+        sgMail.setApiKey(apiKey);
+        this.sendGridConfigured = true;
+        this.logger.log('SendGrid configured successfully', 'EmailService');
+      } catch (error) {
+        this.logger.warn(
+          `SendGrid initialization failed: ${error.message}`,
+          'EmailService',
+        );
+      }
     } else {
       this.logger.warn(
         'SENDGRID_API_KEY not configured - emails will be logged only',
@@ -45,9 +61,7 @@ export class EmailService {
     };
 
     try {
-      const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
-
-      if (!apiKey) {
+      if (!this.sendGridConfigured) {
         // Development mode - log email instead of sending
         this.logger.debug('Email (not sent - dev mode)', 'EmailService', {
           to: msg.to,

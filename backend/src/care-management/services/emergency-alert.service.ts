@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { LoggerService } from '../../common/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+
+let sgMail: any = null;
+try {
+  sgMail = require('@sendgrid/mail');
+} catch (error) {
+  // SendGrid not available
+}
 
 interface AlertRecipient {
   type: 'HOSPITAL' | 'CLINIC' | 'POLICE' | 'FAMILY' | 'CAREGIVER';
@@ -26,6 +32,8 @@ interface EmergencyAlert {
 
 @Injectable()
 export class EmergencyAlertService {
+  private sendGridConfigured = false;
+
   constructor(
     private prisma: PrismaService,
     private logger: LoggerService,
@@ -33,8 +41,13 @@ export class EmergencyAlertService {
   ) {
     // Initialize SendGrid
     const apiKey = this.config.get<string>('SENDGRID_API_KEY');
-    if (apiKey && apiKey !== 'SG.test_key_replace_with_real_sendgrid_key') {
-      sgMail.setApiKey(apiKey);
+    if (apiKey && apiKey !== 'SG.test_key_replace_with_real_sendgrid_key' && apiKey !== 'your_sendgrid_api_key_here' && sgMail) {
+      try {
+        sgMail.setApiKey(apiKey);
+        this.sendGridConfigured = true;
+      } catch (error) {
+        this.logger.warn(`SendGrid initialization failed: ${error.message}`, 'EmergencyAlertService');
+      }
     }
   }
 
@@ -380,7 +393,6 @@ export class EmergencyAlertService {
     report: any,
     alertId: string,
   ) {
-    const apiKey = this.config.get<string>('SENDGRID_API_KEY');
     const fromEmail = this.config.get<string>('EMAIL_FROM', 'noreply@eldercare.com');
 
     // Format email based on recipient type
@@ -396,8 +408,8 @@ export class EmergencyAlertService {
     }
 
     try {
-      // Only send if real SendGrid key is configured
-      if (apiKey && apiKey !== 'SG.test_key_replace_with_real_sendgrid_key') {
+      // Only send if SendGrid is configured
+      if (this.sendGridConfigured && sgMail) {
         await sgMail.send({
           to: recipient.email!,
           from: fromEmail,

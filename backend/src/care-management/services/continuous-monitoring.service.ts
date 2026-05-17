@@ -28,7 +28,8 @@ export class ContinuousMonitoringService implements OnModuleInit, OnModuleDestro
     }, 60000); // Check every minute
 
     // Initialize monitoring for all active elders
-    await this.initializeAllMonitoring();
+    // TODO: Update to use correct Prisma models (ElderProfile, User, etc.)
+    // await this.initializeAllMonitoring();
   }
 
   /**
