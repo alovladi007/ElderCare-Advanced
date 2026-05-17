@@ -47,7 +47,13 @@ model ElderProfile {
   dateOfBirth     DateTime
   gender          String
   medicalRecordNo String    @unique
+  firstName       String    // Added for emergency reports
+  lastName        String    // Added for emergency reports
+  bloodType       String?   // Added for emergency reports
   address         String?
+  city            String?   // Added for emergency reports
+  state           String?   // Added for emergency reports
+  zipCode         String?   // Added for emergency reports
   emergencyContact Json?    // { name, relationship, phone }
   medicalConditions Json?   // Array of conditions
   allergies        Json?    // Array of allergies
@@ -66,6 +72,15 @@ model ElderProfile {
   carePlan           CarePlan?
   appointments       Appointment[]
   medications        Medication[]
+
+  // Emergency Monitoring Relations
+  healthcareProviders HealthcareProvider[]
+  emergencyServices   EmergencyService[]
+  emergencyReports    EmergencyReport[]
+  emergencyDispatches EmergencyDispatch[]
+  medicalHistory      MedicalHistory?
+  emergencyContacts   EmergencyContact[]
+  monitoringConfig    MonitoringConfig?
 
   @@map("elder_profiles")
 }
@@ -157,6 +172,7 @@ model Alert {
   elder                ElderProfile       @relation(fields: [elderId], references: [id], onDelete: Cascade)
   sourceSensorEvent    SensorEvent?       @relation(fields: [sourceSensorEventId], references: [id])
   sourceEmergencyScenario EmergencyScenario? @relation(fields: [sourceEmergencyScenarioId], references: [id])
+  emergencyNotifications EmergencyNotification[]
 
   @@map("alerts")
 }
@@ -856,4 +872,235 @@ model Note {
   updatedAt   DateTime @updatedAt
 
   @@map("notes")
+}
+
+// ============================================================================
+// 24/7 EMERGENCY MONITORING & ALERTING SYSTEM
+// ============================================================================
+
+enum HealthcareProviderType {
+  HOSPITAL
+  CLINIC
+  PRIMARY_CARE
+  SPECIALIST
+  URGENT_CARE
+  EMERGENCY_ROOM
+}
+
+model HealthcareProvider {
+  id       String                  @id @default(uuid())
+  elderId  String
+  type     HealthcareProviderType
+  name     String
+  email    String?
+  phone    String?
+  address  String?
+  city     String?
+  state    String?
+  zipCode  String?
+  priority Int                     @default(5) // 1 = highest priority
+  active   Boolean                 @default(true)
+  notes    String?
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("healthcare_providers")
+}
+
+enum EmergencyServiceType {
+  POLICE
+  FIRE
+  AMBULANCE
+  EMERGENCY_DISPATCH
+}
+
+model EmergencyService {
+  id        String               @id @default(uuid())
+  elderId   String
+  type      EmergencyServiceType
+  name      String               // e.g., "City Police Department"
+  email     String?
+  phone     String               // Emergency contact number
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  active    Boolean              @default(true)
+  notes     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_services")
+}
+
+enum NotificationMethod {
+  EMAIL
+  SMS
+  PHONE_CALL
+  PUSH
+  DISPATCH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  QUEUED
+}
+
+model EmergencyNotification {
+  id               String             @id @default(uuid())
+  alertId          String
+  recipientType    String             // HOSPITAL, CLINIC, POLICE, FAMILY, etc.
+  recipientName    String
+  recipientContact String             // Email or phone
+  method           NotificationMethod
+  status           NotificationStatus @default(PENDING)
+  metadata         Json?              // Additional info about the notification
+  sentAt           DateTime           @default(now())
+  deliveredAt      DateTime?
+  failedReason     String?
+  createdAt        DateTime           @default(now())
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_notifications")
+}
+
+model EmergencyReport {
+  id          String        @id @default(uuid())
+  elderId     String
+  alertType   String        // MEDICAL, FALL, VITAL_ABNORMAL, etc.
+  severity    AlertSeverity
+  title       String
+  summary     String
+  reportData  Json          // Comprehensive report with all patient data
+  generatedAt DateTime      @default(now())
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  dispatches EmergencyDispatch[]
+
+  @@map("emergency_reports")
+}
+
+enum DispatchPriority {
+  IMMEDIATE
+  URGENT
+  ROUTINE
+}
+
+enum DispatchStatus {
+  PENDING
+  DISPATCHED
+  EN_ROUTE
+  ON_SCENE
+  COMPLETED
+  CANCELLED
+}
+
+model EmergencyDispatch {
+  id               String           @id @default(uuid())
+  elderId          String
+  reportId         String
+  serviceType      String           // POLICE, FIRE, AMBULANCE
+  serviceName      String
+  serviceContact   String?
+  priority         DispatchPriority
+  status           DispatchStatus   @default(PENDING)
+  incidentType     String
+  incidentSeverity AlertSeverity
+  location         Json             // Address, coordinates
+  patientInfo      Json             // Name, age, gender, blood type
+  notes            String?
+  dispatchedAt     DateTime?
+  arrivedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  elder  ElderProfile    @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  report EmergencyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_dispatches")
+}
+
+model MedicalHistory {
+  id              String   @id @default(uuid())
+  elderId         String   @unique
+  conditions      Json     @default("[]") // Array of medical conditions
+  allergies       Json     @default("[]") // Array of allergies
+  surgeries       Json     @default("[]") // Array of past surgeries
+  chronicDiseases Json     @default("[]") // Array of chronic diseases
+  familyHistory   Json?    // Family medical history
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("medical_history")
+}
+
+model EmergencyContact {
+  id           String   @id @default(uuid())
+  elderId      String
+  name         String
+  relationship String   // "Daughter", "Son", "Spouse", etc.
+  phone        String
+  email        String?
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  isPrimary    Boolean  @default(false)
+  active       Boolean  @default(true)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_contacts")
+}
+
+// ============================================================================
+// 24/7 MONITORING CONFIGURATION
+// ============================================================================
+
+model MonitoringConfig {
+  id                    String   @id @default(uuid())
+  elderId               String   @unique
+  enabled               Boolean  @default(true)
+
+  // Vital thresholds (JSON with custom ranges)
+  vitalThresholds       Json?
+
+  // Alert preferences
+  notifyFamily          Boolean  @default(true)
+  notifyHealthcare      Boolean  @default(true)
+  notifyEmergency       Boolean  @default(true)
+
+  // Quiet hours (no non-critical alerts)
+  quietHoursStart       String?  // e.g., "22:00"
+  quietHoursEnd         String?  // e.g., "07:00"
+
+  // Monitoring intervals
+  vitalCheckInterval    Int      @default(300) // seconds (5 min default)
+  inactivityTimeout     Int      @default(3600) // seconds (1 hour default)
+
+  // Emergency escalation
+  autoEscalateCritical  Boolean  @default(true)
+  escalationDelay       Int      @default(300) // seconds (5 min before escalation)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  elder ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  @@map("monitoring_configs")
 }
