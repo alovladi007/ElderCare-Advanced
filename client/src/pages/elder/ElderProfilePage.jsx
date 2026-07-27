@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { User, Heart, Phone, FileText, Users, Save } from 'lucide-react';
-import { Container, Card, Button, Loading, Alert, Badge } from '../../components';
+import React, { useState, useEffect, useCallback } from 'react';
+import { User, Heart, Phone, FileText, Users } from 'lucide-react';
+import { Container, Card, Loading, Alert, Badge } from '../../components';
 import ProfilePhotoUpload from '../../components/elder/ProfilePhotoUpload';
 import BasicInfoForm from '../../components/elder/BasicInfoForm';
 import EmergencyContactManager from '../../components/elder/EmergencyContactManager';
@@ -23,11 +23,7 @@ const ElderProfilePage = ({ elderId }) => {
     { id: 'family', label: 'Family Members', icon: Users },
   ];
 
-  useEffect(() => {
-    loadProfile();
-  }, [elderId]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       const data = await elderService.getById(elderId);
@@ -38,7 +34,11 @@ const ElderProfilePage = ({ elderId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleSave = async (updatedData) => {
     try {

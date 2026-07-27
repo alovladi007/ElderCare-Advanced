@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic,
   MicOff,
   Volume2,
   VolumeX,
-  Settings,
   HelpCircle,
-  Activity,
   CheckCircle,
   XCircle,
   Loader,
@@ -27,6 +25,30 @@ const VoiceControl = ({ elderId, homeId, className = '' }) => {
 
   const recognitionRef = useRef(null);
   const synthRef = useRef(window.speechSynthesis);
+  // Mirrors `speechEnabled` so `speak` can stay identity-stable and still read the
+  // current value. Without this, the speech-recognition handlers registered below
+  // would keep reading the value captured when recognition was created, and muting
+  // would not take effect until elderId/homeId changed.
+  const speechEnabledRef = useRef(speechEnabled);
+
+  useEffect(() => {
+    speechEnabledRef.current = speechEnabled;
+  }, [speechEnabled]);
+
+  const speak = useCallback((text) => {
+    if (!synthRef.current || !speechEnabledRef.current) return;
+
+    // Cancel any ongoing speech
+    synthRef.current.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9; // Slightly slower for elderly patients
+    utterance.pitch = 1.0;
+    utterance.volume = 0.9;
+
+    synthRef.current.speak(utterance);
+  }, []);
 
   useEffect(() => {
     // Check if browser supports speech recognition
@@ -81,16 +103,14 @@ const VoiceControl = ({ elderId, homeId, className = '' }) => {
           ...prev.slice(0, 9), // Keep last 10 commands
         ]);
 
-        // Speak response if enabled
-        if (speechEnabled && res.data.message) {
+        // Speak response if enabled (`speak` no-ops when speech is muted)
+        if (res.data.message) {
           speak(res.data.message);
         }
       } catch (err) {
         const errorMsg = err.response?.data?.message || 'Failed to process voice command';
         setError(errorMsg);
-        if (speechEnabled) {
-          speak("I'm sorry, I had trouble processing that command.");
-        }
+        speak("I'm sorry, I had trouble processing that command.");
       } finally {
         setProcessing(false);
       }
@@ -125,7 +145,7 @@ const VoiceControl = ({ elderId, homeId, className = '' }) => {
         recognitionRef.current.stop();
       }
     };
-  }, [elderId, homeId]);
+  }, [elderId, homeId, speak]);
 
   const loadSupportedCommands = async () => {
     try {
@@ -150,21 +170,6 @@ const VoiceControl = ({ elderId, homeId, className = '' }) => {
     if (recognitionRef.current && isListening) {
       recognitionRef.current.stop();
     }
-  };
-
-  const speak = (text) => {
-    if (!synthRef.current || !speechEnabled) return;
-
-    // Cancel any ongoing speech
-    synthRef.current.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9; // Slightly slower for elderly patients
-    utterance.pitch = 1.0;
-    utterance.volume = 0.9;
-
-    synthRef.current.speak(utterance);
   };
 
   const toggleSpeech = () => {

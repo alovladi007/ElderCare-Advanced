@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Activity, Heart, Droplet, Thermometer, Wind, AlertTriangle,
   Bell, User, LogOut, RefreshCw, TrendingUp, TrendingDown,
-  Camera, Phone, Clock, CheckCircle, XCircle, Shield,
+  Clock, CheckCircle, Shield,
   Brain, Footprints, Moon, Coffee, Battery, Wifi, Zap, Target, Gauge, Eye,
   Scale, Ruler, Dumbbell, Beaker, Pill, Smartphone, Watch, Cpu, Waves
 } from 'lucide-react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+
+const API_URL = 'http://localhost:4100/api';
+const SOCKET_URL = 'http://localhost:4100';
 
 const MonitoringDashboard = () => {
   const navigate = useNavigate();
@@ -24,10 +27,63 @@ const MonitoringDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
 
-  const API_URL = 'http://localhost:4100/api';
-  const SOCKET_URL = 'http://localhost:4100';
+  // Lets the long-lived socket handlers below read the currently selected patient
+  // instead of the value captured when the socket was created.
+  const selectedPatientRef = useRef(selectedPatient);
+  useEffect(() => {
+    selectedPatientRef.current = selectedPatient;
+  }, [selectedPatient]);
+
+  const fetchLatestVitals = useCallback(async (patientId) => {
+    try {
+      const response = await axios.get(`${API_URL}/vitals/patient/${patientId}/latest`);
+      setLatestVitals(response.data.data);
+    } catch (error) {
+      console.error('Error fetching vitals:', error);
+    }
+  }, []);
+
+  const fetchVitalHistory = useCallback(async (patientId) => {
+    try {
+      const response = await axios.get(`${API_URL}/vitals/patient/${patientId}?type=blood-pressure&limit=20`);
+      const formattedData = response.data.data.reverse().map((reading) => ({
+        time: new Date(reading.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        systolic: reading.values.systolic,
+        diastolic: reading.values.diastolic
+      }));
+      setVitalHistory(formattedData);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    }
+  }, []);
+
+  const fetchAlerts = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_URL}/alerts?limit=10`);
+      setAlerts(response.data.data);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+    }
+  }, []);
+
+  const fetchPatients = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_URL}/patients`);
+      console.log('Patients loaded:', response.data.count);
+      setPatients(response.data.data);
+      if (response.data.data.length > 0) {
+        // Functional update so this callback does not have to depend on
+        // `selectedPatient`, which would otherwise re-run the init effect.
+        setSelectedPatient((current) => current || response.data.data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+    }
+  }, []);
 
   useEffect(() => {
+    let activeSocket = null;
+
     // Auto-login with demo credentials for development
     const initializeMonitoring = async () => {
       try {
@@ -73,6 +129,7 @@ const MonitoringDashboard = () => {
         const newSocket = io(SOCKET_URL, {
           auth: { token }
         });
+        activeSocket = newSocket;
 
         newSocket.on('connect', () => {
           console.log('Socket connected with authentication');
@@ -86,9 +143,10 @@ const MonitoringDashboard = () => {
 
         newSocket.on('vital-reading', (data) => {
           console.log('New vital reading:', data);
-          if (selectedPatient && data.patientId === selectedPatient._id) {
-            fetchLatestVitals(selectedPatient._id);
-            fetchVitalHistory(selectedPatient._id);
+          const current = selectedPatientRef.current;
+          if (current && data.patientId === current._id) {
+            fetchLatestVitals(current._id);
+            fetchVitalHistory(current._id);
           }
         });
 
@@ -130,9 +188,12 @@ const MonitoringDashboard = () => {
     initializeMonitoring();
 
     return () => {
-      if (socket) socket.disconnect();
+      // Disconnect the socket this effect created. Previously this read the
+      // `socket` state, which was still null in the mount closure, so the
+      // connection was never torn down.
+      if (activeSocket) activeSocket.disconnect();
     };
-  }, []);
+  }, [navigate, fetchPatients, fetchAlerts, fetchLatestVitals, fetchVitalHistory]);
 
   useEffect(() => {
     if (selectedPatient && socket) {
@@ -140,52 +201,7 @@ const MonitoringDashboard = () => {
       fetchLatestVitals(selectedPatient._id);
       fetchVitalHistory(selectedPatient._id);
     }
-  }, [selectedPatient]);
-
-  const fetchPatients = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/patients`);
-      console.log('Patients loaded:', response.data.count);
-      setPatients(response.data.data);
-      if (response.data.data.length > 0 && !selectedPatient) {
-        setSelectedPatient(response.data.data[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching patients:', error);
-    }
-  };
-
-  const fetchLatestVitals = async (patientId) => {
-    try {
-      const response = await axios.get(`${API_URL}/vitals/patient/${patientId}/latest`);
-      setLatestVitals(response.data.data);
-    } catch (error) {
-      console.error('Error fetching vitals:', error);
-    }
-  };
-
-  const fetchVitalHistory = async (patientId) => {
-    try {
-      const response = await axios.get(`${API_URL}/vitals/patient/${patientId}?type=blood-pressure&limit=20`);
-      const formattedData = response.data.data.reverse().map((reading, index) => ({
-        time: new Date(reading.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        systolic: reading.values.systolic,
-        diastolic: reading.values.diastolic
-      }));
-      setVitalHistory(formattedData);
-    } catch (error) {
-      console.error('Error fetching history:', error);
-    }
-  };
-
-  const fetchAlerts = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/alerts?limit=10`);
-      setAlerts(response.data.data);
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-    }
-  };
+  }, [selectedPatient, socket, fetchLatestVitals, fetchVitalHistory]);
 
   const acknowledgeAlert = async (alertId) => {
     try {

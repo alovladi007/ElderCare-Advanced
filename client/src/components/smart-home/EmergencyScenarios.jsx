@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, Plus, Play, X, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
 import { smartHomeService } from '../../services';
@@ -11,12 +11,7 @@ const EmergencyScenarios = ({ homeId }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [testingScenario, setTestingScenario] = useState(null);
 
-  useEffect(() => {
-    loadScenarios();
-    loadActiveScenarios();
-  }, [homeId]);
-
-  const loadScenarios = async () => {
+  const loadScenarios = useCallback(async () => {
     try {
       setLoading(true);
       const data = await smartHomeService.getScenarios(homeId);
@@ -27,16 +22,21 @@ const EmergencyScenarios = ({ homeId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId]);
 
-  const loadActiveScenarios = async () => {
+  const loadActiveScenarios = useCallback(async () => {
     try {
       const data = await smartHomeService.getActiveScenarios(homeId);
       setActiveScenarios(data);
     } catch (err) {
       console.error('Failed to load active scenarios:', err);
     }
-  };
+  }, [homeId]);
+
+  useEffect(() => {
+    loadScenarios();
+    loadActiveScenarios();
+  }, [loadScenarios, loadActiveScenarios]);
 
   const testScenario = async (scenarioId) => {
     try {

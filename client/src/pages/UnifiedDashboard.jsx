@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Home as HomeIcon,
   Activity,
@@ -23,33 +23,28 @@ import {
   Upload,
   Phone,
   Mail,
-  MapPin,
   Edit,
   Plus,
-  Search,
   Filter,
-  ChevronRight,
-  CheckCircle,
-  XCircle,
-  User,
   Stethoscope,
-  Clipboard,
-  BarChart3,
-  PieChart
+  Clipboard
 } from 'lucide-react';
 // import { useAuth } from '../shared/hooks/useAuth';
-import { elderProfileApi, smartHomeApi, careManagementApi } from '../shared/api/api.client';
+import { elderProfileApi } from '../shared/api/api.client';
+
+// Mock user for demo access - no login required. Declared at module scope so it keeps
+// a stable identity across renders; as a component-local literal it produced a new
+// object every render and could not be used safely in hook dependency arrays.
+const user = { role: 'ADMIN', name: 'Demo User', email: 'demo@eldercare.com' };
 
 const UnifiedDashboard = () => {
   const navigate = useNavigate();
-  // Mock user for demo access - no login required
-  const user = { role: 'ADMIN', name: 'Demo User', email: 'demo@eldercare.com' };
   const logout = () => navigate('/');
 
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
-  const [selectedElder, setSelectedElder] = useState(null);
-  const [elders, setElders] = useState([]);
+  const [, setSelectedElder] = useState(null);
+  const [, setElders] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [messages, setMessages] = useState([]);
@@ -59,11 +54,6 @@ const UnifiedDashboard = () => {
   const [healthTrends, setHealthTrends] = useState([]);
   const [billing, setBilling] = useState([]);
   const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    loadDashboard();
-    loadMockData();
-  }, []);
 
   const loadMockData = () => {
     // Mock messages
@@ -119,7 +109,16 @@ const UnifiedDashboard = () => {
     ]);
   };
 
-  const loadDashboard = async () => {
+  const loadElderDashboard = useCallback(async (elderId) => {
+    try {
+      const response = await elderProfileApi.getDashboard(elderId);
+      setDashboardData(response.data);
+    } catch (error) {
+      console.error('Failed to load elder dashboard:', error);
+    }
+  }, []);
+
+  const loadDashboard = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -142,16 +141,12 @@ const UnifiedDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadElderDashboard]);
 
-  const loadElderDashboard = async (elderId) => {
-    try {
-      const response = await elderProfileApi.getDashboard(elderId);
-      setDashboardData(response.data);
-    } catch (error) {
-      console.error('Failed to load elder dashboard:', error);
-    }
-  };
+  useEffect(() => {
+    loadDashboard();
+    loadMockData();
+  }, [loadDashboard]);
 
   const handleLogout = () => {
     logout();

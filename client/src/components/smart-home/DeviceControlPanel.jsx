@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Power, Plus, Filter, Search, Lightbulb, Thermometer,
+  Power, Plus, Search, Lightbulb, Thermometer,
   Lock, Camera, DoorClosed, Settings as SettingsIcon
 } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Input, Select, Modal } from '..';
@@ -15,12 +15,7 @@ const DeviceControlPanel = ({ homeId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDevice, setShowAddDevice] = useState(false);
 
-  useEffect(() => {
-    loadDevices();
-    loadZones();
-  }, [homeId]);
-
-  const loadDevices = async () => {
+  const loadDevices = useCallback(async () => {
     try {
       setLoading(true);
       const data = await smartHomeService.getDevices(homeId);
@@ -31,16 +26,21 @@ const DeviceControlPanel = ({ homeId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId]);
 
-  const loadZones = async () => {
+  const loadZones = useCallback(async () => {
     try {
       const data = await smartHomeService.getZones(homeId);
       setZones(data);
     } catch (err) {
       console.error('Failed to load zones:', err);
     }
-  };
+  }, [homeId]);
+
+  useEffect(() => {
+    loadDevices();
+    loadZones();
+  }, [loadDevices, loadZones]);
 
   const toggleDevice = async (deviceId, actuatorId) => {
     try {
