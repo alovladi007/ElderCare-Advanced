@@ -113,7 +113,7 @@ export class EmailService {
   }): Promise<boolean> {
     const frontendUrl =
       this.configService.get<string>('FRONTEND_URL') ||
-      'http://localhost:3000';
+      'http://localhost:24610';
     const resetLink = `${frontendUrl}/reset-password?token=${data.resetToken}`;
 
     const subject = 'Password Reset Request';
@@ -262,7 +262,7 @@ export class EmailService {
         <li>Monitor health metrics and alerts</li>
         <li>Connect with care providers</li>
       </ul>
-      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000'}/dashboard" class="button">
+      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:24610'}/dashboard" class="button">
         Go to Dashboard
       </a>
       <p>If you have any questions, please don't hesitate to contact our support team.</p>
@@ -379,7 +379,7 @@ export class EmailService {
           <span>${bookingDetails.clinicianName}</span>
         </div>
       </div>
-      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000'}/bookings" class="button">
+      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:24610'}/bookings" class="button">
         View Booking Details
       </a>
       <p>You will receive a reminder 24 hours before your appointment.</p>
@@ -430,7 +430,7 @@ export class EmailService {
         <p style="font-size: 18px; margin: 10px 0;"><strong>${dateStr}</strong></p>
         <p style="margin: 10px 0 0 0;">with ${appointmentDetails.clinicianName}</p>
       </div>
-      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000'}/bookings" class="button">
+      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:24610'}/bookings" class="button">
         View Appointment Details
       </a>
       <p>Please arrive 10 minutes early. If you need to reschedule, please contact us as soon as possible.</p>
@@ -482,7 +482,7 @@ export class EmailService {
       <h2>Hello ${firstName},</h2>
       <p>It's time to take your medication:</p>
       ${medicationList}
-      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000'}/medications" class="button">
+      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:24610'}/medications" class="button">
         View Medication Schedule
       </a>
       <p>Please remember to take your medications as prescribed. If you have any concerns, contact your healthcare provider.</p>
@@ -534,7 +534,7 @@ export class EmailService {
         <h3 style="margin: 0 0 10px 0; color: ${color};">${alert.severity}: ${alert.title}</h3>
         <p style="margin: 10px 0;">${alert.message}</p>
       </div>
-      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000'}/alerts" class="button">
+      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:24610'}/alerts" class="button">
         View Alert Details
       </a>
       <p>Please review this alert and take appropriate action if needed.</p>
@@ -600,7 +600,7 @@ export class EmailService {
           ${emergency.details}
         </div>
       </div>
-      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000'}/emergencies" class="button">
+      <a href="${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:24610'}/emergencies" class="button">
         VIEW EMERGENCY DETAILS
       </a>
       <p style="color: #DC2626; font-weight: bold;">

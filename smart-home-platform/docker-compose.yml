@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: smarthome123
       POSTGRES_DB: smarthome
     ports:
-      - "5433:5432"
+      - "24625:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -18,7 +18,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "18000:9000"
+      - "24626:9000"
     environment:
       DATABASE_URL: postgresql://smarthome:smarthome123@postgres:5432/smarthome
       HUB_URL: http://hub:9001
@@ -31,16 +31,16 @@ services:
   hub:
     build: ./hub
     ports:
-      - "8001:9001"
+      - "24627:9001"
     volumes:
       - ./hub:/app
 
   frontend:
     build: ./frontend
     ports:
-      - "6100:3000"
+      - "24616:3000"
     environment:
-      - VITE_API_URL=http://localhost:18000
+      - VITE_API_URL=http://localhost:24626
     volumes:
       - ./frontend:/app
       - /app/node_modules

@@ -10,8 +10,8 @@ import { AxiosRequestConfig } from 'axios';
 @Injectable()
 export class ApiGatewayService {
   private readonly serviceUrls = {
-    legacy: process.env.LEGACY_SERVER_URL || 'http://localhost:5000',
-    monitoring: process.env.MONITORING_SERVER_URL || 'http://localhost:5001',
+    legacy: process.env.LEGACY_SERVER_URL || 'http://localhost:24614',
+    monitoring: process.env.MONITORING_SERVER_URL || 'http://localhost:24613',
   };
 
   constructor(private readonly httpService: HttpService) {}

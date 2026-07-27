@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ['http://localhost:3002', 'http://localhost:3001', 'http://localhost:3000'],
+    origin: ['http://localhost:24610'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   }
@@ -376,7 +376,7 @@ const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
   console.log(`\n✅ Monitoring Server running on port ${PORT}`);
   console.log(`🔌 WebSocket server ready for real-time monitoring`);
-  console.log(`\n📊 Access the dashboard at: http://localhost:3002/#/monitoring/login`);
+  console.log(`\n📊 Access the dashboard at: http://localhost:24610/#/monitoring/login`);
   console.log(`\n👤 Test Login Credentials:`);
   console.log(`   Doctor: doctor@evergreen.com / password123`);
   console.log(`   Nurse: nurse@evergreen.com / password123`);

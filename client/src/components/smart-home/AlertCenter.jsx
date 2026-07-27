@@ -13,7 +13,7 @@ const AlertCenter = ({ homeId }) => {
 
   const setupWebSocket = useCallback(() => {
     try {
-      const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+      const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:24612';
       const ws = new WebSocket(`${wsUrl}/smarthome/alerts?homeId=${homeId}`);
 
       ws.onopen = () => {

@@ -81,8 +81,8 @@ jobs:
         run: npm run build
         env:
           # Create React App only reads REACT_APP_*-prefixed variables.
-          REACT_APP_API_URL: http://localhost:9401/api
-          REACT_APP_WS_URL: ws://localhost:9402
+          REACT_APP_API_URL: http://localhost:24611/api
+          REACT_APP_WS_URL: ws://localhost:24612
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

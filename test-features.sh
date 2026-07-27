@@ -12,7 +12,7 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-API_URL="http://localhost:3001/api"
+API_URL="http://localhost:24611/api"
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0

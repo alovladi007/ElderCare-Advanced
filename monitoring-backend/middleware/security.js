@@ -100,7 +100,7 @@ const sanitizeInput = (req, res, next) => {
  * Validate request origin for sensitive operations
  */
 const validateOrigin = (req, res, next) => {
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:3000').split(',');
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:24610').split(',');
 
   const origin = req.get('origin') || req.get('referer');
 

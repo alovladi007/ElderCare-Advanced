@@ -67,14 +67,14 @@ parameter returned 500.
 
 ## 2. Running the platform
 
-The app now boots from a clean clone. Ports were moved to a block verified free of collisions (`9400`/`9401`/`9402`).
+The app now boots from a clean clone. Ports were moved to a block verified free of collisions (`24610`/`24611`/`24612`).
 
 | Service | URL | Status |
 |---|---|---|
-| Web app | `http://localhost:9400` | ✅ compiles, warnings only |
-| REST API | `http://localhost:9401` | ✅ builds clean, 121 unit tests pass |
-| API docs (Swagger) | `http://localhost:9401/api/docs` | ✅ (unauthenticated — see C8) |
-| WebSocket | `ws://localhost:9402` | ✅ |
+| Web app | `http://localhost:24610` | ✅ compiles, warnings only |
+| REST API | `http://localhost:24611` | ✅ builds clean, 121 unit tests pass |
+| API docs (Swagger) | `http://localhost:24611/api/docs` | ✅ (unauthenticated — see C8) |
+| WebSocket | `ws://localhost:24612` | ✅ |
 
 ```bash
 sudo service postgresql start
@@ -112,7 +112,7 @@ app.useStaticAssets(path.join(__dirname, '..', 'uploads'), { prefix: '/uploads/'
 
 **Reproduced:**
 ```
-$ curl http://localhost:9401/uploads/medical-records/phi-test-record.txt
+$ curl http://localhost:24611/uploads/medical-records/phi-test-record.txt
 PATIENT: Robert Williams, Dx: Diabetes Type 2      # HTTP 200, no token
 ```
 

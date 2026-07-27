@@ -33,9 +33,9 @@ async function bootstrap() {
   app.use(cors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        process.env.FRONTEND_URL || 'http://localhost:3000',
-        'http://localhost:3000',
-        'http://localhost:3001', // Development backend
+        process.env.FRONTEND_URL || 'http://localhost:24610',
+        'http://localhost:24610',
+        'http://localhost:24611', // Development backend
       ];
 
       // Allow requests with no origin (like mobile apps, Postman, curl)

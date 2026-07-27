@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:9401/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:24611/api';
 
 /**
  * Get auth token from localStorage
