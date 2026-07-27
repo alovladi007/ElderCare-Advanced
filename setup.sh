@@ -79,8 +79,8 @@ cd ../client
 if [ ! -f ".env" ]; then
     echo -e "${YELLOW}⚠ Creating frontend .env file${NC}"
     cat > .env << 'EOF'
-VITE_API_URL=http://localhost:24611/api
-VITE_WS_URL=ws://localhost:24612
+VITE_API_URL=http://localhost:31611/api
+VITE_WS_URL=ws://localhost:31612
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_51234567890abcdefghijklmnopqrstuvwxyz
 VITE_APP_NAME=ElderCare Advanced
 VITE_APP_VERSION=1.0.0
@@ -111,7 +111,7 @@ echo "4. Start the frontend: cd client && npm run dev"
 echo "5. Run tests:          ./test-features.sh"
 echo ""
 echo "Default URLs:"
-echo "- Frontend: http://localhost:24610"
-echo "- Backend API: http://localhost:24611"
-echo "- WebSocket: ws://localhost:24612"
+echo "- Frontend: http://localhost:31610"
+echo "- Backend API: http://localhost:31611"
+echo "- WebSocket: ws://localhost:31612"
 echo ""

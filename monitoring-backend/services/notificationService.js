@@ -349,7 +349,7 @@ async function sendWelcomeEmail(user, temporaryPassword = null) {
 
             ${temporaryPassword ? '<p><strong>Important:</strong> Please change your password after your first login.</p>' : ''}
 
-            <p>You can access the monitoring dashboard at: <a href="${process.env.CLIENT_URL || 'http://localhost:24610'}">ElderCare Monitoring Dashboard</a></p>
+            <p>You can access the monitoring dashboard at: <a href="${process.env.CLIENT_URL || 'http://localhost:31610'}">ElderCare Monitoring Dashboard</a></p>
 
             <p>If you have any questions, please contact your system administrator.</p>
 
@@ -379,7 +379,7 @@ async function sendPasswordResetEmail(user, resetToken) {
       return false;
     }
 
-    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:24610'}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:31610'}/reset-password?token=${resetToken}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,

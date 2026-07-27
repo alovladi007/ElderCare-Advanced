@@ -13,7 +13,7 @@ import { LoggerService } from '../common/logging/logger.service';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:24610',
+    origin: process.env.FRONTEND_URL || 'http://localhost:31610',
     credentials: true,
   },
   namespace: '/notifications',

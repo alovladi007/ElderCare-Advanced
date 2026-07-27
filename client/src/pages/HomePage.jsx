@@ -268,7 +268,7 @@ const HomePage = () => {
                 icon: Zap,
                 title: 'Smart Home Platform',
                 description: 'Control devices, automations, and home monitoring',
-                link: 'http://localhost:24616',
+                link: 'http://localhost:31616',
                 color: 'from-orange-400 to-orange-600',
                 external: true
               }

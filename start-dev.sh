@@ -50,8 +50,8 @@ cd ..
 # Wait for backend to start
 echo "Waiting for backend to start..."
 for i in {1..30}; do
-    if curl -s http://localhost:24611/api/gateway/health > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ Backend API started on http://localhost:24611${NC}"
+    if curl -s http://localhost:31611/api/gateway/health > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ Backend API started on http://localhost:31611${NC}"
         break
     fi
     sleep 1
@@ -73,8 +73,8 @@ cd ..
 # Wait for frontend to start
 echo "Waiting for frontend to start..."
 for i in {1..30}; do
-    if curl -s http://localhost:24610 > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ Frontend started on http://localhost:24610${NC}"
+    if curl -s http://localhost:31610 > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ Frontend started on http://localhost:31610${NC}"
         break
     fi
     sleep 1
@@ -90,10 +90,10 @@ echo -e "${GREEN}=========================================${NC}"
 echo -e "${GREEN}🚀 ElderCare Advanced is running!${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
-echo -e "Frontend:  ${BLUE}http://localhost:24610${NC}"
-echo -e "Backend API: ${BLUE}http://localhost:24611${NC}"
-echo -e "API Docs:  ${BLUE}http://localhost:24611/api/docs${NC}"
-echo -e "WebSocket: ${BLUE}ws://localhost:24612${NC}"
+echo -e "Frontend:  ${BLUE}http://localhost:31610${NC}"
+echo -e "Backend API: ${BLUE}http://localhost:31611${NC}"
+echo -e "API Docs:  ${BLUE}http://localhost:31611/api/docs${NC}"
+echo -e "WebSocket: ${BLUE}ws://localhost:31612${NC}"
 echo ""
 echo -e "${YELLOW}Test Credentials:${NC}"
 echo "Admin: admin@eldercare.com / admin123"

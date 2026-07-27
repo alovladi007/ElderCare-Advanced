@@ -2,7 +2,7 @@ import React from 'react';
 import { Home, ArrowRight, Zap, Shield, Activity } from 'lucide-react';
 
 const SmartHomeRedirectPage = () => {
-  const smartHomePlatformUrl = 'http://localhost:24616';
+  const smartHomePlatformUrl = 'http://localhost:31616';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">

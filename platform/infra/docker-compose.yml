@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: eldercare_dev_password
       POSTGRES_DB: eldercare_db
     ports:
-      - "24623:5432"
+      - "31623:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
     image: redis:7-alpine
     container_name: eldercare-redis
     ports:
-      - "24624:6379"
+      - "31624:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -41,9 +41,9 @@ services:
       - DATABASE_URL=postgresql://eldercare:eldercare_dev_password@postgres:5432/eldercare_db
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=development-jwt-secret-change-in-production
-      - PORT=24615
+      - PORT=31615
     ports:
-      - "24615:24615"
+      - "31615:31615"
     volumes:
       - ../backend:/app
       - /app/node_modules
@@ -61,9 +61,9 @@ services:
     container_name: eldercare-frontend
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:24615
+      - NEXT_PUBLIC_API_URL=http://localhost:31615
     ports:
-      - "24618:3000"
+      - "31618:3000"
     volumes:
       - ../frontend:/app
       - /app/node_modules

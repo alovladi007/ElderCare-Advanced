@@ -29,7 +29,7 @@ export interface RegisterData extends LoginCredentials {
   role?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:24611/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:31611/api';
 
 /**
  * Storage keys for auth data

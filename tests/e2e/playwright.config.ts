@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    baseURL: 'http://localhost:24610',
+    baseURL: 'http://localhost:31610',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -39,13 +39,13 @@ export default defineConfig({
   webServer: [
     {
       command: 'cd ../backend && npm run dev',
-      url: 'http://localhost:24611',
+      url: 'http://localhost:31611',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },
     {
       command: 'cd ../client && npm start',
-      url: 'http://localhost:24610',
+      url: 'http://localhost:31610',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },

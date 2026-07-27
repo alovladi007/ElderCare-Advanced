@@ -16,7 +16,7 @@ export interface AuthResponse {
   user: User;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:24611';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:31611';
 
 const AUTH_STORAGE_KEYS = {
   TOKEN: 'eldercare_token',

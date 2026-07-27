@@ -12,8 +12,8 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-const API_URL = 'http://localhost:24613/api';
-const SOCKET_URL = 'http://localhost:24613';
+const API_URL = 'http://localhost:31613/api';
+const SOCKET_URL = 'http://localhost:31613';
 
 const MonitoringDashboard = () => {
   const navigate = useNavigate();

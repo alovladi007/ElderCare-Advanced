@@ -173,7 +173,7 @@ To hand a phase to an autonomous agent, use this frame:
 >
 > **Rules.**
 > 1. This system handles PHI and controls physical safety devices. A regression can expose patient data or silence a real emergency. When a change touches auth, PHI access, or the emergency path, write the failing test first.
-> 2. Do not mark work complete based on code reading. Verify against the running instance (`http://localhost:24611`, seeded via `npm run seed`) with an actual request, and paste the output.
+> 2. Do not mark work complete based on code reading. Verify against the running instance (`http://localhost:31611`, seeded via `npm run seed`) with an actual request, and paste the output.
 > 3. Never simulate. No `Math.random()` standing in for a measurement, no `setTimeout` standing in for an integration, no success response for an action that did not occur. If an integration cannot be completed, leave the feature disabled and say so — that is what produced the findings in this audit.
 > 4. Report honestly. If a fix is partial, say which part. If a test fails, paste it. Do not add a status markdown file claiming completion; that habit produced 39 documents asserting the opposite of the code.
 > 5. Each finding ID you close: state the ID, the fix, and the verification command with its real output.

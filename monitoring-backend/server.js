@@ -18,7 +18,7 @@ const app = express();
 const server = http.createServer(app);
 
 // Configure allowed origins for CORS
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:24610')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:31610')
   .split(',')
   .map(origin => origin.trim());
 
@@ -196,7 +196,7 @@ app.use(notFound);
 // Global error handler - must be last
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 24613;
+const PORT = process.env.PORT || 31613;
 
 server.listen(PORT, () => {
   console.log(`Monitoring Server running on port ${PORT}`);
