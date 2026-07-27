@@ -13,6 +13,19 @@ export class MedicationService {
   ) {}
 
   /**
+   * Coerce a caller-supplied lookback window into a usable number of days.
+   *
+   * Optional numeric query params do not arrive as `undefined`: the global
+   * ValidationPipe transforms a missing `?days=` into NaN, so a TypeScript
+   * default parameter never applies and the resulting date arithmetic yields
+   * an Invalid Date, which Prisma rejects with a 500.
+   */
+  private resolveWindowDays(days: number | undefined, fallback: number): number {
+    const parsed = Number(days);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+  }
+
+  /**
    * Create medication for elder
    */
   async createMedication(data: {
@@ -148,7 +161,8 @@ export class MedicationService {
   /**
    * Get upcoming doses for elder
    */
-  async getUpcomingDoses(elderId: string, days = 7) {
+  async getUpcomingDoses(elderId: string, days?: number) {
+    days = this.resolveWindowDays(days, 7);
     const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
     return this.prisma.medicationDose.findMany({
@@ -258,7 +272,8 @@ export class MedicationService {
   /**
    * Get medication adherence statistics
    */
-  async getAdherenceStats(elderId: string, days = 30) {
+  async getAdherenceStats(elderId: string, days?: number) {
+    days = this.resolveWindowDays(days, 30);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     const doses = await this.prisma.medicationDose.findMany({

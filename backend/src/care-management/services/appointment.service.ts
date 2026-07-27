@@ -13,6 +13,19 @@ export class AppointmentService {
   ) {}
 
   /**
+   * Coerce a caller-supplied lookback window into a usable number of days.
+   *
+   * Optional numeric query params do not arrive as `undefined`: the global
+   * ValidationPipe transforms a missing `?days=` into NaN, so a TypeScript
+   * default parameter never applies and the resulting date arithmetic yields
+   * an Invalid Date, which Prisma rejects with a 500.
+   */
+  private resolveWindowDays(days: number | undefined, fallback: number): number {
+    const parsed = Number(days);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+  }
+
+  /**
    * Create appointment
    */
   async createAppointment(data: {
@@ -135,7 +148,8 @@ export class AppointmentService {
   /**
    * Get upcoming appointments
    */
-  async getUpcomingAppointments(elderId: string, days = 30) {
+  async getUpcomingAppointments(elderId: string, days?: number) {
+    days = this.resolveWindowDays(days, 30);
     const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
     return this.prisma.appointment.findMany({
@@ -287,7 +301,8 @@ export class AppointmentService {
   /**
    * Get appointment statistics
    */
-  async getAppointmentStats(elderId: string, days = 30) {
+  async getAppointmentStats(elderId: string, days?: number) {
+    days = this.resolveWindowDays(days, 30);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     const appointments = await this.prisma.appointment.findMany({

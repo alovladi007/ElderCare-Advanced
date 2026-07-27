@@ -132,8 +132,6 @@ describe('Care Management Integration Tests', () => {
 
     // Adherence is reported per elder, not per medication: the controller
     // exposes GET elder/:elderId/adherence, and the payload counts doses.
-    // `days` is sent explicitly because omitting it currently 500s - see the
-    // skipped test at the bottom of this file.
     it('GET /api/care-management/medications/elder/:elderId/adherence - should get adherence stats', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/care-management/medications/elder/${elderId}/adherence`)
@@ -349,6 +347,7 @@ describe('Care Management Integration Tests', () => {
     it('GET /api/care-management/appointments/elder/:elderId/stats - should get appointment stats', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/care-management/appointments/elder/${elderId}/stats`)
+        .query({ days: 30 })
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
@@ -400,6 +399,22 @@ describe('Care Management Integration Tests', () => {
           unit: 'mmHg',
         })
         .expect(400);
+    });
+
+    // Regression test: the global ValidationPipe turns a missing numeric query
+    // param into NaN rather than leaving it undefined, so the services' default
+    // parameter never applied and the lookback Date came out invalid, 500ing.
+    // Each service now coerces the window explicitly.
+    it('should default the lookback window when ?days is omitted', async () => {
+      await request(app.getHttpServer())
+        .get(`/api/care-management/medications/elder/${elderId}/adherence`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .get(`/api/care-management/appointments/elder/${elderId}/stats`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
     });
   });
 });
