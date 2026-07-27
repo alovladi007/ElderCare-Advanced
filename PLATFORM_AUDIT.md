@@ -33,6 +33,28 @@ The core smart-home engine is real, well-structured work and should be the found
 | **Medium** | 14 | Schema duplication · missing FK indexes · no DTOs · inert validation pipe |
 | **Low** | 8 | Port drift · doc/reality contradictions · bcrypt cost · CSP gaps |
 
+### Remediation status
+
+Work completed since the audit was written is marked **[FIXED]** against each
+finding below. Summary:
+
+| Finding | Status |
+|---|---|
+| C2 — anyone can register as ADMIN | **Fixed** — `RegisterDto` with role allowlist and password policy |
+| C9 — login never persists a token | **Fixed** — client reads `access_token` |
+| C12 — care-management data layer 404s | **Fixed** — client repointed to `/care-management/*` |
+| C13 — login/register throw on interaction | **Fixed** — `useAuth` returns `error`/`isLoading`/`clearError` |
+| H1 — 287 compile errors | **Fixed** — 0 errors; `npm run build` produces `dist/` |
+| H2 — 14 unreachable modules | **Fixed** — deleted (~12,900 LOC) |
+| H3 — simulated "AI" features | **Fixed by deletion** — including `voice-health` |
+| H9 — 11/11 test suites failing | **Fixed** — 121 unit tests pass; CI gates now real |
+| F4 — ESLint rule gutted | **Fixed** — default rule set restored |
+| C1, C3–C8, C10, C11, C14, H4–H8, H10–H12 | **Open** — see the plan |
+
+Two live bugs were found while writing the tests and fixed: an SpO2 reading of
+100% raised a CRITICAL alert, and every vitals request without a `?days=`
+parameter returned 500.
+
 ### The five to fix this week
 
 1. **C1** — one line: delete `useStaticAssets`. Stops anonymous PHI download.
@@ -49,8 +71,8 @@ The app now boots from a clean clone. Ports were moved to a block verified free 
 
 | Service | URL | Status |
 |---|---|---|
-| Web app | `http://localhost:9400` | ✅ compiles, 1 warning |
-| REST API | `http://localhost:9401` | ✅ 152 routes mapped |
+| Web app | `http://localhost:9400` | ✅ compiles, warnings only |
+| REST API | `http://localhost:9401` | ✅ builds clean, 121 unit tests pass |
 | API docs (Swagger) | `http://localhost:9401/api/docs` | ✅ (unauthenticated — see C8) |
 | WebSocket | `ws://localhost:9402` | ✅ |
 
@@ -62,7 +84,9 @@ cd client  && npm install && npm start
 
 **Seeded accounts** (`backend/prisma/seed.ts`): `admin@eldercare.com / admin123`, `family@eldercare.com / family123`, `caregiver@eldercare.com / caregiver123`, `elder@eldercare.com / elder123`.
 
-> **Note:** logging in through the web UI will *appear* to succeed and then fail on every subsequent request — see **C9**. The API itself works; use the seeded credentials against `/api/auth/login` directly to get a working token.
+> **Note:** the seeded passwords predate the password policy added when C2 was
+> closed. They are created directly through Prisma, so they still work for
+> login; new self-service registrations must meet the 12-character policy.
 
 ### What this audit had to fix just to make it run
 
@@ -96,7 +120,7 @@ This is a reportable breach class under HIPAA §164.402 if real records are ever
 
 **Fix:** delete the `useStaticAssets` line. Serve PHI only through an authenticated, authorization-checked handler.
 
-### C2 — Anyone can register themselves as ADMIN, with a one-character password **[verified]**
+### C2 — Anyone can register themselves as ADMIN, with a one-character password **[verified] [FIXED]**
 `auth.controller.ts:16` types `@Body()` as an inline TypeScript literal rather than a DTO class. NestJS's `ValidationPipe` skips validation when the metatype is a plain object, so `whitelist`/`forbidNonWhitelisted` never execute. `auth.service.ts:93` then passes the role straight through: `role: data.role as any`.
 
 **Reproduced:**
@@ -159,7 +183,7 @@ async updateElderProfile(elderId: string, data: any) {
 ```
 The unfiltered request body reaches the ORM. A caller can rewrite `medicalRecordNo`, `dateOfBirth`, `status`, or `userId` — re-parenting an elder profile onto their own account, which then grants them everything else legitimately. 40 handlers share the `@Body() body: any` pattern.
 
-### C9 — The web app's login does not work **[verified]**
+### C9 — The web app's login does not work **[verified] [FIXED]**
 `client/src/services/auth.service.js:17` guards token storage on the wrong field:
 ```js
 const response = await api.post('/auth/login', credentials);
@@ -217,7 +241,7 @@ Hardcoded clinician credentials, auto-submitted on mount: visiting `/#/monitorin
 
 `EmployeeLoginPage.jsx:13-28` accepts any email/password with no backend call; `EmployeeDashboard.jsx:31-33` has its own auth check commented out.
 
-### C12 — The entire care-management data layer 404s **[verified]**
+### C12 — The entire care-management data layer 404s **[verified] [FIXED]**
 All 23 methods in `services/care.service.js` call `/care/*`. The backend serves `/care-management/*`:
 
 ```
@@ -229,7 +253,7 @@ $ curl .../api/care/medications  →  HTTP 404
 
 Six further mismatches exist in `shared/api/api.client.js` (`/health/vitals/:id` vs `/health/vitals/elder/:id`; `PATCH /care-tasks/:id` vs `PUT /care-plans/tasks/:id`). Consequence: `MedicationSchedule`, `AppointmentCalendar`, `VitalSignsCharts`, `CareTaskList`, and `CareOverview` cannot load a single record. Smart-home and auth routes *do* match, so the breakage is not uniform — which is why it went unnoticed.
 
-### C13 — Login and Register throw on first interaction **[verified]**
+### C13 — Login and Register throw on first interaction **[verified] [FIXED]**
 `hooks/useAuth.js:50-57` returns exactly `{ user, loading, isAuthenticated, login, register, logout }`. But:
 
 ```js
@@ -250,7 +274,7 @@ Including runtime, not just build-time: `axios` (authentication bypass via proto
 
 ## 4. High-severity findings
 
-### H1 — The backend does not compile: 287 errors **[verified]**
+### H1 — The backend does not compile: 287 errors **[verified] [FIXED]**
 `npx tsc --noEmit` → 287 errors, so `npm run build` cannot produce `dist/` and `npm start` cannot run. Development works only because `ts-node-dev --transpile-only` skips type checking.
 
 | Module | Errors | Wired? |
@@ -269,14 +293,14 @@ Including runtime, not just build-time: `axios` (authentication bypass via proto
 
 `BACKEND_COMPILATION_FIXES.md` states *"0 errors – clean compilation."* That claim is false as of this commit.
 
-### H2 — Half the backend is unreachable dead code
+### H2 — Half the backend is unreachable dead code **[FIXED]**
 `app.module.ts` imports 15 modules. **14 modules — 12,901 of ~25,650 LOC (50.3%) — are referenced nowhere.** Their class names appear only in their own `*.module.ts` files.
 
 Unreachable: `ml-prediction`, `computer-vision`, `advanced-nlu`, `voice-health`, `iot-devices`, `edge-computing`, `robotics`, `event-streaming`, `telemedicine`, `mobile-api`, `blockchain`, `data-analytics`, `zero-trust-security`, `ai-companion`. Only one has a controller, so even if wired, 13 of 14 would expose no HTTP surface at all.
 
 **This includes every security control that would make the platform HIPAA-viable** — `zero-trust-security` holds the only AES-256/RSA-4096 implementation and the only code that writes an access log. Shipping dormant modules named "zero-trust" and "encryption" is worse than having none: it creates a false compliance narrative for anyone reading the repo.
 
-### H3 — "Advanced AI" features are simulations, and one of them generates clinical alerts
+### H3 — "Advanced AI" features are simulations, and one of them generates clinical alerts **[FIXED by deletion]**
 The headline capabilities do not do what their names claim.
 
 | Module | Reality | Evidence |
@@ -318,7 +342,7 @@ The same literal is the `docker-compose.yml` default and is published in `.env.e
 ### H8 — Zero input validation across the entire HTTP surface
 `main.ts:61` configures `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })`, and `class-validator` is a declared dependency — but **`backend/src` contains no DTO class and no `class-validator` decorator**. Every `@Body()` is `any` or an inline literal, both of which the pipe skips. The configuration provides zero protection while creating the appearance of validation, and is the direct enabler of C2 and C8.
 
-### H9 — The entire test suite fails **[verified]**
+### H9 — The entire test suite fails **[verified] [FIXED]**
 `npx jest` → **11 of 11 suites fail, 7 of 7 tests fail.** Nine fail at DI wiring. `jest.config.js:29` asserts a 60% coverage threshold that has never been met. **The client has 0 test files** across 48 pages and 36 components. There are no tests for `auth`, `bookings`, `elder-profile`, or any of the 14 advanced modules.
 
 CI compounds this: `.github/workflows/ci.yml` runs lint, integration tests, and `npm audit` with `|| true`, so they can never fail the build. `npm test` and `npm run build` are *not* suppressed — meaning CI is red on every push and is being ignored.
