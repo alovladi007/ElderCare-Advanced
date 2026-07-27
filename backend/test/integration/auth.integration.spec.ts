@@ -4,20 +4,15 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../../src/app.module';
+import request from 'supertest';
+import { createTestApp } from '../utils/test-app';
 
 describe('Authentication Integration Tests', () => {
   let app: INestApplication;
   let authToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    app = await createTestApp();
   });
 
   afterAll(async () => {
@@ -30,7 +25,7 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/register')
         .send({
           email: `test${Date.now()}@example.com`,
-          password: 'password123',
+          password: 'TestPassw0rd123',
           firstName: 'Test',
           lastName: 'User',
           role: 'FAMILY',
@@ -50,7 +45,7 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/register')
         .send({
           email,
-          password: 'password123',
+          password: 'TestPassw0rd123',
           firstName: 'Test',
           lastName: 'User',
           role: 'FAMILY',
@@ -61,12 +56,12 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/register')
         .send({
           email,
-          password: 'password123',
+          password: 'TestPassw0rd123',
           firstName: 'Test',
           lastName: 'User',
           role: 'FAMILY',
         })
-        .expect(400);
+        .expect(409);
     });
 
     it('should fail with invalid email', async () => {
@@ -74,7 +69,7 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/register')
         .send({
           email: 'invalid-email',
-          password: 'password123',
+          password: 'TestPassw0rd123',
           firstName: 'Test',
           lastName: 'User',
         })
@@ -84,7 +79,7 @@ describe('Authentication Integration Tests', () => {
 
   describe('POST /auth/login', () => {
     const testEmail = `login${Date.now()}@example.com`;
-    const testPassword = 'password123';
+    const testPassword = 'TestPassw0rd123';
 
     beforeAll(async () => {
       // Create test user
@@ -118,7 +113,7 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/login')
         .send({
           email: testEmail,
-          password: 'wrongpassword',
+          password: 'WrongPassw0rd123',
         })
         .expect(401);
     });
@@ -128,7 +123,7 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/login')
         .send({
           email: 'nonexistent@example.com',
-          password: 'password123',
+          password: 'TestPassw0rd123',
         })
         .expect(401);
     });
@@ -163,8 +158,8 @@ describe('Authentication Integration Tests', () => {
 
   describe('POST /auth/change-password', () => {
     const testEmail = `changepass${Date.now()}@example.com`;
-    const oldPassword = 'oldpassword123';
-    const newPassword = 'newpassword456';
+    const oldPassword = 'OldPassw0rd123';
+    const newPassword = 'NewPassw0rd456';
     let userToken: string;
 
     beforeAll(async () => {
@@ -208,8 +203,8 @@ describe('Authentication Integration Tests', () => {
         .post('/auth/change-password')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          currentPassword: 'wrongpassword',
-          newPassword: 'newpassword789',
+          currentPassword: 'WrongPassw0rd123',
+          newPassword: 'NewPassw0rd789',
         })
         .expect(401);
     });

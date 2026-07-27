@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { LoggerService } from '../logging/logger.service';
 import sharp from 'sharp';
+import type { Metadata } from 'sharp';
 
 export interface ImageProcessingOptions {
   width?: number;
@@ -134,7 +135,7 @@ export class ImageProcessorService {
   /**
    * Extract image metadata
    */
-  async getImageMetadata(buffer: Buffer): Promise<sharp.Metadata> {
+  async getImageMetadata(buffer: Buffer): Promise<Metadata> {
     try {
       return await sharp(buffer).metadata();
     } catch (error) {

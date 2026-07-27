@@ -37,7 +37,7 @@ const EmergencyContactManager = ({ contacts, onSave, saving }) => {
   };
 
   const handleDelete = (index) => {
-    if (!confirm('Are you sure you want to delete this emergency contact?')) return;
+    if (!window.confirm('Are you sure you want to delete this emergency contact?')) return;
 
     const updated = contactList.filter((_, i) => i !== index);
     setContactList(updated);

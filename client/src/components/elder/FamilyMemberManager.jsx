@@ -62,7 +62,7 @@ const FamilyMemberManager = ({ elderId, profile }) => {
   };
 
   const handleRemoveMember = async (memberId) => {
-    if (!confirm('Are you sure you want to remove this family member?')) return;
+    if (!window.confirm('Are you sure you want to remove this family member?')) return;
 
     try {
       await api.delete(`/elder-profile/${elderId}/family/${memberId}`);

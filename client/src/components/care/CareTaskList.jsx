@@ -45,7 +45,7 @@ const CareTaskList = ({ elderId }) => {
   };
 
   const deleteTask = async (taskId) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
 
     try {
       await careService.deleteCareTask(taskId);

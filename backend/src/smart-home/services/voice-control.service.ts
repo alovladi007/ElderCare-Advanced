@@ -10,7 +10,7 @@ interface VoiceCommand {
   timestamp: Date;
 }
 
-interface VoiceResponse {
+export interface VoiceResponse {
   success: boolean;
   message: string;
   action?: string;
@@ -20,7 +20,24 @@ interface VoiceResponse {
 @Injectable()
 export class VoiceControlService {
   // Voice command patterns with synonyms
-  private commandPatterns = {
+  /**
+   * Not every command carries every attribute - a light command has a
+   * deviceType, a scene command has a scene, an emergency command has a
+   * severity. The shape is declared once here so `parseCommand` can read any
+   * of them without TypeScript narrowing to whichever entry happens to be
+   * first in the literal.
+   */
+  private commandPatterns: Record<
+    string,
+    {
+      patterns: RegExp[];
+      action: string;
+      deviceType?: string;
+      scene?: string;
+      severity?: string;
+      reminderType?: string;
+    }
+  > = {
     // Device Control
     'turn_on_light': {
       patterns: [
@@ -332,21 +349,26 @@ export class VoiceControlService {
     homeId: string,
     command: any,
   ): Promise<VoiceResponse> {
+    // ActuatorCommand.issuedByUserId is a User foreign key, but elderId is an
+    // ElderProfile id. Resolve the owning user once so the command records who
+    // issued it; null falls back to the schema's "system issued" meaning.
+    const issuedByUserId = await this.resolveIssuerUserId(elderId);
+
     switch (command.action) {
       case 'TURN_ON':
       case 'TURN_OFF':
-        return await this.executeDeviceControl(homeId, command);
+        return await this.executeDeviceControl(homeId, command, issuedByUserId);
 
       case 'ADJUST_TEMP':
-        return await this.executeTemperatureControl(homeId, command);
+        return await this.executeTemperatureControl(homeId, command, issuedByUserId);
 
       case 'LOCK':
       case 'UNLOCK':
-        return await this.executeLockControl(homeId, command);
+        return await this.executeLockControl(homeId, command, issuedByUserId);
 
       case 'OPEN':
       case 'CLOSE':
-        return await this.executeCurtainControl(homeId, command);
+        return await this.executeCurtainControl(homeId, command, issuedByUserId);
 
       case 'EMERGENCY_ALERT':
         return await this.executeEmergencyAlert(elderId, command);
@@ -375,9 +397,24 @@ export class VoiceControlService {
   }
 
   /**
+   * Map an ElderProfile id to the User id that owns it, for command provenance.
+   */
+  private async resolveIssuerUserId(elderId: string): Promise<string | null> {
+    const elder = await this.prisma.elderProfile.findUnique({
+      where: { id: elderId },
+      select: { userId: true },
+    });
+    return elder?.userId ?? null;
+  }
+
+  /**
    * Control devices (lights, appliances)
    */
-  private async executeDeviceControl(homeId: string, command: any): Promise<VoiceResponse> {
+  private async executeDeviceControl(
+    homeId: string,
+    command: any,
+    issuedByUserId: string | null,
+  ): Promise<VoiceResponse> {
     // Find matching devices
     const devices = await this.prisma.device.findMany({
       where: {
@@ -426,11 +463,13 @@ export class VoiceControlService {
             await this.prisma.actuatorCommand.create({
               data: {
                 actuatorId: actuator.id,
-                issuerId: elderId, // Voice commands issued by elder
+                homeId,
+                deviceId: device.id,
+                issuedByUserId,
                 commandName,
                 commandParamsJson: {},
                 status: 'PENDING',
-                issuedAt: new Date(),
+
               },
             });
             results.push(device.name);
@@ -458,7 +497,11 @@ export class VoiceControlService {
   /**
    * Control thermostat
    */
-  private async executeTemperatureControl(homeId: string, command: any): Promise<VoiceResponse> {
+  private async executeTemperatureControl(
+    homeId: string,
+    command: any,
+    issuedByUserId: string | null,
+  ): Promise<VoiceResponse> {
     const thermostats = await this.prisma.device.findMany({
       where: {
         homeId,
@@ -495,11 +538,13 @@ export class VoiceControlService {
     await this.prisma.actuatorCommand.create({
       data: {
         actuatorId: actuator.id,
-        issuerId: elderId,
+        homeId,
+        deviceId: actuator.deviceId,
+        issuedByUserId,
         commandName: 'SET_TEMPERATURE',
         commandParamsJson: { temperature: targetTemp },
         status: 'PENDING',
-        issuedAt: new Date(),
+
       },
     });
 
@@ -513,7 +558,11 @@ export class VoiceControlService {
   /**
    * Control door locks
    */
-  private async executeLockControl(homeId: string, command: any): Promise<VoiceResponse> {
+  private async executeLockControl(
+    homeId: string,
+    command: any,
+    issuedByUserId: string | null,
+  ): Promise<VoiceResponse> {
     const locks = await this.prisma.device.findMany({
       where: {
         homeId,
@@ -542,11 +591,13 @@ export class VoiceControlService {
         await this.prisma.actuatorCommand.create({
           data: {
             actuatorId: actuator.id,
-            issuerId: elderId,
+            homeId,
+            deviceId: actuator.deviceId,
+            issuedByUserId,
             commandName,
             commandParamsJson: {},
             status: 'PENDING',
-            issuedAt: new Date(),
+    
           },
         });
         results.push(lock.name);
@@ -563,7 +614,11 @@ export class VoiceControlService {
   /**
    * Control curtains/blinds
    */
-  private async executeCurtainControl(homeId: string, command: any): Promise<VoiceResponse> {
+  private async executeCurtainControl(
+    homeId: string,
+    command: any,
+    issuedByUserId: string | null,
+  ): Promise<VoiceResponse> {
     const curtains = await this.prisma.device.findMany({
       where: {
         homeId,
@@ -592,11 +647,13 @@ export class VoiceControlService {
         await this.prisma.actuatorCommand.create({
           data: {
             actuatorId: actuator.id,
-            issuerId: elderId,
+            homeId,
+            deviceId: actuator.deviceId,
+            issuedByUserId,
             commandName,
             commandParamsJson: {},
             status: 'PENDING',
-            issuedAt: new Date(),
+    
           },
         });
         results.push(curtain.name);

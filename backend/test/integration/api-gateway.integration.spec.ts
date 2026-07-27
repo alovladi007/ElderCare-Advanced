@@ -4,27 +4,22 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../../src/app.module';
+import request from 'supertest';
+import { createTestApp } from '../utils/test-app';
 
 describe('API Gateway Integration Tests', () => {
   let app: INestApplication;
   let authToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    app = await createTestApp();
 
     // Create and login test user
     const response = await request(app.getHttpServer())
       .post('/auth/register')
       .send({
         email: `gateway${Date.now()}@example.com`,
-        password: 'password123',
+        password: 'TestPassw0rd123',
         firstName: 'Gateway',
         lastName: 'Test',
         role: 'ADMIN',

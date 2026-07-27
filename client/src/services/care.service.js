@@ -11,7 +11,7 @@ const careService = {
   },
 
   createMedication: async (data) => {
-    return await api.post('/care/medications', data);
+    return await api.post('/care-management/medications', data);
   },
 
   updateMedication: async (medicationId, data) => {
@@ -40,7 +40,7 @@ const careService = {
   },
 
   createAppointment: async (data) => {
-    return await api.post('/care/appointments', data);
+    return await api.post('/care-management/appointments', data);
   },
 
   updateAppointment: async (appointmentId, data) => {
@@ -61,7 +61,7 @@ const careService = {
   },
 
   createCarePlan: async (data) => {
-    return await api.post('/care/care-plans', data);
+    return await api.post('/care-management/care-plans', data);
   },
 
   updateCarePlan: async (carePlanId, data) => {
@@ -92,7 +92,7 @@ const careService = {
   },
 
   recordVital: async (data) => {
-    return await api.post('/care/health-monitoring/vitals', data);
+    return await api.post('/care-management/health/vitals', data);
   },
 
   getVitalStats: async (elderId, vitalType) => {

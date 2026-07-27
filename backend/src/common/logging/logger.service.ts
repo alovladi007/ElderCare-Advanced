@@ -102,4 +102,19 @@ export class LoggerService implements NestLoggerService {
       ...metadata,
     });
   }
+
+  /**
+   * Log a caught error together with its stack and surrounding context.
+   *
+   * Callers pass the Error object itself rather than a pre-formatted string,
+   * so the stack survives into the log record.
+   */
+  logError(message: string, error: unknown, metadata?: Record<string, any>) {
+    const err = error instanceof Error ? error : undefined;
+    this.logger.error(message, {
+      error: err ? err.message : String(error),
+      stack: err?.stack,
+      ...metadata,
+    });
+  }
 }

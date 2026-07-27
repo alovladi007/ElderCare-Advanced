@@ -17,7 +17,10 @@ export class HealthMonitoringService {
     HEART_RATE: { min: 60, max: 100, critical_low: 50, critical_high: 120 },
     TEMPERATURE: { min: 97.0, max: 99.0, critical_low: 95.0, critical_high: 103.0 }, // Fahrenheit
     GLUCOSE: { min: 70, max: 140, critical_low: 60, critical_high: 200 }, // mg/dL fasting
-    SPO2: { min: 95, max: 100, critical_low: 90, critical_high: 100 },
+    // No critical_high: 100% is the best possible oxygen saturation. The
+    // threshold check is `value >= critical_high`, so setting it to 100 raised
+    // a CRITICAL alert on a perfectly healthy reading.
+    SPO2: { min: 95, max: 100, critical_low: 90 },
     WEIGHT: { min: 0, max: 500 }, // lbs - no standard range
     RESPIRATORY_RATE: { min: 12, max: 20, critical_low: 10, critical_high: 30 },
   };
@@ -60,10 +63,24 @@ export class HealthMonitoringService {
   }
 
   /**
+   * Coerce a caller-supplied lookback window into a usable number of days.
+   *
+   * Optional numeric query params do not arrive as `undefined`: the global
+   * ValidationPipe transforms a missing `?days=` into NaN, so a TypeScript
+   * default parameter never applies and the resulting Date is invalid. That
+   * surfaced as a 500 on every vitals request that omitted the parameter.
+   */
+  private resolveWindowDays(days?: number, fallback = 30): number {
+    const parsed = Number(days);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+  }
+
+  /**
    * Get vitals by elder
    */
-  async getVitalsByElder(elderId: string, vitalType?: VitalType, days = 30) {
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  async getVitalsByElder(elderId: string, vitalType?: VitalType, days?: number) {
+    const windowDays = this.resolveWindowDays(days);
+    const startDate = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
 
     return this.prisma.vitalReading.findMany({
       where: {
@@ -108,7 +125,8 @@ export class HealthMonitoringService {
   /**
    * Get vital statistics
    */
-  async getVitalStats(elderId: string, vitalType: VitalType, days = 30) {
+  async getVitalStats(elderId: string, vitalType: VitalType, days?: number) {
+    days = this.resolveWindowDays(days);
     const vitals = await this.getVitalsByElder(elderId, vitalType, days);
 
     if (vitals.length === 0) {
@@ -229,7 +247,8 @@ export class HealthMonitoringService {
   /**
    * Get health summary for elder
    */
-  async getHealthSummary(elderId: string, days = 30) {
+  async getHealthSummary(elderId: string, days?: number) {
+    days = this.resolveWindowDays(days);
     const vitals = await this.getVitalsByElder(elderId, undefined, days);
     const latestVitals = await this.getLatestVitals(elderId);
 

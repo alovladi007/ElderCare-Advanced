@@ -2,372 +2,341 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CarePlanService } from './care-plan.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { LoggerService } from '../../common/logging/logger.service';
-import { TaskStatus, TaskPriority } from '@prisma/client';
+import { CareTaskPriority, CareTaskStatus } from '@prisma/client';
 
 describe('CarePlanService', () => {
   let service: CarePlanService;
-  let prismaService: PrismaService;
-  let loggerService: LoggerService;
 
   const mockPrismaService = {
     carePlan: {
       create: jest.fn(),
       findUnique: jest.fn(),
-      findMany: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     },
     careTask: {
       create: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
-      count: jest.fn(),
-    },
-    elderProfile: {
-      findUnique: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
   const mockLoggerService = {
+    log: jest.fn(),
     debug: jest.fn(),
-    logEvent: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
+    logEvent: jest.fn(),
+    logSecurity: jest.fn(),
   };
+
+  const task = (overrides: Partial<Record<string, any>> = {}) => ({
+    status: CareTaskStatus.PENDING,
+    priority: CareTaskPriority.MEDIUM,
+    dueDate: new Date('2099-01-01T00:00:00.000Z'),
+    ...overrides,
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CarePlanService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
-        {
-          provide: LoggerService,
-          useValue: mockLoggerService,
-        },
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
     }).compile();
 
     service = module.get<CarePlanService>(CarePlanService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    loggerService = module.get<LoggerService>(LoggerService);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+    jest.useRealTimers();
   });
 
   describe('createCarePlan', () => {
-    it('should create a care plan', async () => {
-      const carePlanData = {
+    it('activates the new plan and logs the event', async () => {
+      const data = {
         elderId: 'elder-1',
-        name: 'Daily Care Plan',
-        description: 'Routine daily care activities',
-        createdByUserId: 'user-1',
+        title: 'Post-surgery recovery',
+        startDate: new Date('2026-01-01T00:00:00.000Z'),
       };
+      mockPrismaService.carePlan.create.mockResolvedValue({ id: 'plan-1', ...data });
 
-      const createdPlan = {
-        id: 'plan-1',
-        ...carePlanData,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const result = await service.createCarePlan(data);
 
-      mockPrismaService.carePlan.create.mockResolvedValue(createdPlan);
-
-      const result = await service.createCarePlan(carePlanData);
-
-      expect(result).toEqual(createdPlan);
-      expect(prismaService.carePlan.create).toHaveBeenCalledWith({
-        data: {
-          ...carePlanData,
-          isActive: true,
-        },
+      expect(result.id).toBe('plan-1');
+      expect(mockPrismaService.carePlan.create).toHaveBeenCalledWith({
+        data: { ...data, isActive: true },
       });
+      expect(mockLoggerService.logEvent).toHaveBeenCalledWith(
+        'Care plan created',
+        'CarePlan',
+        'plan-1',
+        { elderId: 'elder-1', title: 'Post-surgery recovery' },
+      );
     });
   });
 
-  describe('getCarePlan', () => {
-    it('should retrieve care plan with tasks', async () => {
-      const carePlan = {
-        id: 'plan-1',
-        name: 'Daily Care Plan',
-        tasks: [
-          { id: 'task-1', title: 'Morning medication' },
-          { id: 'task-2', title: 'Breakfast' },
-        ],
-      };
+  describe('getCarePlanByElder', () => {
+    it('looks the plan up by elder and returns its tasks in due-date order', async () => {
+      mockPrismaService.carePlan.findUnique.mockResolvedValue({ id: 'plan-1', tasks: [] });
 
-      mockPrismaService.carePlan.findUnique.mockResolvedValue(carePlan);
+      const result = await service.getCarePlanByElder('elder-1');
 
-      const result = await service.getCarePlan('plan-1');
+      expect(result).toEqual({ id: 'plan-1', tasks: [] });
+      expect(mockPrismaService.carePlan.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { elderId: 'elder-1' },
+          include: expect.objectContaining({
+            tasks: { orderBy: { dueDate: 'asc' } },
+          }),
+        }),
+      );
+    });
 
-      expect(result).toEqual(carePlan);
-      expect(prismaService.carePlan.findUnique).toHaveBeenCalledWith({
-        where: { id: 'plan-1' },
-        include: {
-          tasks: {
-            orderBy: { createdAt: 'desc' },
-          },
-        },
-      });
+    it('returns null when the elder has no plan', async () => {
+      mockPrismaService.carePlan.findUnique.mockResolvedValue(null);
+
+      await expect(service.getCarePlanByElder('elder-1')).resolves.toBeNull();
     });
   });
 
-  describe('getElderCarePlans', () => {
-    it('should retrieve all active care plans for an elder', async () => {
-      const carePlans = [
-        { id: 'plan-1', name: 'Morning Routine', isActive: true },
-        { id: 'plan-2', name: 'Evening Routine', isActive: true },
-      ];
+  describe('createTask', () => {
+    it('starts tasks as PENDING with MEDIUM priority by default', async () => {
+      mockPrismaService.careTask.create.mockResolvedValue({ id: 'task-1' });
 
-      mockPrismaService.carePlan.findMany.mockResolvedValue(carePlans);
-
-      const result = await service.getElderCarePlans('elder-1');
-
-      expect(result).toEqual(carePlans);
-      expect(prismaService.carePlan.findMany).toHaveBeenCalledWith({
-        where: { elderId: 'elder-1', isActive: true },
-        include: {
-          tasks: {
-            where: {
-              status: {
-                in: ['PENDING', 'IN_PROGRESS'],
-              },
-            },
-            orderBy: { dueDate: 'asc' },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-    });
-  });
-
-  describe('createCareTask', () => {
-    it('should create a care task', async () => {
-      const taskData = {
+      await service.createTask({
         carePlanId: 'plan-1',
-        title: 'Morning medication',
-        description: 'Administer morning pills',
-        priority: TaskPriority.HIGH,
-        dueDate: new Date('2024-01-15'),
-        assignedToUserId: 'caregiver-1',
-      };
-
-      const createdTask = {
-        id: 'task-1',
-        ...taskData,
-        status: TaskStatus.PENDING,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      mockPrismaService.careTask.create.mockResolvedValue(createdTask);
-
-      const result = await service.createCareTask(taskData);
-
-      expect(result).toEqual(createdTask);
-      expect(prismaService.careTask.create).toHaveBeenCalledWith({
-        data: {
-          ...taskData,
-          status: TaskStatus.PENDING,
-        },
+        title: 'Morning walk',
+        dueDate: new Date('2026-01-02T00:00:00.000Z'),
       });
+
+      expect(mockPrismaService.careTask.create.mock.calls[0][0].data).toMatchObject({
+        carePlanId: 'plan-1',
+        status: 'PENDING',
+        priority: 'MEDIUM',
+      });
+    });
+
+    it('keeps an explicitly supplied priority', async () => {
+      mockPrismaService.careTask.create.mockResolvedValue({ id: 'task-2' });
+
+      await service.createTask({
+        carePlanId: 'plan-1',
+        title: 'Wound check',
+        priority: CareTaskPriority.URGENT,
+        dueDate: new Date('2026-01-02T00:00:00.000Z'),
+      });
+
+      expect(mockPrismaService.careTask.create.mock.calls[0][0].data.priority).toBe(
+        CareTaskPriority.URGENT,
+      );
     });
   });
 
-  describe('updateTaskStatus', () => {
-    it('should update task status to IN_PROGRESS', async () => {
-      const task = {
-        id: 'task-1',
-        status: TaskStatus.PENDING,
-      };
-
-      const updatedTask = {
-        ...task,
-        status: TaskStatus.IN_PROGRESS,
-      };
-
-      mockPrismaService.careTask.update.mockResolvedValue(updatedTask);
-
-      const result = await service.updateTaskStatus(
-        'task-1',
-        TaskStatus.IN_PROGRESS,
-        'user-1',
-      );
-
-      expect(result).toEqual(updatedTask);
-      expect(prismaService.careTask.update).toHaveBeenCalled();
+  describe('getTasksByCarePlan', () => {
+    beforeEach(() => {
+      mockPrismaService.careTask.findMany.mockResolvedValue([]);
     });
 
-    it('should update task status to COMPLETED with completion time', async () => {
-      const task = {
-        id: 'task-1',
-        status: TaskStatus.IN_PROGRESS,
-      };
+    it('filters out completed tasks by default', async () => {
+      await service.getTasksByCarePlan('plan-1');
 
-      const updatedTask = {
-        ...task,
-        status: TaskStatus.COMPLETED,
-        completedAt: new Date(),
-      };
-
-      mockPrismaService.careTask.update.mockResolvedValue(updatedTask);
-
-      const result = await service.updateTaskStatus(
-        'task-1',
-        TaskStatus.COMPLETED,
-        'user-1',
-        'Task completed successfully',
-      );
-
-      expect(result.status).toBe(TaskStatus.COMPLETED);
-      expect(prismaService.careTask.update).toHaveBeenCalledWith({
-        where: { id: 'task-1' },
-        data: {
-          status: TaskStatus.COMPLETED,
-          completedAt: expect.any(Date),
-          completedByUserId: 'user-1',
-          notes: 'Task completed successfully',
-        },
-      });
-    });
-  });
-
-  describe('getTasks', () => {
-    it('should retrieve tasks for a care plan', async () => {
-      const tasks = [
-        { id: 'task-1', title: 'Task 1', status: TaskStatus.PENDING },
-        { id: 'task-2', title: 'Task 2', status: TaskStatus.IN_PROGRESS },
-      ];
-
-      mockPrismaService.careTask.findMany.mockResolvedValue(tasks);
-
-      const result = await service.getTasks('plan-1');
-
-      expect(result).toEqual(tasks);
-      expect(prismaService.careTask.findMany).toHaveBeenCalledWith({
-        where: { carePlanId: 'plan-1' },
-        orderBy: { createdAt: 'desc' },
+      expect(mockPrismaService.careTask.findMany.mock.calls[0][0].where).toEqual({
+        carePlanId: 'plan-1',
+        status: { not: 'COMPLETED' },
       });
     });
 
-    it('should filter tasks by status', async () => {
-      const pendingTasks = [
-        { id: 'task-1', title: 'Task 1', status: TaskStatus.PENDING },
-      ];
+    it('returns the full history when completed tasks are requested', async () => {
+      await service.getTasksByCarePlan('plan-1', true);
 
-      mockPrismaService.careTask.findMany.mockResolvedValue(pendingTasks);
-
-      const result = await service.getTasks('plan-1', TaskStatus.PENDING);
-
-      expect(result).toEqual(pendingTasks);
-      expect(prismaService.careTask.findMany).toHaveBeenCalledWith({
-        where: {
-          carePlanId: 'plan-1',
-          status: TaskStatus.PENDING,
-        },
-        orderBy: { createdAt: 'desc' },
+      expect(mockPrismaService.careTask.findMany.mock.calls[0][0].where).toEqual({
+        carePlanId: 'plan-1',
       });
+      expect(mockPrismaService.careTask.findMany.mock.calls[0][0].orderBy).toEqual([
+        { priority: 'desc' },
+        { dueDate: 'asc' },
+      ]);
     });
   });
 
   describe('getOverdueTasks', () => {
-    it('should retrieve overdue tasks', async () => {
-      const overdueTasks = [
-        {
-          id: 'task-1',
-          title: 'Overdue task',
-          dueDate: new Date('2024-01-01'),
-          status: TaskStatus.PENDING,
-        },
-      ];
+    it('returns an empty list without querying tasks when the elder has no plan', async () => {
+      mockPrismaService.carePlan.findUnique.mockResolvedValue(null);
 
-      mockPrismaService.careTask.findMany.mockResolvedValue(overdueTasks);
+      await expect(service.getOverdueTasks('elder-1')).resolves.toEqual([]);
+      expect(mockPrismaService.careTask.findMany).not.toHaveBeenCalled();
+    });
+
+    it('selects unfinished tasks whose due date has already passed', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-01T00:00:00.000Z'));
+      mockPrismaService.carePlan.findUnique.mockResolvedValue({ id: 'plan-1' });
+      mockPrismaService.careTask.findMany.mockResolvedValue([{ id: 'task-1' }]);
 
       const result = await service.getOverdueTasks('elder-1');
 
-      expect(result).toBeDefined();
-      expect(prismaService.careTask.findMany).toHaveBeenCalled();
+      expect(result).toEqual([{ id: 'task-1' }]);
+      expect(mockPrismaService.careTask.findMany).toHaveBeenCalledWith({
+        where: {
+          carePlanId: 'plan-1',
+          status: { in: ['PENDING', 'IN_PROGRESS'] },
+          dueDate: { lt: new Date('2026-06-01T00:00:00.000Z') },
+        },
+        orderBy: { dueDate: 'asc' },
+      });
+    });
+  });
+
+  describe('completeTask', () => {
+    it('stamps the completion time alongside the COMPLETED status', async () => {
+      mockPrismaService.careTask.update.mockResolvedValue({ id: 'task-1' });
+
+      await service.completeTask('task-1', 'walked 20 minutes');
+
+      expect(mockPrismaService.careTask.update).toHaveBeenCalledWith({
+        where: { id: 'task-1' },
+        data: {
+          status: 'COMPLETED',
+          completedAt: expect.any(Date),
+          notes: 'walked 20 minutes',
+        },
+      });
+      expect(mockLoggerService.logEvent).toHaveBeenCalledWith(
+        'Care task completed',
+        'CareTask',
+        'task-1',
+        {},
+      );
+    });
+  });
+
+  describe('updateTask', () => {
+    it('passes the patch straight through and logs which fields changed', async () => {
+      mockPrismaService.careTask.update.mockResolvedValue({ id: 'task-1' });
+
+      await service.updateTask('task-1', {
+        status: CareTaskStatus.IN_PROGRESS,
+        priority: CareTaskPriority.HIGH,
+      });
+
+      expect(mockPrismaService.careTask.update).toHaveBeenCalledWith({
+        where: { id: 'task-1' },
+        data: { status: CareTaskStatus.IN_PROGRESS, priority: CareTaskPriority.HIGH },
+      });
+      expect(mockLoggerService.logEvent).toHaveBeenCalledWith(
+        'Care task updated',
+        'CareTask',
+        'task-1',
+        { changes: ['status', 'priority'] },
+      );
     });
   });
 
   describe('getCarePlanStats', () => {
-    it('should calculate care plan statistics', async () => {
-      mockPrismaService.careTask.count
-        .mockResolvedValueOnce(20) // total
-        .mockResolvedValueOnce(12) // completed
-        .mockResolvedValueOnce(5) // pending
-        .mockResolvedValueOnce(3) // overdue
-        .mockResolvedValueOnce(4); // urgent
+    it('breaks tasks down by status and computes the completion rate', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-01T00:00:00.000Z'));
+      mockPrismaService.carePlan.findUnique.mockResolvedValue({
+        id: 'plan-1',
+        title: 'Recovery',
+        startDate: new Date('2026-01-01T00:00:00.000Z'),
+        endDate: null,
+        isActive: true,
+        tasks: [
+          task({ status: CareTaskStatus.COMPLETED }),
+          task({ status: CareTaskStatus.COMPLETED }),
+          task({ status: CareTaskStatus.IN_PROGRESS }),
+          task({ status: CareTaskStatus.PENDING }),
+          // Overdue and urgent: still open with a due date in the past.
+          task({
+            status: CareTaskStatus.PENDING,
+            priority: CareTaskPriority.URGENT,
+            dueDate: new Date('2026-05-01T00:00:00.000Z'),
+          }),
+        ],
+      });
 
       const result = await service.getCarePlanStats('elder-1');
 
-      expect(result.totalTasks).toBe(20);
-      expect(result.completedTasks).toBe(12);
-      expect(result.pendingTasks).toBe(5);
-      expect(result.overdueTasks).toBe(3);
-      expect(result.urgentTasks).toBe(4);
-      expect(result.completionRate).toBe(60);
+      expect(result.totalTasks).toBe(5);
+      expect(result.completedTasks).toBe(2);
+      expect(result.pendingTasks).toBe(2);
+      expect(result.inProgressTasks).toBe(1);
+      expect(result.overdueTasks).toBe(1);
+      expect(result.urgentTasks).toBe(1);
+      expect(result.completionRate).toBe(40);
+      expect(result.carePlan).toEqual({
+        id: 'plan-1',
+        title: 'Recovery',
+        startDate: new Date('2026-01-01T00:00:00.000Z'),
+        endDate: null,
+        isActive: true,
+      });
     });
 
-    it('should handle zero tasks gracefully', async () => {
-      mockPrismaService.careTask.count.mockResolvedValue(0);
+    it('does not count completed tasks as overdue even when past due', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-01T00:00:00.000Z'));
+      mockPrismaService.carePlan.findUnique.mockResolvedValue({
+        id: 'plan-1',
+        tasks: [
+          task({
+            status: CareTaskStatus.COMPLETED,
+            dueDate: new Date('2026-05-01T00:00:00.000Z'),
+          }),
+        ],
+      });
+
+      const result = await service.getCarePlanStats('elder-1');
+
+      expect(result.overdueTasks).toBe(0);
+      expect(result.completionRate).toBe(100);
+    });
+
+    it('reports a 0% completion rate for an empty plan', async () => {
+      mockPrismaService.carePlan.findUnique.mockResolvedValue({ id: 'plan-1', tasks: [] });
 
       const result = await service.getCarePlanStats('elder-1');
 
       expect(result.totalTasks).toBe(0);
       expect(result.completionRate).toBe(0);
     });
-  });
 
-  describe('updateCarePlan', () => {
-    it('should update care plan details', async () => {
-      const updatedPlan = {
-        id: 'plan-1',
-        name: 'Updated Plan Name',
-        description: 'Updated description',
-      };
+    it('returns null when the elder has no care plan', async () => {
+      mockPrismaService.carePlan.findUnique.mockResolvedValue(null);
 
-      mockPrismaService.carePlan.update.mockResolvedValue(updatedPlan);
-
-      const result = await service.updateCarePlan('plan-1', {
-        name: 'Updated Plan Name',
-        description: 'Updated description',
-      });
-
-      expect(result).toEqual(updatedPlan);
-      expect(prismaService.carePlan.update).toHaveBeenCalledWith({
-        where: { id: 'plan-1' },
-        data: {
-          name: 'Updated Plan Name',
-          description: 'Updated description',
-        },
-      });
+      await expect(service.getCarePlanStats('elder-1')).resolves.toBeNull();
     });
   });
 
-  describe('deactivateCarePlan', () => {
-    it('should deactivate care plan', async () => {
-      const deactivatedPlan = {
-        id: 'plan-1',
-        isActive: false,
-      };
+  describe('updateCarePlan', () => {
+    it('applies the patch and logs the changed field names', async () => {
+      mockPrismaService.carePlan.update.mockResolvedValue({ id: 'plan-1' });
 
-      mockPrismaService.carePlan.update.mockResolvedValue(deactivatedPlan);
+      await service.updateCarePlan('plan-1', { title: 'Revised plan', isActive: false });
 
-      const result = await service.deactivateCarePlan('plan-1');
-
-      expect(result).toEqual(deactivatedPlan);
-      expect(prismaService.carePlan.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.carePlan.update).toHaveBeenCalledWith({
         where: { id: 'plan-1' },
-        data: { isActive: false },
+        data: { title: 'Revised plan', isActive: false },
+      });
+      expect(mockLoggerService.logEvent).toHaveBeenCalledWith(
+        'Care plan updated',
+        'CarePlan',
+        'plan-1',
+        { changes: ['title', 'isActive'] },
+      );
+    });
+  });
+
+  describe('deleteCarePlan', () => {
+    it('hard-deletes the plan row', async () => {
+      mockPrismaService.carePlan.delete.mockResolvedValue({ id: 'plan-1' });
+
+      await service.deleteCarePlan('plan-1');
+
+      expect(mockPrismaService.carePlan.delete).toHaveBeenCalledWith({
+        where: { id: 'plan-1' },
       });
     });
   });

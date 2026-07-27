@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AutomationEngineService } from './automation-engine.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DeviceService } from './device.service';
+import { LoggerService } from '../../common/logging/logger.service';
 
 describe('AutomationEngineService', () => {
   let service: AutomationEngineService;
@@ -29,6 +30,19 @@ describe('AutomationEngineService', () => {
           provide: DeviceService,
           useValue: {
             issueActuatorCommand: jest.fn(),
+          },
+        },
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+            logEvent: jest.fn(),
+            logError: jest.fn(),
+            logSecurity: jest.fn(),
           },
         },
       ],

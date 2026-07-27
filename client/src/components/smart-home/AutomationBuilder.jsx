@@ -37,7 +37,7 @@ const AutomationBuilder = ({ homeId }) => {
   };
 
   const deleteRule = async (ruleId) => {
-    if (!confirm('Are you sure you want to delete this automation rule?')) return;
+    if (!window.confirm('Are you sure you want to delete this automation rule?')) return;
 
     try {
       await smartHomeService.deleteRule(ruleId);

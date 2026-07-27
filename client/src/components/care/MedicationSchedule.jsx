@@ -56,7 +56,7 @@ const MedicationSchedule = ({ elderId }) => {
   };
 
   const deleteMedication = async (medicationId) => {
-    if (!confirm('Are you sure you want to delete this medication?')) return;
+    if (!window.confirm('Are you sure you want to delete this medication?')) return;
 
     try {
       await careService.deleteMedication(medicationId);

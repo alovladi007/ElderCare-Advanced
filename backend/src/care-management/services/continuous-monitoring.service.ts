@@ -27,9 +27,14 @@ export class ContinuousMonitoringService implements OnModuleInit, OnModuleDestro
       await this.runGlobalHealthCheck();
     }, 60000); // Check every minute
 
-    // Initialize monitoring for all active elders
-    // TODO: Update to use correct Prisma models (ElderProfile, User, etc.)
-    // await this.initializeAllMonitoring();
+    // Initialize monitoring for all active elders.
+    // A failure here must not prevent the app from booting: the global check
+    // above still runs, and per-elder monitoring is retried on the next cycle.
+    try {
+      await this.initializeAllMonitoring();
+    } catch (error) {
+      this.logger.logError('Failed to initialize per-elder monitoring', error);
+    }
   }
 
   /**
@@ -55,7 +60,7 @@ export class ContinuousMonitoringService implements OnModuleInit, OnModuleDestro
    * Initialize monitoring for all active elders
    */
   private async initializeAllMonitoring() {
-    const activeElders = await this.prisma.elder.findMany({
+    const activeElders = await this.prisma.elderProfile.findMany({
       where: {
         status: 'ACTIVE',
       },
@@ -331,12 +336,12 @@ export class ContinuousMonitoringService implements OnModuleInit, OnModuleDestro
         homeId: home.id,
       },
       orderBy: {
-        eventTime: 'desc',
+        occurredAt: 'desc',
       },
     });
 
     if (latestEvent) {
-      const secondsSinceLastActivity = (Date.now() - latestEvent.eventTime.getTime()) / 1000;
+      const secondsSinceLastActivity = (Date.now() - latestEvent.occurredAt.getTime()) / 1000;
 
       // Alert if no activity detected for longer than timeout
       if (secondsSinceLastActivity > timeoutSeconds) {
@@ -357,10 +362,10 @@ export class ContinuousMonitoringService implements OnModuleInit, OnModuleDestro
             title: 'Prolonged Inactivity Detected',
             message: `No activity detected in the home for ${Math.round(secondsSinceLastActivity / 60)} minutes. Please check on the patient.`,
             metadata: {
-              lastActivityTime: latestEvent.eventTime,
+              lastActivityTime: latestEvent.occurredAt,
               minutesSinceLastActivity: Math.round(secondsSinceLastActivity / 60),
-              lastSensorType: latestEvent.sensorType,
-              lastLocation: latestEvent.location,
+              lastEventType: latestEvent.eventType,
+              lastDeviceId: latestEvent.deviceId,
             },
           });
         }

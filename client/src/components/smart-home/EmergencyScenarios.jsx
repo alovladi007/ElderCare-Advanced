@@ -52,7 +52,7 @@ const EmergencyScenarios = ({ homeId }) => {
   };
 
   const cancelScenario = async (activeScenarioId) => {
-    if (!confirm('Are you sure you want to cancel this active scenario?')) return;
+    if (!window.confirm('Are you sure you want to cancel this active scenario?')) return;
 
     try {
       await smartHomeService.cancelScenario(activeScenarioId);

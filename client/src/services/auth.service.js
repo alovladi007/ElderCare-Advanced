@@ -4,8 +4,8 @@ const authService = {
   // Register new user
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
-    if (response.token) {
-      localStorage.setItem('auth_token', response.token);
+    if (response.access_token) {
+      localStorage.setItem('auth_token', response.access_token);
       localStorage.setItem('user', JSON.stringify(response.user));
     }
     return response;
@@ -14,8 +14,8 @@ const authService = {
   // Login user
   login: async (credentials) => {
     const response = await api.post('/auth/login', credentials);
-    if (response.token) {
-      localStorage.setItem('auth_token', response.token);
+    if (response.access_token) {
+      localStorage.setItem('auth_token', response.access_token);
       localStorage.setItem('user', JSON.stringify(response.user));
     }
     return response;

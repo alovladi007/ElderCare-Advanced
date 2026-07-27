@@ -77,7 +77,7 @@ const PaymentHistory = ({ viewMode = 'bookings' }) => {
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
 
     try {
       await bookingService.cancelBooking(bookingId);

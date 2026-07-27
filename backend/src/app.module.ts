@@ -25,15 +25,22 @@ import { RolesGuard } from './auth/roles.guard';
       isGlobal: true,
     }),
     // Rate limiting - 100 requests per 15 minutes globally
-    ThrottlerModule.forRoot([{
-      name: 'default',
-      ttl: 60000, // 60 seconds
-      limit: 100, // 100 requests per minute
-    }, {
-      name: 'auth',
-      ttl: 900000, // 15 minutes
-      limit: 10, // 10 attempts per 15 minutes (for auth endpoints)
-    }]),
+    ThrottlerModule.forRoot({
+      // Integration tests drive far more requests through these routes than a
+      // human would, so per-IP limits would turn later tests into 429s that
+      // look like unrelated failures. Opt out explicitly, never by default:
+      // rate limiting stays on unless DISABLE_THROTTLE is set.
+      skipIf: () => process.env.DISABLE_THROTTLE === 'true',
+      throttlers: [{
+        name: 'default',
+        ttl: 60000, // 60 seconds
+        limit: 100, // 100 requests per minute
+      }, {
+        name: 'auth',
+        ttl: 900000, // 15 minutes
+        limit: 10, // 10 attempts per 15 minutes (for auth endpoints)
+      }],
+    }),
     LoggerModule, // Global logging module
     EmailModule, // Global email module
     StorageModule, // Global storage module

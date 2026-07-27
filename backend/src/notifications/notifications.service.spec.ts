@@ -74,10 +74,6 @@ describe('NotificationsService', () => {
     jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   describe('notifyNewAlert', () => {
     it('should send real-time alert notification', async () => {
       const alert = {
@@ -129,7 +125,7 @@ describe('NotificationsService', () => {
         title: 'Test Alert',
         message: 'Test message',
         severity: AlertSeverity.INFO,
-        type: AlertType.SYSTEM,
+        type: AlertType.SMART_HOME_INACTIVITY,
         elderId: 'elder-2',
         triggeredAt: new Date(),
         metadata: {},

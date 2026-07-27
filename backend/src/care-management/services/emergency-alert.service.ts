@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { LoggerService } from '../../common/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
+import { AlertType, AlertSeverity } from '@prisma/client';
 
 let sgMail: any = null;
 try {
@@ -52,6 +53,49 @@ export class EmergencyAlertService {
   }
 
   /**
+   * Map this service's emergency vocabulary onto the Alert enums in the schema.
+   *
+   * The two vocabularies were designed independently: an emergency has a
+   * clinical type (MEDICAL, FALL, PANIC_BUTTON...) while the Alert table stores
+   * the operational categories the rest of the app filters on. Anything without
+   * a direct counterpart falls back to SMART_HOME_CUSTOM so an emergency is
+   * still recorded rather than dropped.
+   */
+  private toAlertType(type: EmergencyAlert['type']): AlertType {
+    switch (type) {
+      case 'FALL':
+        return AlertType.FALL_DETECTED;
+      case 'VITAL_ABNORMAL':
+      case 'MEDICAL':
+        return AlertType.VITAL_ABNORMAL;
+      case 'ENVIRONMENTAL':
+        return AlertType.SMART_HOME_TEMPERATURE_EXTREME;
+      case 'PANIC_BUTTON':
+      case 'DEVICE_ALERT':
+      default:
+        return AlertType.SMART_HOME_CUSTOM;
+    }
+  }
+
+  /**
+   * Collapse the four-level emergency severity onto the schema's three levels.
+   * HIGH escalates to CRITICAL rather than de-escalating to WARNING: for an
+   * emergency path, over-alerting is the safer failure direction.
+   */
+  private toAlertSeverity(severity: EmergencyAlert['severity']): AlertSeverity {
+    switch (severity) {
+      case 'CRITICAL':
+      case 'HIGH':
+        return AlertSeverity.CRITICAL;
+      case 'MEDIUM':
+        return AlertSeverity.WARNING;
+      case 'LOW':
+      default:
+        return AlertSeverity.INFO;
+    }
+  }
+
+  /**
    * Trigger emergency alert - main entry point
    */
   async triggerEmergencyAlert(alert: EmergencyAlert) {
@@ -62,7 +106,7 @@ export class EmergencyAlertService {
     });
 
     // 1. Get elder profile and emergency contacts
-    const elder = await this.prisma.elder.findUnique({
+    const elder = await this.prisma.elderProfile.findUnique({
       where: { id: alert.elderId },
       include: {
         emergencyContacts: {
@@ -87,8 +131,8 @@ export class EmergencyAlertService {
     const alertRecord = await this.prisma.alert.create({
       data: {
         elderId: alert.elderId,
-        type: alert.type,
-        severity: alert.severity,
+        type: this.toAlertType(alert.type),
+        severity: this.toAlertSeverity(alert.severity),
         status: 'ACTIVE',
         title: alert.title,
         message: alert.message,
@@ -251,7 +295,7 @@ export class EmergencyAlertService {
     const medications = await this.prisma.medication.findMany({
       where: {
         elderId: alert.elderId,
-        status: 'ACTIVE',
+        isActive: true,
       },
     });
 
@@ -281,7 +325,7 @@ export class EmergencyAlertService {
       data: {
         elderId: alert.elderId,
         alertType: alert.type,
-        severity: alert.severity,
+        severity: this.toAlertSeverity(alert.severity),
         title: `Emergency Report: ${alert.title}`,
         summary: alert.message,
         reportData: {
@@ -313,7 +357,7 @@ export class EmergencyAlertService {
             chronicDiseases: medicalHistory?.chronicDiseases || [],
           },
           currentMedications: medications.map(med => ({
-            name: med.medicationName,
+            name: med.name,
             dosage: med.dosage,
             frequency: med.frequency,
             prescribedBy: med.prescribedBy,
@@ -499,7 +543,7 @@ export class EmergencyAlertService {
         priority: 'IMMEDIATE',
         status: 'PENDING',
         incidentType: alert.type,
-        incidentSeverity: alert.severity,
+        incidentSeverity: this.toAlertSeverity(alert.severity),
         location: {
           address: elder.address,
           city: elder.city,

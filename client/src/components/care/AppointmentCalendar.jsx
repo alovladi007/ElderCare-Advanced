@@ -29,7 +29,7 @@ const AppointmentCalendar = ({ elderId }) => {
   };
 
   const deleteAppointment = async (appointmentId) => {
-    if (!confirm('Are you sure you want to delete this appointment?')) return;
+    if (!window.confirm('Are you sure you want to delete this appointment?')) return;
 
     try {
       await careService.deleteAppointment(appointmentId);

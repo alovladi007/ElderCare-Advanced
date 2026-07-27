@@ -313,15 +313,22 @@ export class ElderProfileService {
    */
   async createElderProfile(data: {
     userId: string;
+    firstName: string;
+    lastName: string;
     dateOfBirth: Date;
     gender: string;
     medicalRecordNo: string;
+    bloodType?: string;
     address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
     emergencyContact?: any;
     medicalConditions?: any;
-    medications?: any;
     allergies?: any;
   }) {
+    // Medications are a separate relation, not a column on ElderProfile - they
+    // are created through the medication endpoints once the profile exists.
     return this.prisma.elderProfile.create({
       data,
       include: {

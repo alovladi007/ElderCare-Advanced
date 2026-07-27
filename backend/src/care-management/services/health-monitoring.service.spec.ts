@@ -2,370 +2,344 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HealthMonitoringService } from './health-monitoring.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { LoggerService } from '../../common/logging/logger.service';
-import { NotificationsService } from '../../notifications/notifications.service';
-import { VitalType, AlertSeverity } from '@prisma/client';
+import { VitalType } from '@prisma/client';
 
 describe('HealthMonitoringService', () => {
   let service: HealthMonitoringService;
-  let prismaService: PrismaService;
-  let loggerService: LoggerService;
-  let notificationsService: NotificationsService;
 
   const mockPrismaService = {
     vitalReading: {
       create: jest.fn(),
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      delete: jest.fn(),
     },
     alert: {
       create: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
   const mockLoggerService = {
+    log: jest.fn(),
     debug: jest.fn(),
-    logEvent: jest.fn(),
     warn: jest.fn(),
+    error: jest.fn(),
+    logEvent: jest.fn(),
     logSecurity: jest.fn(),
-  };
-
-  const mockNotificationsService = {
-    notifyAbnormalVital: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HealthMonitoringService,
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService,
-        },
-        {
-          provide: LoggerService,
-          useValue: mockLoggerService,
-        },
-        {
-          provide: NotificationsService,
-          useValue: mockNotificationsService,
-        },
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
     }).compile();
 
     service = module.get<HealthMonitoringService>(HealthMonitoringService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    loggerService = module.get<LoggerService>(LoggerService);
-    notificationsService = module.get<NotificationsService>(NotificationsService);
+
+    mockPrismaService.alert.create.mockResolvedValue({ id: 'alert-1' });
+    mockPrismaService.alert.findMany.mockResolvedValue([]);
+    mockPrismaService.vitalReading.findFirst.mockResolvedValue(null);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+    jest.useRealTimers();
   });
 
   describe('recordVital', () => {
-    it('should record normal vital reading', async () => {
-      const vitalData = {
-        elderId: 'elder-1',
-        vitalType: VitalType.BLOOD_PRESSURE,
-        value: 120,
-        unit: 'mmHg',
-        notes: 'Normal reading',
-      };
-
-      const createdVital = {
+    const record = async (vital: any) => {
+      mockPrismaService.vitalReading.create.mockResolvedValue({
         id: 'vital-1',
-        ...vitalData,
         recordedAt: new Date(),
+        ...vital,
+      });
+      return service.recordVital(vital);
+    };
+
+    it('persists the reading with a recordedAt timestamp and logs the event', async () => {
+      const data = {
+        elderId: 'elder-1',
+        vitalType: VitalType.HEART_RATE,
+        value: 72,
+        unit: 'bpm',
       };
 
-      mockPrismaService.vitalReading.create.mockResolvedValue(createdVital);
+      const result = await record(data);
 
-      const result = await service.recordVital(vitalData);
-
-      expect(result).toEqual(createdVital);
-      expect(prismaService.vitalReading.create).toHaveBeenCalledWith({
-        data: vitalData,
+      expect(result).toMatchObject(data);
+      expect(mockPrismaService.vitalReading.create).toHaveBeenCalledWith({
+        data: { ...data, recordedAt: expect.any(Date) },
       });
+      expect(mockLoggerService.logEvent).toHaveBeenCalledWith(
+        'Vital recorded',
+        'VitalReading',
+        'vital-1',
+        expect.objectContaining({ elderId: 'elder-1', value: 72 }),
+      );
     });
 
-    it('should create alert for critical high blood pressure', async () => {
-      const vitalData = {
+    it('does not raise an alert for an in-range reading', async () => {
+      await record({
         elderId: 'elder-1',
-        vitalType: VitalType.BLOOD_PRESSURE,
-        value: 185,
-        unit: 'mmHg',
-      };
-
-      const createdVital = {
-        id: 'vital-1',
-        ...vitalData,
-        recordedAt: new Date(),
-      };
-
-      mockPrismaService.vitalReading.create.mockResolvedValue(createdVital);
-      mockPrismaService.alert.create.mockResolvedValue({
-        id: 'alert-1',
-        severity: AlertSeverity.CRITICAL,
+        vitalType: VitalType.SPO2,
+        value: 97,
+        unit: '%',
       });
 
-      const result = await service.recordVital(vitalData);
-
-      expect(result).toEqual(createdVital);
-      expect(prismaService.alert.create).toHaveBeenCalled();
-      expect(notificationsService.notifyAbnormalVital).toHaveBeenCalled();
+      expect(mockPrismaService.alert.create).not.toHaveBeenCalled();
+      expect(mockLoggerService.logSecurity).not.toHaveBeenCalled();
     });
 
-    it('should create alert for critical low heart rate', async () => {
-      const vitalData = {
+    it('raises a CRITICAL alert when a value crosses the critical-low threshold', async () => {
+      // HEART_RATE critical_low is 50
+      await record({
         elderId: 'elder-1',
         vitalType: VitalType.HEART_RATE,
         value: 45,
         unit: 'bpm',
-      };
-
-      const createdVital = {
-        id: 'vital-2',
-        ...vitalData,
-        recordedAt: new Date(),
-      };
-
-      mockPrismaService.vitalReading.create.mockResolvedValue(createdVital);
-      mockPrismaService.alert.create.mockResolvedValue({
-        id: 'alert-2',
-        severity: AlertSeverity.CRITICAL,
       });
 
-      const result = await service.recordVital(vitalData);
-
-      expect(prismaService.alert.create).toHaveBeenCalled();
-      expect(loggerService.logSecurity).toHaveBeenCalled();
+      expect(mockPrismaService.alert.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          elderId: 'elder-1',
+          type: 'VITAL_ABNORMAL',
+          severity: 'CRITICAL',
+          status: 'ACTIVE',
+          message: 'Critical low heart rate: 45 bpm',
+        }),
+      });
+      expect(mockLoggerService.logSecurity).toHaveBeenCalledWith(
+        'Abnormal vital detected',
+        'critical',
+        expect.objectContaining({ severity: 'CRITICAL' }),
+      );
     });
 
-    it('should create warning for abnormal but non-critical temperature', async () => {
-      const vitalData = {
+    it('raises only a WARNING when a value is outside normal range but not critical', async () => {
+      // TEMPERATURE normal 97-99, critical_high 103
+      await record({
         elderId: 'elder-1',
         vitalType: VitalType.TEMPERATURE,
-        value: 99.5,
-        unit: '°F',
-      };
-
-      const createdVital = {
-        id: 'vital-3',
-        ...vitalData,
-        recordedAt: new Date(),
-      };
-
-      mockPrismaService.vitalReading.create.mockResolvedValue(createdVital);
-      mockPrismaService.alert.create.mockResolvedValue({
-        id: 'alert-3',
-        severity: AlertSeverity.WARNING,
+        value: 100.4,
+        unit: 'F',
       });
 
-      const result = await service.recordVital(vitalData);
+      expect(mockPrismaService.alert.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          severity: 'WARNING',
+          message: 'Abnormal temperature: 100.4 F',
+        }),
+      });
+      expect(mockLoggerService.logSecurity).toHaveBeenCalledWith(
+        'Abnormal vital detected',
+        'medium',
+        expect.objectContaining({ severity: 'WARNING' }),
+      );
+    });
 
-      expect(prismaService.alert.create).toHaveBeenCalled();
+    it('evaluates blood pressure against the systolic value', async () => {
+      await record({
+        elderId: 'elder-1',
+        vitalType: VitalType.BLOOD_PRESSURE,
+        value: 185,
+        systolic: 185,
+        diastolic: 110,
+        unit: 'mmHg',
+      });
+
+      expect(mockPrismaService.alert.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          severity: 'CRITICAL',
+          message: 'Critical blood pressure: 185/110 mmHg',
+        }),
+      });
+    });
+
+    it('flags a systolic reading above normal but below critical as a WARNING', async () => {
+      await record({
+        elderId: 'elder-1',
+        vitalType: VitalType.BLOOD_PRESSURE,
+        value: 150,
+        systolic: 150,
+        diastolic: 95,
+        unit: 'mmHg',
+      });
+
+      expect(mockPrismaService.alert.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          severity: 'WARNING',
+          message: 'Abnormal blood pressure: 150/95 mmHg',
+        }),
+      });
     });
   });
 
-  describe('checkVitalThresholds', () => {
-    it('should detect critical high blood pressure', () => {
-      const vital = {
-        id: 'vital-1',
-        elderId: 'elder-1',
-        vitalType: VitalType.BLOOD_PRESSURE,
-        value: 190,
-        unit: 'mmHg',
-        recordedAt: new Date(),
-      };
+  describe('getVitalsByElder', () => {
+    it('queries a rolling window and optionally narrows by vital type', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-01-31T00:00:00.000Z'));
+      mockPrismaService.vitalReading.findMany.mockResolvedValue([]);
 
-      const result = (service as any).isAbnormal(vital);
+      await service.getVitalsByElder('elder-1', VitalType.GLUCOSE, 7);
 
-      expect(result).toBe(true);
-    });
-
-    it('should detect critical low blood pressure', () => {
-      const vital = {
-        id: 'vital-1',
-        elderId: 'elder-1',
-        vitalType: VitalType.BLOOD_PRESSURE,
-        value: 75,
-        unit: 'mmHg',
-        recordedAt: new Date(),
-      };
-
-      const result = (service as any).isAbnormal(vital);
-
-      expect(result).toBe(true);
-    });
-
-    it('should detect normal blood pressure', () => {
-      const vital = {
-        id: 'vital-1',
-        elderId: 'elder-1',
-        vitalType: VitalType.BLOOD_PRESSURE,
-        value: 120,
-        unit: 'mmHg',
-        recordedAt: new Date(),
-      };
-
-      const result = (service as any).isAbnormal(vital);
-
-      expect(result).toBe(false);
-    });
-
-    it('should detect abnormal oxygen saturation', () => {
-      const vital = {
-        id: 'vital-1',
-        elderId: 'elder-1',
-        vitalType: VitalType.OXYGEN_SATURATION,
-        value: 88,
-        unit: '%',
-        recordedAt: new Date(),
-      };
-
-      const result = (service as any).isAbnormal(vital);
-
-      expect(result).toBe(true);
-    });
-
-    it('should detect normal oxygen saturation', () => {
-      const vital = {
-        id: 'vital-1',
-        elderId: 'elder-1',
-        vitalType: VitalType.OXYGEN_SATURATION,
-        value: 98,
-        unit: '%',
-        recordedAt: new Date(),
-      };
-
-      const result = (service as any).isAbnormal(vital);
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('getElderVitals', () => {
-    it('should retrieve vitals for an elder', async () => {
-      const vitals = [
-        {
-          id: 'vital-1',
-          vitalType: VitalType.BLOOD_PRESSURE,
-          value: 120,
-          recordedAt: new Date(),
+      expect(mockPrismaService.vitalReading.findMany).toHaveBeenCalledWith({
+        where: {
+          elderId: 'elder-1',
+          vitalType: VitalType.GLUCOSE,
+          recordedAt: { gte: new Date('2026-01-24T00:00:00.000Z') },
         },
-        {
-          id: 'vital-2',
-          vitalType: VitalType.HEART_RATE,
-          value: 75,
-          recordedAt: new Date(),
-        },
-      ];
-
-      mockPrismaService.vitalReading.findMany.mockResolvedValue(vitals);
-
-      const result = await service.getElderVitals('elder-1');
-
-      expect(result).toEqual(vitals);
-      expect(prismaService.vitalReading.findMany).toHaveBeenCalledWith({
-        where: { elderId: 'elder-1' },
         orderBy: { recordedAt: 'desc' },
-        take: 100,
       });
     });
 
-    it('should filter vitals by type', async () => {
-      const vitals = [
-        {
-          id: 'vital-1',
-          vitalType: VitalType.BLOOD_PRESSURE,
-          value: 120,
-        },
-      ];
+    it('omits the vitalType filter when none is supplied', async () => {
+      mockPrismaService.vitalReading.findMany.mockResolvedValue([]);
 
-      mockPrismaService.vitalReading.findMany.mockResolvedValue(vitals);
+      await service.getVitalsByElder('elder-1');
 
-      const result = await service.getElderVitals(
-        'elder-1',
-        VitalType.BLOOD_PRESSURE,
+      const where = mockPrismaService.vitalReading.findMany.mock.calls[0][0].where;
+      expect(where).not.toHaveProperty('vitalType');
+    });
+  });
+
+  describe('getLatestVitals', () => {
+    it('returns a map keyed by vital type, skipping types with no readings', async () => {
+      mockPrismaService.vitalReading.findFirst.mockImplementation(
+        async ({ where }: any) =>
+          where.vitalType === VitalType.WEIGHT
+            ? { id: 'v-w', vitalType: VitalType.WEIGHT, value: 160 }
+            : null,
       );
 
-      expect(result).toEqual(vitals);
-      expect(prismaService.vitalReading.findMany).toHaveBeenCalledWith({
-        where: {
-          elderId: 'elder-1',
-          vitalType: VitalType.BLOOD_PRESSURE,
-        },
-        orderBy: { recordedAt: 'desc' },
-        take: 100,
-      });
-    });
-  });
+      const result = await service.getLatestVitals('elder-1');
 
-  describe('getLatestVital', () => {
-    it('should retrieve latest vital of specific type', async () => {
-      const latestVital = {
-        id: 'vital-1',
-        vitalType: VitalType.HEART_RATE,
-        value: 72,
-        recordedAt: new Date(),
-      };
-
-      mockPrismaService.vitalReading.findFirst.mockResolvedValue(latestVital);
-
-      const result = await service.getLatestVital('elder-1', VitalType.HEART_RATE);
-
-      expect(result).toEqual(latestVital);
-      expect(prismaService.vitalReading.findFirst).toHaveBeenCalledWith({
-        where: {
-          elderId: 'elder-1',
-          vitalType: VitalType.HEART_RATE,
-        },
-        orderBy: { recordedAt: 'desc' },
-      });
+      // One lookup per known vital type
+      expect(mockPrismaService.vitalReading.findFirst).toHaveBeenCalledTimes(7);
+      expect(Object.keys(result)).toEqual([VitalType.WEIGHT]);
+      expect(result[VitalType.WEIGHT].value).toBe(160);
     });
   });
 
   describe('getVitalStats', () => {
-    it('should calculate vital statistics', async () => {
-      const vitals = [
-        { value: 120 },
-        { value: 115 },
-        { value: 125 },
-        { value: 118 },
-        { value: 122 },
-      ];
-
-      mockPrismaService.vitalReading.findMany.mockResolvedValue(vitals);
-
-      const result = await service.getVitalStats(
-        'elder-1',
-        VitalType.BLOOD_PRESSURE,
-        30,
+    it('computes average, min, max and standard deviation over the readings', async () => {
+      mockPrismaService.vitalReading.findMany.mockResolvedValue(
+        [120, 115, 125, 118, 122].map((value, i) => ({ id: `v-${i}`, value })),
       );
 
-      expect(result.count).toBe(5);
-      expect(result.average).toBe(120);
-      expect(result.min).toBe(115);
-      expect(result.max).toBe(125);
+      const result = await service.getVitalStats('elder-1', VitalType.BLOOD_PRESSURE, 30);
+
+      expect(result.period).toEqual({ days: 30, totalReadings: 5 });
+      expect(result.statistics).toEqual({
+        average: 120,
+        min: 115,
+        max: 125,
+        stdDev: 3.41,
+        trend: 'stable',
+      });
+      expect(result.normalRange).toEqual({ min: 90, max: 140 });
+      expect(result.adherence).toEqual({ inRange: 5, abnormal: 0, percentage: 100 });
+      expect(result.latestReading).toEqual({ id: 'v-0', value: 120 });
     });
 
-    it('should handle empty vitals list', async () => {
-      mockPrismaService.vitalReading.findMany.mockResolvedValue([]);
-
-      const result = await service.getVitalStats(
-        'elder-1',
-        VitalType.BLOOD_PRESSURE,
-        30,
+    it('detects an increasing trend and counts out-of-range readings', async () => {
+      // Readings are newest-first; the two most recent are far above the rest.
+      const values = [140, 140, ...Array(10).fill(80)];
+      mockPrismaService.vitalReading.findMany.mockResolvedValue(
+        values.map((value, i) => ({ id: `v-${i}`, value })),
       );
 
-      expect(result.count).toBe(0);
-      expect(result.average).toBe(0);
-      expect(result.min).toBe(0);
-      expect(result.max).toBe(0);
+      const result = await service.getVitalStats('elder-1', VitalType.HEART_RATE, 30);
+
+      expect(result.statistics.trend).toBe('increasing');
+      expect(result.statistics.max).toBe(140);
+      // HEART_RATE normal range is 60-100, so the two 140s are abnormal.
+      expect(result.adherence).toEqual({ inRange: 10, abnormal: 2, percentage: 83 });
+    });
+
+    it('returns null when the elder has no readings in the period', async () => {
+      mockPrismaService.vitalReading.findMany.mockResolvedValue([]);
+
+      const result = await service.getVitalStats('elder-1', VitalType.GLUCOSE, 30);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getHealthSummary', () => {
+    it('reports "critical" as soon as one reading breaches a critical threshold', async () => {
+      mockPrismaService.vitalReading.findMany.mockResolvedValue([
+        { id: 'v-1', vitalType: VitalType.HEART_RATE, value: 45 },
+        { id: 'v-2', vitalType: VitalType.HEART_RATE, value: 72 },
+      ]);
+
+      const result = await service.getHealthSummary('elder-1', 30);
+
+      expect(result.healthStatus).toBe('critical');
+      expect(result.statistics).toEqual({
+        abnormalReadings: 0,
+        criticalReadings: 1,
+        normalReadings: 1,
+      });
+      expect(result.period).toEqual({ days: 30, totalReadings: 2 });
+    });
+
+    it('reports "warning" when more than 20% of readings are abnormal', async () => {
+      const readings = [
+        ...Array(3).fill({ vitalType: VitalType.HEART_RATE, value: 110 }),
+        ...Array(7).fill({ vitalType: VitalType.HEART_RATE, value: 72 }),
+      ];
+      mockPrismaService.vitalReading.findMany.mockResolvedValue(readings);
+
+      const result = await service.getHealthSummary('elder-1', 30);
+
+      expect(result.statistics.criticalReadings).toBe(0);
+      expect(result.statistics.abnormalReadings).toBe(3);
+      expect(result.healthStatus).toBe('warning');
+    });
+
+    it('reports "normal" when abnormal readings stay at or below the 20% threshold', async () => {
+      const readings = [
+        ...Array(2).fill({ vitalType: VitalType.HEART_RATE, value: 110 }),
+        ...Array(8).fill({ vitalType: VitalType.HEART_RATE, value: 72 }),
+      ];
+      mockPrismaService.vitalReading.findMany.mockResolvedValue(readings);
+
+      const result = await service.getHealthSummary('elder-1', 30);
+
+      expect(result.statistics.abnormalReadings).toBe(2);
+      expect(result.healthStatus).toBe('normal');
+    });
+
+    it('includes the ten most recent abnormal-vital alerts', async () => {
+      mockPrismaService.vitalReading.findMany.mockResolvedValue([]);
+      mockPrismaService.alert.findMany.mockResolvedValue([{ id: 'alert-9' }]);
+
+      const result = await service.getHealthSummary('elder-1', 14);
+
+      expect(result.recentAlerts).toEqual([{ id: 'alert-9' }]);
+      expect(mockPrismaService.alert.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            elderId: 'elder-1',
+            type: 'VITAL_ABNORMAL',
+          }),
+          take: 10,
+        }),
+      );
+    });
+  });
+
+  describe('deleteVital', () => {
+    it('deletes the reading by id', async () => {
+      mockPrismaService.vitalReading.delete.mockResolvedValue({ id: 'vital-1' });
+
+      await expect(service.deleteVital('vital-1')).resolves.toEqual({ id: 'vital-1' });
+      expect(mockPrismaService.vitalReading.delete).toHaveBeenCalledWith({
+        where: { id: 'vital-1' },
+      });
     });
   });
 });

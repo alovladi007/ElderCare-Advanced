@@ -106,7 +106,7 @@ const AlertCenter = ({ homeId }) => {
   };
 
   const deleteAlert = async (alertId) => {
-    if (!confirm('Are you sure you want to delete this alert?')) return;
+    if (!window.confirm('Are you sure you want to delete this alert?')) return;
 
     try {
       await smartHomeService.deleteAlert(alertId);

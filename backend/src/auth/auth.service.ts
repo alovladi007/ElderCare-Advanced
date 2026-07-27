@@ -4,6 +4,8 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { LoggerService } from '../common/logging/logger.service';
 import { EmailService } from '../common/email/email.service';
 import * as bcrypt from 'bcryptjs';
+import { UserRole } from '@prisma/client';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -62,14 +64,7 @@ export class AuthService {
     };
   }
 
-  async register(data: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    role: string;
-  }) {
+  async register(data: RegisterDto) {
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
@@ -90,7 +85,7 @@ export class AuthService {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
-        role: data.role as any,
+        role: (data.role ?? 'FAMILY') as UserRole,
         isActive: true,
       },
     });
@@ -107,8 +102,14 @@ export class AuthService {
       });
     });
 
+    // Registration signs the user straight in. The client depends on this:
+    // without a token here it would have to make a second login call, and the
+    // web app currently does not.
     const { password: _, ...result } = user;
-    return result;
+    return {
+      ...(await this.login(result)),
+      ...result,
+    };
   }
 
   async getProfile(userId: string) {
