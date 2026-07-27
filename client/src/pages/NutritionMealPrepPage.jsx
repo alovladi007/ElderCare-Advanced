@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Apple, UtensilsCrossed, CheckCircle, Users, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
+import { Apple, CheckCircle, Users, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
 
 const NutritionMealPrepPage = () => {
   const services = [

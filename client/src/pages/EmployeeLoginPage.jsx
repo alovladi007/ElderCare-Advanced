@@ -108,7 +108,13 @@ const EmployeeLoginPage = () => {
                 <input type="checkbox" className="mr-2 rounded" />
                 <span className="text-sm">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-white hover:underline">Forgot password?</a>
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-white hover:underline"
+              >
+                Forgot password?
+              </button>
             </div>
 
             {/* Submit Button */}

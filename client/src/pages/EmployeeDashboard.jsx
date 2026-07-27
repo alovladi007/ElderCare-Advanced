@@ -3,9 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   Clock, LogOut, FileText, Calendar, User, CheckCircle,
-  ClipboardList, AlertCircle, TrendingUp, PlayCircle, StopCircle, Home,
-  Users, Briefcase, ListTodo, Edit3, Plus, Search, Filter, ArrowUpDown,
-  MessageSquare, Phone, Mail, MapPin, ChevronRight, X, Save, Trash2
+  ClipboardList, AlertCircle, TrendingUp, PlayCircle, StopCircle, Home
 } from 'lucide-react';
 
 const EmployeeDashboard = () => {
@@ -17,7 +15,7 @@ const EmployeeDashboard = () => {
   const [clockInTime, setClockInTime] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedForm, setSelectedForm] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [, setFormData] = useState({});
 
   useEffect(() => {
     // Bypass authentication - demo mode

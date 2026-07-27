@@ -2,6 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Phone, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
+const socialLinks = [
+  { label: 'Facebook', Icon: Facebook },
+  { label: 'Twitter', Icon: Twitter },
+  { label: 'Instagram', Icon: Instagram },
+  { label: 'LinkedIn', Icon: Linkedin },
+];
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
@@ -22,18 +29,16 @@ const Footer = () => {
               Providing compassionate elder care, professional home care, and reliable home repair services for over 15 years.
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
-                <Linkedin size={20} />
-              </a>
+              {socialLinks.map(({ label, Icon }) => (
+                <button
+                  key={label}
+                  type="button"
+                  aria-label={`${label} (coming soon)`}
+                  className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors"
+                >
+                  <Icon size={20} aria-hidden="true" />
+                </button>
+              ))}
             </div>
           </div>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Home, Lightbulb, Thermometer, Lock, Camera,
   DoorClosed, Settings, Power, Plus, Play,
-  Clock, Zap, TrendingUp, Activity
+  Zap, Activity
 } from 'lucide-react';
 import { Container, Card, Badge, Button, Loading, Alert } from '../components';
 import { smartHomeService } from '../services';
@@ -10,9 +10,9 @@ import { smartHomeService } from '../services';
 const SmartHomeDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [devices, setDevices] = useState([]);
-  const [scenes, setScenes] = useState([]);
+  const [scenes] = useState([]);
   const [automations, setAutomations] = useState([]);
-  const [rooms, setRooms] = useState([]);
+  const [rooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,16 +59,6 @@ const SmartHomeDashboard = () => {
     } catch (error) {
       console.error('Error toggling device:', error);
       setError('Failed to control device');
-    }
-  };
-
-  const executeScene = async (sceneId) => {
-    try {
-      // Execute scene logic here
-      console.log('Executing scene:', sceneId);
-      await loadDashboardData(); // Refresh data
-    } catch (error) {
-      console.error('Error executing scene:', error);
     }
   };
 

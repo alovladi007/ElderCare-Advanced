@@ -5,7 +5,7 @@ import {
   Heart, Users, Brain, Stethoscope, Utensils, Pill,
   HeartPulse, CheckCircle, ArrowRight, Monitor
 } from 'lucide-react';
-import { Section, Container, Card, Badge, Button } from '../components';
+import { Section, Card, Button } from '../components';
 
 const ElderCarePage = () => {
   const services = [

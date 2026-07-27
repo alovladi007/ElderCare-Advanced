@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Activity, HeartPulse, Thermometer, Droplet, Scale, Phone,
+  Activity, HeartPulse, Thermometer, Droplet, Phone,
   AlertCircle, Camera, Waves, Bell, Shield, Clock,
   ArrowRight, CheckCircle2, Smartphone, Monitor, Wifi,
   Siren, Zap, Eye, Radio, Star

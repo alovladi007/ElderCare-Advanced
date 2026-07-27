@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, Mail, Phone, UserCheck, UserX } from 'lucide-react';
 import { Card, Button, Input, Badge, Modal, Alert } from '..';
 import api from '../../services/api';
@@ -16,11 +16,7 @@ const FamilyMemberManager = ({ elderId, profile }) => {
     relationship: '',
   });
 
-  useEffect(() => {
-    loadFamilyMembers();
-  }, [elderId]);
-
-  const loadFamilyMembers = async () => {
+  const loadFamilyMembers = useCallback(async () => {
     try {
       setLoading(true);
       // Fetch family members linked to this elder profile
@@ -32,7 +28,11 @@ const FamilyMemberManager = ({ elderId, profile }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadFamilyMembers();
+  }, [loadFamilyMembers]);
 
   const handleInvite = async (e) => {
     e.preventDefault();

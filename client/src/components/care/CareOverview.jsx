@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Pill, Calendar, Heart, ClipboardCheck, AlertCircle, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Pill, Calendar, ClipboardCheck, AlertCircle, TrendingUp } from 'lucide-react';
 import { Card, Badge, Loading, Alert } from '..';
 import careService from '../../services/care.service';
 
@@ -10,11 +10,7 @@ const CareOverview = ({ elderId }) => {
   const [upcomingDoses, setUpcomingDoses] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
 
-  useEffect(() => {
-    loadOverview();
-  }, [elderId]);
-
-  const loadOverview = async () => {
+  const loadOverview = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -33,7 +29,11 @@ const CareOverview = ({ elderId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadOverview();
+  }, [loadOverview]);
 
   if (loading) {
     return <Loading variant="spinner" size="lg" text="Loading care overview..." />;

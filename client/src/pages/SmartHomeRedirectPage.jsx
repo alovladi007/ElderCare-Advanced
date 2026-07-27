@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Home, ArrowRight, Zap, Shield, Activity } from 'lucide-react';
 
 const SmartHomeRedirectPage = () => {

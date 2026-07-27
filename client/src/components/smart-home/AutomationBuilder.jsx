@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Zap, Plus, Edit, Trash, Play, Pause } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
 import { smartHomeService } from '../../services';
@@ -10,11 +10,7 @@ const AutomationBuilder = ({ homeId }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
 
-  useEffect(() => {
-    loadRules();
-  }, [homeId]);
-
-  const loadRules = async () => {
+  const loadRules = useCallback(async () => {
     try {
       setLoading(true);
       const data = await smartHomeService.getRules(homeId);
@@ -25,7 +21,11 @@ const AutomationBuilder = ({ homeId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId]);
+
+  useEffect(() => {
+    loadRules();
+  }, [loadRules]);
 
   const toggleRule = async (ruleId, currentState) => {
     try {

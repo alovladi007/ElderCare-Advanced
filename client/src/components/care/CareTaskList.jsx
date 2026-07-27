@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ClipboardList, Plus, Edit, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
 import careService from '../../services/care.service';
@@ -12,11 +12,7 @@ const CareTaskList = ({ elderId }) => {
   const [editingTask, setEditingTask] = useState(null);
   const [draggedTask, setDraggedTask] = useState(null);
 
-  useEffect(() => {
-    loadCarePlanAndTasks();
-  }, [elderId]);
-
-  const loadCarePlanAndTasks = async () => {
+  const loadCarePlanAndTasks = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -33,7 +29,11 @@ const CareTaskList = ({ elderId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadCarePlanAndTasks();
+  }, [loadCarePlanAndTasks]);
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {

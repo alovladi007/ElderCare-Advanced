@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Smile, CheckCircle, Heart, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
+import { Users, CheckCircle, Heart, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
 
 const ElderCompanionshipPage = () => {
   const services = [

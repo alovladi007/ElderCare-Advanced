@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, CreditCard, FileText, Download, Eye, X } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Modal } from '..';
 import bookingService from '../../services/booking.service';
@@ -10,11 +10,7 @@ const PaymentHistory = ({ viewMode = 'bookings' }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [viewMode]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       let result;
@@ -40,7 +36,11 @@ const PaymentHistory = ({ viewMode = 'bookings' }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [viewMode]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const getStatusBadge = (status) => {
     const variants = {

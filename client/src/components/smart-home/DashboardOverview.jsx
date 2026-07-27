@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
 import { Card, Badge, Loading, Alert } from '..';
 import { smartHomeService } from '../../services';
@@ -10,11 +10,7 @@ const DashboardOverview = ({ homeId }) => {
   const [recentEvents, setRecentEvents] = useState([]);
   const [activeScenarios, setActiveScenarios] = useState([]);
 
-  useEffect(() => {
-    loadOverviewData();
-  }, [homeId]);
-
-  const loadOverviewData = async () => {
+  const loadOverviewData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -33,7 +29,11 @@ const DashboardOverview = ({ homeId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId]);
+
+  useEffect(() => {
+    loadOverviewData();
+  }, [loadOverviewData]);
 
   if (loading) {
     return <Loading variant="spinner" size="lg" text="Loading dashboard..." />;

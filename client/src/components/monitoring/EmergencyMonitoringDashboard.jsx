@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Activity,
@@ -9,10 +9,8 @@ import {
   Shield,
   Clock,
   CheckCircle,
-  XCircle,
   Settings,
   Bell,
-  Send,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -29,13 +27,7 @@ const EmergencyMonitoringDashboard = ({ elderId }) => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [config, setConfig] = useState({});
 
-  useEffect(() => {
-    loadMonitoringData();
-    const interval = setInterval(loadMonitoringData, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, [elderId]);
-
-  const loadMonitoringData = async () => {
+  const loadMonitoringData = useCallback(async () => {
     try {
       const [statusRes, alertsRes, contactsRes, providersRes, servicesRes] = await Promise.all([
         api.get(`/care-management/emergency/monitoring/status/${elderId}`),
@@ -56,7 +48,13 @@ const EmergencyMonitoringDashboard = ({ elderId }) => {
       console.error('Failed to load monitoring data:', error);
       setLoading(false);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadMonitoringData();
+    const interval = setInterval(loadMonitoringData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [loadMonitoringData]);
 
   const toggleMonitoring = async () => {
     try {

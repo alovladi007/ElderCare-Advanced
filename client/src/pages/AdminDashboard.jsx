@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Calendar, Wrench, TrendingUp, Activity, DollarSign } from 'lucide-react';
+import { Users, Calendar, TrendingUp, DollarSign } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [stats] = useState({

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Calendar, Clock, User, Mail, Phone, MessageSquare, Home, CheckCircle } from 'lucide-react';
-import axios from 'axios';
 
 const BookingPage = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X, Save, AlertCircle } from 'lucide-react';
-import { Card, Button, Input, TextArea, Badge } from '..';
+import { Card, Button, Input, Badge } from '..';
 
 const MedicalHistoryForm = ({ profile, onSave, saving }) => {
   const [medicalConditions, setMedicalConditions] = useState([]);

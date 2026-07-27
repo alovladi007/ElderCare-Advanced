@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Pill, Plus, Edit, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
 import careService from '../../services/care.service';
@@ -12,12 +12,7 @@ const MedicationSchedule = ({ elderId }) => {
   const [editingMed, setEditingMed] = useState(null);
   const [recordingDose, setRecordingDose] = useState(null);
 
-  useEffect(() => {
-    loadMedications();
-    loadUpcomingDoses();
-  }, [elderId]);
-
-  const loadMedications = async () => {
+  const loadMedications = useCallback(async () => {
     try {
       setLoading(true);
       const data = await careService.getMedications(elderId);
@@ -28,16 +23,21 @@ const MedicationSchedule = ({ elderId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId]);
 
-  const loadUpcomingDoses = async () => {
+  const loadUpcomingDoses = useCallback(async () => {
     try {
       const data = await careService.getUpcomingDoses(elderId);
       setUpcomingDoses(data);
     } catch (err) {
       console.error('Failed to load upcoming doses:', err);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadMedications();
+    loadUpcomingDoses();
+  }, [loadMedications, loadUpcomingDoses]);
 
   const handleRecordDose = async (doseId, status) => {
     try {

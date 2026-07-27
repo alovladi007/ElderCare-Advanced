@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, Filter, Search, CheckCheck, Trash2, AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Bell, Search, CheckCheck, Trash2, AlertTriangle, Info, AlertCircle } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Input, Select } from '..';
 import { smartHomeService } from '../../services';
 
@@ -11,18 +11,7 @@ const AlertCenter = ({ homeId }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadAlerts();
-
-    // Setup WebSocket connection for real-time alerts
-    const ws = setupWebSocket();
-
-    return () => {
-      if (ws) ws.close();
-    };
-  }, [homeId]);
-
-  const setupWebSocket = () => {
+  const setupWebSocket = useCallback(() => {
     try {
       const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
       const ws = new WebSocket(`${wsUrl}/smarthome/alerts?homeId=${homeId}`);
@@ -68,9 +57,9 @@ const AlertCenter = ({ homeId }) => {
       console.error('Failed to setup WebSocket:', err);
       return null;
     }
-  };
+  }, [homeId]);
 
-  const loadAlerts = async () => {
+  const loadAlerts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await smartHomeService.getAlerts(homeId);
@@ -81,7 +70,18 @@ const AlertCenter = ({ homeId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [homeId]);
+
+  useEffect(() => {
+    loadAlerts();
+
+    // Setup WebSocket connection for real-time alerts
+    const ws = setupWebSocket();
+
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [loadAlerts, setupWebSocket]);
 
   const markAsRead = async (alertId) => {
     try {

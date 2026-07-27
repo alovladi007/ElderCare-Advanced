@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Users, Clock, Heart, CheckCircle, ArrowRight, Sparkles, ShieldCheck, Calendar } from 'lucide-react';
+import { Home, Users, Heart, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 
 const HomeCarePage = () => {
   const services = [

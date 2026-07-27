@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, Activity, Thermometer, Wind, Droplet, TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Card, Badge, Button, Loading, Alert, Select } from '..';
+import { Card, Badge, Loading, Alert, Select } from '..';
 import careService from '../../services/care.service';
 
 const VitalSignsCharts = ({ elderId }) => {
@@ -10,13 +10,8 @@ const VitalSignsCharts = ({ elderId }) => {
   const [vitalReadings, setVitalReadings] = useState([]);
   const [stats, setStats] = useState({});
   const [timeRange, setTimeRange] = useState('7d'); // 7d, 30d, 90d
-  const [selectedVital, setSelectedVital] = useState('ALL');
 
-  useEffect(() => {
-    loadVitalData();
-  }, [elderId, timeRange]);
-
-  const loadVitalData = async () => {
+  const loadVitalData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -43,7 +38,11 @@ const VitalSignsCharts = ({ elderId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId, timeRange]);
+
+  useEffect(() => {
+    loadVitalData();
+  }, [loadVitalData]);
 
   const getLatestReading = (vitalType) => {
     const filtered = vitalReadings.filter((r) => r.vitalType === vitalType);

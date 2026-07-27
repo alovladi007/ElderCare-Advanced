@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CreditCard, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
-import { Card, Button, Alert, Loading, Input } from '..';
+import { Card, Button, Alert, Input } from '..';
 import bookingService from '../../services/booking.service';
 
 const PaymentCheckout = ({ bookingData, onBack, onSuccess }) => {
-  const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [paymentIntent, setPaymentIntent] = useState(null);
+  const [, setPaymentIntent] = useState(null);
   const [cardDetails, setCardDetails] = useState({
     cardNumber: '',
     cardName: '',

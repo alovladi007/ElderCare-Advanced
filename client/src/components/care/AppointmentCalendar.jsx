@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Plus, Edit, Trash2, MapPin, Clock, User } from 'lucide-react';
 import { Card, Badge, Button, Loading, Alert, Modal, Input, Select, TextArea } from '..';
 import careService from '../../services/care.service';
@@ -9,13 +9,8 @@ const AppointmentCalendar = ({ elderId }) => {
   const [appointments, setAppointments] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAppt, setEditingAppt] = useState(null);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
 
-  useEffect(() => {
-    loadAppointments();
-  }, [elderId]);
-
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
     try {
       setLoading(true);
       const data = await careService.getAppointments(elderId);
@@ -26,7 +21,11 @@ const AppointmentCalendar = ({ elderId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
 
   const deleteAppointment = async (appointmentId) => {
     if (!window.confirm('Are you sure you want to delete this appointment?')) return;

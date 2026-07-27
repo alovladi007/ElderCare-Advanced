@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Phone, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Phone, Save } from 'lucide-react';
 import { Card, Button, Input, Badge, Modal } from '..';
 
 const EmergencyContactManager = ({ contacts, onSave, saving }) => {

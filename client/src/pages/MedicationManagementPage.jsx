@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Pill, Activity, CheckCircle, Users, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
+import { Pill, CheckCircle, Users, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
 
 const MedicationManagementPage = () => {
   const services = [

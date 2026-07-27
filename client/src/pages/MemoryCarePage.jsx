@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Brain, Heart, CheckCircle, Users, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
+import { Brain, CheckCircle, Users, Shield, Phone, ArrowRight, Sparkles } from 'lucide-react';
 
 const MemoryCarePage = () => {
   const services = [

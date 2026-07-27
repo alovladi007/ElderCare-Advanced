@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle,
@@ -6,13 +6,11 @@ import {
   Volume2,
   VolumeX,
   Heart,
-  Clock,
   Phone,
   Pill,
   Calendar,
   Activity,
   Smile,
-  Settings,
   User,
 } from 'lucide-react';
 import api from '../../utils/axios';
@@ -30,16 +28,7 @@ const AICompanionChat = ({ elderId, className = '' }) => {
   const synthRef = useRef(window.speechSynthesis);
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    loadConversationHistory();
-    loadStats();
-  }, [elderId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const loadConversationHistory = async () => {
+  const loadConversationHistory = useCallback(async () => {
     try {
       const res = await api.get(`/ai-companion/conversation/${elderId}?limit=20`);
       const formattedMessages = res.data.flatMap((conv) => [
@@ -58,16 +47,25 @@ const AICompanionChat = ({ elderId, className = '' }) => {
     } catch (error) {
       console.error('Failed to load conversation:', error);
     }
-  };
+  }, [elderId]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const res = await api.get(`/ai-companion/stats/${elderId}?days=7`);
       setStats(res.data);
     } catch (error) {
       console.error('Failed to load stats:', error);
     }
-  };
+  }, [elderId]);
+
+  useEffect(() => {
+    loadConversationHistory();
+    loadStats();
+  }, [loadConversationHistory, loadStats]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || loading) return;
