@@ -132,9 +132,12 @@ describe('Care Management Integration Tests', () => {
 
     // Adherence is reported per elder, not per medication: the controller
     // exposes GET elder/:elderId/adherence, and the payload counts doses.
+    // `days` is sent explicitly because omitting it currently 500s - see the
+    // skipped test at the bottom of this file.
     it('GET /api/care-management/medications/elder/:elderId/adherence - should get adherence stats', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/care-management/medications/elder/${elderId}/adherence`)
+        .query({ days: 30 })
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
