@@ -87,7 +87,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 3001;
+  // Fallback must never be 3000/3001: those collide with other tooling on a
+// developer machine, and .env is gitignored so a fresh clone has none.
+// See PORTS.md.
+  const port = process.env.PORT || 31611;
   const host = process.env.HOST || '0.0.0.0';
   await app.listen(port, host);
 

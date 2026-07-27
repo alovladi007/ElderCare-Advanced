@@ -43,7 +43,17 @@ Container-internal ports are unchanged (Postgres still listens on 5432 *inside* 
 
 ## Running locally
 
-`.env` files are gitignored, so a fresh clone has none. Without `client/.env`, create-react-app falls back to **port 3000** — the collision this map exists to prevent. Copy the templates first:
+`.env` files are gitignored, so a fresh clone has none. That used to mean
+create-react-app fell back to **port 3000** and the API to **3001** — the exact
+collision this map exists to prevent. Both defaults now come from the block
+instead, so a clone with no configuration at all still binds 31610/31611 and
+never 3000:
+
+- `client/package.json` → `"start": "PORT=${PORT:-31610} ... react-scripts start"`
+- `backend/src/main.ts` → `process.env.PORT || 31611`
+
+An explicit `PORT` in the environment still wins. Copy the templates anyway,
+because the backend needs `DATABASE_URL` and `JWT_SECRET`:
 
 ```bash
 cd backend && cp .env.example .env    # then set DATABASE_URL and JWT_SECRET

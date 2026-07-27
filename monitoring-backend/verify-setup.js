@@ -278,8 +278,8 @@ function printSummary() {
     console.log('To start the server:');
     console.log('   npm run dev     (development mode with auto-reload)');
     console.log('   npm start       (production mode)\n');
-    console.log('Server will be available at: http://localhost:' + (process.env.PORT || 5001));
-    console.log('API endpoints: http://localhost:' + (process.env.PORT || 5001) + '/api\n');
+    console.log('Server will be available at: http://localhost:' + (process.env.PORT || 31613));
+    console.log('API endpoints: http://localhost:' + (process.env.PORT || 31613) + '/api\n');
   }
 
   if (!emailConfigured && !twilioConfigured) {
