@@ -77,9 +77,12 @@ async function main() {
   const elderProfile = await prisma.elderProfile.create({
     data: {
       userId: elderUser.id,
+      firstName: elderUser.firstName,
+      lastName: elderUser.lastName,
       dateOfBirth: new Date('1945-05-15'),
       gender: 'male',
       medicalRecordNo: 'MRN-001234',
+      bloodType: 'O+',
       address: '123 Maple Street, Apt 4B, Springfield, IL 62701',
       emergencyContact: {
         name: 'Sarah Johnson',
@@ -90,10 +93,24 @@ async function main() {
         { condition: 'Hypertension', diagnosedDate: '2018-03-15', notes: 'Well controlled with medication' },
         { condition: 'Diabetes Type 2', diagnosedDate: '2019-06-20', notes: 'Diet and medication managed' },
       ],
-      medications: [
-        { name: 'Lisinopril', dosage: '10mg', frequency: 'Once daily', prescribedBy: 'Dr. Smith' },
-        { name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', prescribedBy: 'Dr. Smith' },
-      ],
+      medications: {
+        create: [
+          {
+            name: 'Lisinopril',
+            dosage: '10mg',
+            frequency: 'ONCE_DAILY',
+            startDate: new Date('2018-03-20'),
+            prescribedBy: 'Dr. Smith',
+          },
+          {
+            name: 'Metformin',
+            dosage: '500mg',
+            frequency: 'TWICE_DAILY',
+            startDate: new Date('2019-06-25'),
+            prescribedBy: 'Dr. Smith',
+          },
+        ],
+      },
       allergies: ['Penicillin', 'Shellfish'],
       status: 'ACTIVE',
     },
