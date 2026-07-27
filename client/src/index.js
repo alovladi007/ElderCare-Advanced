@@ -11,5 +11,14 @@ root.render(
   </React.StrictMode>
 );
 
-// Register service worker for PWA functionality
-serviceWorkerRegistration.register();
+// Register the service worker for PWA functionality in production only.
+// In development it intercepts dev-server requests for assets that only exist
+// under content-hashed names, which surfaces as a stream of "Proxy error:
+// Could not proxy request /static/js/main.js" and can serve a stale shell
+// after a code change. unregister() also cleans up any worker a developer
+// picked up from an earlier build.
+if (process.env.NODE_ENV === 'production') {
+  serviceWorkerRegistration.register();
+} else {
+  serviceWorkerRegistration.unregister();
+}
