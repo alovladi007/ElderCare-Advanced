@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { EmergencyAlertService } from '../services/emergency-alert.service';
 import { ContinuousMonitoringService } from '../services/continuous-monitoring.service';
+import { OptionalIntPipe } from '../../common/pipes/optional-int.pipe';
 
 @ApiTags('emergency-monitoring')
 @Controller('care-management/emergency')
@@ -52,7 +53,7 @@ export class EmergencyMonitoringController {
   @ApiQuery({ name: 'days', required: false, type: Number })
   async getAlertHistory(
     @Param('elderId') elderId: string,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.emergencyAlert.getAlertHistory(elderId, days);
   }
@@ -75,7 +76,7 @@ export class EmergencyMonitoringController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   async getEmergencyReports(
     @Param('elderId') elderId: string,
-    @Query('limit') limit?: number,
+    @Query('limit', OptionalIntPipe) limit?: number,
   ) {
     return this.emergencyAlert.getEmergencyReports(elderId, limit);
   }

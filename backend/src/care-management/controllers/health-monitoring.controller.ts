@@ -12,6 +12,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { HealthMonitoringService } from '../services/health-monitoring.service';
 import { VitalType } from '@prisma/client';
+import { OptionalIntPipe } from '../../common/pipes/optional-int.pipe';
 
 @ApiTags('care-management')
 @Controller('care-management/health')
@@ -45,7 +46,7 @@ export class HealthMonitoringController {
   async getVitalsByElder(
     @Param('elderId') elderId: string,
     @Query('vitalType') vitalType?: VitalType,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.healthService.getVitalsByElder(elderId, vitalType, days);
   }
@@ -63,7 +64,7 @@ export class HealthMonitoringController {
   async getVitalStats(
     @Param('elderId') elderId: string,
     @Query('vitalType') vitalType: VitalType,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.healthService.getVitalStats(elderId, vitalType, days);
   }
@@ -73,7 +74,7 @@ export class HealthMonitoringController {
   @ApiQuery({ name: 'days', required: false, type: Number })
   async getHealthSummary(
     @Param('elderId') elderId: string,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.healthService.getHealthSummary(elderId, days);
   }

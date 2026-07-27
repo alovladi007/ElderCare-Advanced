@@ -10,6 +10,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { VoiceControlService } from '../services/voice-control.service';
+import { OptionalIntPipe } from '../../common/pipes/optional-int.pipe';
 
 @ApiTags('voice-control')
 @Controller('smart-home/voice')
@@ -42,7 +43,7 @@ export class VoiceControlController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   async getVoiceHistory(
     @Param('elderId') elderId: string,
-    @Query('limit') limit?: number,
+    @Query('limit', OptionalIntPipe) limit?: number,
   ) {
     return this.voiceControl.getVoiceHistory(elderId, limit);
   }

@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { MedicationService } from '../services/medication.service';
 import { MedicationFrequency } from '@prisma/client';
+import { OptionalIntPipe } from '../../common/pipes/optional-int.pipe';
 
 @ApiTags('care-management')
 @Controller('care-management/medications')
@@ -98,7 +99,7 @@ export class MedicationController {
   @ApiQuery({ name: 'days', required: false, type: Number })
   async getUpcomingDoses(
     @Param('elderId') elderId: string,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.medicationService.getUpcomingDoses(elderId, days);
   }
@@ -126,7 +127,7 @@ export class MedicationController {
   @ApiQuery({ name: 'days', required: false, type: Number })
   async getAdherenceStats(
     @Param('elderId') elderId: string,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.medicationService.getAdherenceStats(elderId, days);
   }

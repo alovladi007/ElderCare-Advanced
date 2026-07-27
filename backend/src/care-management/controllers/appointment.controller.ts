@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { AppointmentService } from '../services/appointment.service';
 import { AppointmentType, AppointmentStatus } from '@prisma/client';
+import { OptionalIntPipe } from '../../common/pipes/optional-int.pipe';
 
 @ApiTags('care-management')
 @Controller('care-management/appointments')
@@ -73,7 +74,7 @@ export class AppointmentController {
   @ApiQuery({ name: 'days', required: false, type: Number })
   async getUpcomingAppointments(
     @Param('elderId') elderId: string,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.appointmentService.getUpcomingAppointments(elderId, days);
   }
@@ -125,7 +126,7 @@ export class AppointmentController {
   @ApiQuery({ name: 'days', required: false, type: Number })
   async getAppointmentStats(
     @Param('elderId') elderId: string,
-    @Query('days') days?: number,
+    @Query('days', OptionalIntPipe) days?: number,
   ) {
     return this.appointmentService.getAppointmentStats(elderId, days);
   }

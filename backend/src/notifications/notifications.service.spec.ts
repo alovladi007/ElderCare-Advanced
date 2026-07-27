@@ -494,6 +494,23 @@ describe('NotificationsService', () => {
   });
 
   describe('getNotifications', () => {
+    it('applies its default limit when the caller passes none', async () => {
+      // Regression: the global ValidationPipe turns an omitted ?limit= into
+      // NaN, so `limit = 20` never applied and `take: NaN` reached Prisma,
+      // 500ing every GET /notifications for a user with an elder profile.
+      (mockPrismaService.elderProfile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'elder-1',
+        userId: 'user-1',
+      });
+      (mockPrismaService.alert.findMany as jest.Mock).mockResolvedValue([]);
+
+      await service.getNotifications('user-1');
+
+      const args = (mockPrismaService.alert.findMany as jest.Mock).mock.calls[0][0];
+      expect(args.take).toBe(20);
+      expect(Number.isNaN(args.take)).toBe(false);
+    });
+
     it('should retrieve notifications for user', async () => {
       const elderProfile = {
         id: 'elder-1',

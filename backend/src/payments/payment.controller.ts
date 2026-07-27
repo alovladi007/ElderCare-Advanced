@@ -15,6 +15,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiExcludeEndpoint } from '@nestj
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PaymentService } from './payment.service';
 import { Request } from 'express';
+import { OptionalIntPipe } from '../common/pipes/optional-int.pipe';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -146,7 +147,7 @@ export class PaymentController {
   @ApiOperation({ summary: 'Get payment history for customer' })
   async getPaymentHistory(
     @Param('customerId') customerId: string,
-    @Query('limit') limit?: number,
+    @Query('limit', OptionalIntPipe) limit?: number,
   ) {
     return this.paymentService.getPaymentHistory(customerId, limit);
   }
